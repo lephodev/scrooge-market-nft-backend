@@ -19,7 +19,7 @@ jobs:
           REMOTE_USER: ${{ secrets.USERNAME }}
           TARGET: ${{ secrets.TARGET_DIR }}
           SCRIPT_BEFORE: |
-            cd /home/ubuntu/market-nft-backend && git add .
+            git add .
             cd /home/ubuntu/market-nft-backend && git commit -m update
             cd /home/ubuntu/market-nft-backend && git pull origin master
             pm2 kill
