@@ -17,6 +17,7 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
           REMOTE_HOST: ${{ secrets.HOST_DNS }}
           REMOTE_USER: ${{ secrets.USERNAME }}
+          TARGET: ${{ secrets.TARGET_DIR }}
           SCRIPT_BEFORE: |
             cd /home/ubuntu/market-nft-backend && git add .
             cd /home/ubuntu/market-nft-backend && git commit -m update
