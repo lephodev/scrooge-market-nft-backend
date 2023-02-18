@@ -1,313 +1,343 @@
 import express, { json } from 'express';
-import db from './config/db.mjs';
-import client from './config/mongodb.mjs';
+import * as db from './config/mongodb.mjs';
+import * as rewards from './config/rewards.mjs'
+import * as affiliate from './config/affiliate.mjs'
+import * as useSDK from './config/sdk.mjs';
+import * as raffles from './raffles/raffles.mjs';
+import * as sharable from './config/sharable_data.mjs';
+import * as email from './email/email.mjs';
+import * as chatgpt from './config/chatgpt.mjs';
+import * as common from './config/commons.mjs';
+import * as utilities from './config/utilities.mjs';
+import { processStripeWebhook } from './config/stripe.mjs';
 import cors from 'cors';
-import Axios from 'axios';
-import sdk from './config/sdk.mjs';
-
-
 const app = express();
-const PORT = 9002;
-/*app.use(cors(
-    {headers : {
-        "Access-Control-Allow-Headers": "*",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "*"      
-    }}
-));*/
-var corsOptions = {
-    
-        "origin": "*",
-        "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
-        "preflightContinue": false,
-        "optionsSuccessStatus": 204
-      
-}
+const PORT = 9001;
+app.use(cors());
 app.use(json());
+app.use(async (req, res, next) => {
+    if ((!db.get_scrooge_usersDB()) || (!db.get_sharing_messagesDB()) || (!db.get_marketplace_redeem_prize_transactionsDB()) || (!db.get_marketplace_prizesDB())
+        || (!db.get_marketplace_itemsDB()) || (!db.get_marketplace_holder_claim_chips_transactionsDB()) || (!db.get_marketplace_ducky_lucks_prizesDB())
+        || (!db.get_marketplace_ducky_lucks_chip_claimsDB()) || (!db.get_marketplace_daily_reward_token_claimsDB()) || (!db.get_marketplace_coupons_merchDB())
+        || (!db.get_marketplace_chip_transactionsDB()) || (!db.get_affiliates_successful_actionsDB()) || (!db.get_affiliatesDB()) || (!db.get_rafflesDB()) || (!db.get_raffles_drawsDB())
+        || (!db.get_raffles_entriesDB()) || (!db.get_raffles_usersDB()) || (!db.get_raffles_usersDB())) {
+        await db.connectToDB();
+    }
+    /*
+    if (!db.get_marketplace_wallet_addressesDB()) {
+        await db.connectToDB();
+    }
+    if (!db.get_common_batch_burn_transactionsDB()) {
+        await db.connectToDB();
+    }
+    if (!db.get_common_burn_requestsDB()) {
+        await db.connectToDB();
+    }
+    if (!db.get_common_common_totalsDB()) {
+        await db.connectToDB();
+    }
+    if (!db.get_sharing_hashtagsDB()) {
+        await db.connectToDB();
+    }*/
+    /*if (!db.get_sharing_responsesDB()) {
+        await db.connectToDB();
+    }
+    if (!db.get_sharing_twitterInfluencersDB()) {
+        await db.connectToDB();
+    }
+    if (!db.get_user_details_casino_profile_pointsDB()) {
+        await db.connectToDB();
+    }*/
+    next();
+});
 
 
-const contract = await sdk.getContract("0xD831267dDF05156Da33e35EaD05DDBf9ffE1F93E");
-
-function addChips(_user_id, _qty, _address) {
-    client.connect(err => {
-        const collection = client.db("scrooge").collection("users");
-        const query = collection.findOneAndUpdate({"username" : "Brady"},{$inc:{"wallet":_qty}}).then((user)=>{
-          //console.log('Mongo User: ', user.value._id);
-          const chip_transactions_collection = client.db("casino-nft-marketplace").collection("chip_transactions");
-            const queryCT = chip_transactions_collection.insertOne({"user_id" : user.value._id, "address":_address,"chips":_qty,"timestamp":new Date() }).then((trans)=>{
-            return true;
-          });
-        });
-    });
-
-    /*let changedRows = 0;
-    const foo = db.query("UPDATE users SET chips = chips + ? WHERE id = ?",[_qty, _user_id], (err,result)=>{
-       if(err) {
-            console.log('error', err);   
-        } else if (result.changedRows == 0) {
-            console.log('no changed rows');
-            return null;
-        } else if (result.changedRows == 1) {
-            console.log('one row updated');
-            const foo = db.query("INSERT INTO chip_transactions (user_id, address, chips) VALUES (?,?,?)",[_user_id,_address,_qty], (err,result)=>{
-                console.log("Record added to chip_transactions");
-            });
-        } else {
-            return null;
-        }
-       changedRows = result.changedRows;
-    });
-    return changedRows;*/
-};
-
-// Route to verify email exists for casino user account
-app.get("/api/verifyEmail/:emailaddress", cors(corsOptions), (req,res)=>{
-    const emailaddress = req.params.emailaddress;
-    client.connect(err => {
-        const collection = client.db("scrooge").collection("users");
-        const query = collection.findOne({"email" : emailaddress}).then((user)=>{
-          res.send(user);
-          client.close();
-        });
+//################################# Affiliates #################################//
+// Route to get Affiliate user
+app.get("/api/getAffiliateUser/:user_id", async (req,res)=>{
+    const resp = await affiliate.getAffiliateUser(req).then((data)=>{
+        res.send(data);
     });
 });
 
-// Route to disburse Free Tokens
-app.get("/api/getFreeTokens/:address/:token_id/:user_id/:qty", cors(corsOptions), async (req,res)=>{
-    const address = req.params.address;
-    const token_id = req.params.token_id;
-    const user_id = req.params.user_id;
-    const qty = req.params.qty;
-    if(address && token_id && user_id){
-        client.connect(err => {
-            const collection = client.db("casino-nft-marketplace").collection("items");
-            const query = collection.findOne({"token_id" : parseInt(token_id)}).then((item)=>{
-              addChips(user_id,item.chip_value,address);
-              res.send(item.chip_value.toString());
-              client.close();
-            });
-        }); 
-    } 
-});
-
-function addChipsX(_user_id, _qty, _address) {
-    let changedRows = 0;
-    const foo = db.query("UPDATE users SET chips = chips + ? WHERE id = ?",[_qty, _user_id], (err,result)=>{
-       if(err) {
-            console.log('error', err);   
-        } else if (result.changedRows == 0) {
-            console.log('no changed rows');
-            return null;
-        } else if (result.changedRows == 1) {
-            console.log('one row updated');
-            const foo = db.query("INSERT INTO chip_transactions (user_id, address, chips) VALUES (?,?,?)",[_user_id,_address,_qty], (err,result)=>{
-                console.log("Record added to chip_transactions");
-            });
-        } else {
-            return null;
-        }
-       changedRows = result.changedRows;
+// Route to create Affiliate user
+app.get("/api/createAffiliateUser/:user_id/:ip_address", async (req,res)=>{
+    const resp = await affiliate.createAffiliateUser(req).then((data)=>{
+        res.send(data);
     });
-    return changedRows;
-};
-
-// Route to redeem Token NFT
-app.get("/api/redeemTokenNFT/:address/:token_id/:user_id/:qty", cors(corsOptions), async (req,res)=>{
-    const address = req.params.address;
-    const token_id = req.params.token_id;
-    const user_id = req.params.user_id;
-    const qty = req.params.qty;
-
-    if(address && token_id){
-        //write sql to get corresponding chip count for token_id
-        db.query("SELECT chip_value FROM token_nfts WHERE token_id = ?", token_id, (err,result)=>{
-            if(err) {
-            console.log(err)
-            } else {
-                addChips(user_id,result[0].chip_value,address);
-                const chipsAdded = result[0].chip_value;
-                res.send(chipsAdded.toString());
-            }
-        });        
-    } 
 });
 
-// Route to get user's NFT balance
-app.get("/api/getWalletNFTBalanceByTokenID/:address/:token_id/:user_id/:qty", cors(corsOptions), async (req,res)=>{
-    const address = req.params.address;
-    const token_id = req.params.token_id;
-    const user_id = req.params.user_id;
-    const qty = req.params.qty;
-    if(address && token_id){
-        const bal = await contract.erc1155.balanceOf(address, token_id);
-        console.log('Wallet NFT Balance: ',bal.toString());
-        if(bal.toNumber() >= 1){
-            addChips(user_id,qty);
-            console.log("chips added");
-        } else{
-            console.log("chips not added. no nft.");
-        }
-        res.send(bal.toString());
-    } 
+// Route to get affiliate leaders by number of tokens earned
+app.get("/api/getAffLeadersByTokens/:limit/:days", async (req,res)=>{
+    const resp = await affiliate.getAffLeadersByTokens(req).then((data)=>{
+        res.send(data);
+    });
 });
 
+// Route to get affiliate leaders by number of commissions (num of sales) earned
+app.get("/api/getAffLeadersByCount/:limit/:days", async (req,res)=>{
+    const resp = await affiliate.getAffLeadersByCount(req).then((data)=>{
+        res.send(data);
+    });
+});
+
+// Route to get affiliate leaders by number of commissions (num of sales) earned
+app.get("/api/getAffLeadersByType/:type/:limit/:days", async (req,res)=>{
+    const resp = await affiliate.getAffLeadersByType(req).then((data)=>{
+        res.send(data);
+    });
+});
+
+
+
+
+//################################# Common Data #################################//
+
+
+//################################# Email #################################//
+// Route to trigger email
+app.get("/api/sendEmail/:to/:subject/:body", async (req,res)=>{
+    const resp = await email.sendemail(req).then((data)=>{
+        res.send(data);
+    });
+});
+
+
+//################################# Items #################################//
+app.get("/api/getFreeTokens/:address/:token_id/:user_id/:qty/:aff_id", async (req,res)=>{
+    const resp = await useSDK.getFreeTokens(req).then((data)=>{
+        res.send(data);
+    });
+});
+
+app.get("/api/getItems/:type", async (req,res)=>{
+    const resp = await rewards.getItems(req).then((data)=>{
+        res.send(data);
+    });
+});
+
+
+
+//################################# Prizes #################################//
 // Route to get available prizes
-app.get("/api/getPrizes", cors(corsOptions), (req,res)=>{
-    const user_id = req.params.user_id;
-    db.query("SELECT * FROM prizes ORDER BY price ASC", (err,result)=>{
-        if(err) {
-        console.log(err)
-        } else {
-            //console.log(result);
-            res.send(result);
-        }
+app.get("/api/getPrizes", async (req,res)=>{
+    const resp = await rewards.getPrizes(req).then((data)=>{
+        //console.log('prizes resp: ', data);
+        res.send(data);
+    });
+});
+
+// Route to get user's redeemed prizes
+app.get("/api/getUserRedeemed/:user_id", async (req,res)=>{
+    const resp = await rewards.getUserRedeemed(req).then((data)=>{
+        res.send(data);
+    });
+});
+
+// Route to update markRedeemed flag in prize_redeem_transactions table
+app.get("/api/markMerchCouponRedeemed/:trans_id/:user_id", async (req,res)=>{
+    const resp = await rewards.markMerchCouponRedeemed(req).then((data)=>{
+        res.send(data);
     });
 });
 
 // Route to redeem prize
-app.get("/api/redeemPrize/:prize_id/:user_id/:qty", cors(corsOptions), async (req,res)=>{
-    const prize_id = req.params.prize_id;
-    const user_id = req.params.user_id;
-    const qty = req.params.qty;
-
-    if(prize_id && user_id){
-        db.query("SELECT chips FROM users WHERE id = ?", user_id, (err,result)=>{
-            if(err) {
-            console.log(err)
-            } else {
-                const chipBal = result[0].chips;
-                db.query("SELECT price FROM prizes WHERE id = ?", prize_id, (err,result)=>{
-                    if(err) {
-                        console.log(err)
-                    } else {
-                        const prizeCost = result[0].price;
-                        console.log('**** Begin redeem prize process ****')
-                        console.log('Prize cost: ', prizeCost);
-                        console.log('User chip balance: ', chipBal);
-                        if (chipBal >= prizeCost) {
-                            const newChipBal = (chipBal-prizeCost);
-                            console.log("User has enough chips.");
-                            console.log("Debiting spent chips.");
-                            db.query("UPDATE users SET chips = chips - ? WHERE id = ?",[prizeCost, user_id], (err,result)=>{
-                                if(err) {
-                                    console.log(err)
-                                } else {
-                                    console.log("Chips debited.");
-                                    console.log('New chip balance: ', newChipBal);
-                                    console.log("Claiming prize.");
-                                    //add functionality to disburse prize to user
-                                    db.query("INSERT INTO redeem_prize_transactions (user_id, prize_id) VALUES (?,?)",[user_id,prize_id], (err,result)=>{
-                                        if(err) {
-                                            console.log(err)
-                                        } else {
-                                            console.log("Redeem transaction recorded.");
-                                            res.send(result);
-                                        }
-                                    });
-
-                                    
-                                }
-                            });
-                        }
-                        
-                        
-                    }
-                });
-                //addChips(user_id,result[0].chip_value,address);
-                //chipsAdded = result[0].chip_value;
-                
-            }
-        });        
-    } 
-});
-
-// Route to get user's current chip count
-app.get("/api/getUserChipCount/:user_id", cors(corsOptions), (req,res)=>{
-    const user_id = req.params.user_id;
-    db.query("SELECT chips FROM users WHERE id = ?", user_id, (err,result)=>{
-        if(err) {
-        console.log(err)
-        } else {
-            res.send(result);
-        }
+app.get("/api/redeemPrize/:address/:user_id/:prize_id", async (req,res)=>{
+    const resp = await rewards.redeemPrize(req).then((data)=>{
+        res.send(data);
     });
 });
 
-// Route to add chips
-app.post('/api/addChips/:user_id/:qty', cors(corsOptions),(req,res)=>{
 
-    const user_id = req.params.user_id;
-    const qty = req.params.qty;
-    db.query("UPDATE chip_transactions SET chips = chips + ? WHERE id = ?",[qty, user_id], (err,result)=>{
-        if(err) {
-            console.log(err)   
-        } else {
-            
-            res.send(result);
-        }
-        console.log('why'); 
-    });    
+
+//################################# Raffles #################################//
+// Route to get current raffles
+app.get("/api/getCurrentRaffles/:limit/:days", async (req,res)=>{
+    const resp = await raffles.getCurrentRaffles(req).then((data)=>{
+        res.send(data);
+    });
+});
+
+// Route to get finished raffles
+app.get("/api/getFinishedRaffles/:limit/:days", async (req,res)=>{
+    const resp = await raffles.getFinishedRaffles(req).then((data)=>{
+        res.send(data);
+    });
+});
+
+// Route to get entries by raffle ID
+app.get("/api/getEntriesByRaffleID/:raffle_id/:limit/:days", async (req,res)=>{
+    const resp = await raffles.getEntriesByRaffleID(req).then((data)=>{
+        res.send(data);
+    });
+});
+
+// Route to get entries count by raffle ID
+app.get("/api/getEntriesCountByRaffleID/:raffle_id", async (req,res)=>{
+    const resp = await raffles.getEntriesCountByRaffleID(req).then((data)=>{
+        res.send(data);
+    });
+});
+
+// Route to get entries by user ID
+app.get("/api/getEntriesByUserID/:user_id/:limit/:days", async (req,res)=>{
+    const resp = await raffles.getEntriesByUserID(req).then((data)=>{
+        res.send(data);
+    });
+});
+
+// Route to get draw by raffle ID
+app.get("/api/getDrawByRaffleID/:raffle_id", async (req,res)=>{
+    const resp = await raffles.getDrawByRaffleID(req).then((data)=>{
+        res.send(data);
+    });
+});
+
+// Route to get prize by prize ID
+app.get("/api/getDrawByRaffleID/:prize_id", async (req,res)=>{
+    const resp = await raffles.getPrizeByPrizeID(req).then((data)=>{
+        res.send(data);
+    });
+});
+
+// Route to enter raffle
+app.get("/api/enterRaffle/:raffle_id/:user_id/:address", async (req,res)=>{
+    const resp = await raffles.enterRaffle(req).then((data)=>{
+        res.send(data);
+    });
+});
+
+// Route to get amount of user's raffle tickets
+app.get("/api/getUserRaffleTickets/:user_id", async (req,res)=>{
+    const resp = await raffles.getUserRaffleTickets(req).then((data)=>{
+        res.send(data);
+    });
+});
+
+// Route to intialize raffle purchase event
+app.get("/api/initEntryPurchase/:user_id/:address/:amt/:item_id", async (req,res)=>{
+    const resp = await raffles.initEntryPurchase(req).then((data)=>{
+        res.send(data);
+    });
+});
+
+// Route to finalize raffle purchase event
+app.get("/api/finalizeEntryPurchase/:user_id/:address/:amt/:purchase_id/:trans_hash", async (req,res)=>{
+    const resp = await raffles.finalizeEntryPurchase(req).then((data)=>{
+        res.send(data);
+    });
 });
 
 
 
-// Route to get all posts
-app.get("/api/get", (req,res)=>{
-    query("SELECT * FROM posts", (err,result)=>{
-    if(err) {
-    console.log(err)
-    } 
-res.send(result)
-});   });
 
-// Route to get one post
-app.get("/api/getFromId/:id", (req,res)=>{
-
-const id = req.params.id;
- query("SELECT * FROM posts WHERE id = ?", id, 
- (err,result)=>{
-    if(err) {
-    console.log(err)
-    } 
-    res.send(result)
-    });   });
-
-// Route for creating the post
-app.post('/api/create', (req,res)=> {
-
-const username = req.body.userName;
-const title = req.body.title;
-const text = req.body.text;
-
-    query("INSERT INTO posts (title, post_text, user_name) VALUES (?,?,?)",[title,text,username], (err,result)=>{
-   if(err) {
-   console.log(err)
-   } 
-   console.log(result)
-});   });
-
-// Route to like a post
-app.post('/api/like/:id',(req,res)=>{
-
-const id = req.params.id;
-    query("UPDATE posts SET likes = likes + 1 WHERE id = ?",id, (err,result)=>{
-    if(err) {
-   console.log(err)   } 
-   console.log(result)
-    });    
+//################################# Rewards #################################//
+// Route to get last claim date
+app.get("/api/getNextClaimDate/:address/:type/:user_id/:token_id", async (req,res)=>{
+    const resp = await rewards.getNextClaimDate(req).then((data)=>{
+        res.send(data);
+    });
 });
 
-// Route to delete a post
+// Route to claim DL Tokens
+app.get("/api/claimDLTokens/:address/:user_id/:token_id", async (req,res)=>{
+    const resp = await rewards.claimDLTokens(req).then((data)=>{
+        res.send(data);
+    });
+});
 
-app.delete('/api/delete/:id',(req,res)=>{
-const id = req.params.id;
+// Route to claim daily rewards
+app.get("/api/claimDailyRewards/:user_id", async (req,res)=>{
+    const resp = await rewards.claimDailyRewards(req).then((data)=>{
+        res.send(data);
+    });
+});
 
-    query("DELETE FROM posts WHERE id= ?", id, (err,result)=>{
-if(err) {
-console.log(err)
-        } }); });
+// Route to claim holder monthly Tokens
+app.get("/api/claimHolderTokens/:address/:user_id", async (req,res)=>{
+    const resp = await rewards.claimHolderTokens(req).then((data)=>{
+        res.send(data);
+    });
+});
+
+
+
+
+//################################# Sharable Data #################################//
+// Route to get Sharable Messages
+app.get("/api/getSharableMessages", async (req,res)=>{
+    const resp = await sharable.getSharableMessages(req).then((data)=>{
+        res.send(data);
+    });
+});
+
+// Route to get shortened link
+app.get("/api/getShortLink/:link", async (req,res)=>{
+    const resp = await sharable.getShortLink(req).then((data)=>{
+        res.send(data);
+    });
+});
+
+// Route to get AI message
+app.get("/api/getAIMessage/:prompt/:user_id/:type", async (req,res)=>{
+    const resp = await chatgpt.getAIMessage(req).then((data)=>{
+        res.send(data);
+    });
+});
+    
+
+
+
+//################################# Stripe #################################//
+app.post('/webhook/stripe', express.raw({type: 'application/json'}), (request, response) => {
+    const res = processStripeWebhook(request);
+    response.send();
+});
+
+
+//################################# User #################################//
+
+
+
+
+//################################# Utilities #################################//
+app.get("/api/decrypt/:text", (req,res)=>{
+    const resp = utilities.decrypt(req)
+        res.send(resp);
+});
+
+app.get("/api/encrypt/:text", (req,res)=>{
+    const resp = utilities.encrypt(req);
+        res.send(resp);
+});
+
+
+//################################# Wallet #################################//
+// Route to get OG Balance
+app.get("/api/getOGBalance/:address", async (req,res)=>{
+    const resp = await useSDK.getOGBalance(req).then((data)=>{
+        res.send(data);
+    });
+});
+
+// Route to get user's NFT balance
+app.get("/api/getWalletNFTBalanceByTokenID/:address/:token_id/:user_id/:qty", async (req,res)=>{
+    const resp = await useSDK.getWalletNFTBalanceByTokenID(req).then((data)=>{
+        res.send(data);
+    });
+});
+
+// Route to get wallet DL data
+app.get("/api/getWalletDLBalance/:address", async (req,res)=>{
+    const resp = await useSDK.getWalletDLBalance(req).then((data)=>{
+        res.send(data);
+    });
+});
+
+
 
 app.listen(PORT, ()=>{
-    console.log('Server is running on port: ',PORT);
+    console.log('Server is running.');
 });
 
+export default app;

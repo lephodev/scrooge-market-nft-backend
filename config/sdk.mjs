@@ -1,8 +1,165 @@
 import {ThirdwebSDK} from '@thirdweb-dev/sdk';
+import affAddOrder from './affiliate.mjs';
+import { addChips } from './rewards.mjs';
+import OG_ABI from './OG_ABI.json' assert {type: 'json'};
+import JR_ABI from './JR_ABI.json' assert {type: 'json'};
 
-const sdk = new ThirdwebSDK("https://bsc-dataseed3.binance.org/");
-const contract = await sdk.getContract("0x729FDb31f1Cd2633aE26F0A87EfD0CC55a336F9f");
-/*const bal = await contract.erc1155.balanceOf("0x77eA7d7428178f676a16E620E705e8fAF63402B6", 4);
-console.log('Wallet NFT Balance: ',bal.toString());*/
+export const sdk = new ThirdwebSDK("https://bsc-dataseed4.binance.org/");
+export const CasinoNFTEditionContractAddress = '0x729FDb31f1Cd2633aE26F0A87EfD0CC55a336F9f';
+export const CasinoMarketplaceContractAddress = '0x91197754fCC899B543FebB5BE4dae193C75EF9d1';
+export const OGContractAddress = '0xfA1BA18067aC6884fB26e329e60273488a247FC3';
+export const JRContractAddress = '0x2e9F79aF51dD1bb56Bbb1627FBe4Cc90aa8985Dd';
+export const DLContractAddress = '0xEe7c31b42e8bC3F2e04B5e1bfde84462fe1aA768';
+export const BurnContractAddress = '0x000000000000000000000000000000000000dEaD';
 
-export default sdk;
+//export const contractJR = await sdk.getContractFromAbi(JRContractAddress, JR_ABI);
+export const contractCasinoMarketplace = await sdk.getContract(CasinoMarketplaceContractAddress);
+export const contract = await sdk.getContract(CasinoMarketplaceContractAddress);
+export const sdk_casino_nfts = ThirdwebSDK.fromPrivateKey(
+    process.env.CASINO_NFTS_PRIVATE_KEY,
+    "binance"
+);
+export const contractCasinoNFT = await sdk_casino_nfts.getContract(CasinoNFTEditionContractAddress, "edition");
+export const sdk_casino_nfts_wallet = await sdk_casino_nfts.wallet.getAddress();
+export const sdk_OG = ThirdwebSDK.fromPrivateKey(
+    process.env.OG_PRIVATE_KEY,
+    "binance"
+);
+export const contractOG = await sdk_OG.getContractFromAbi(OGContractAddress, OG_ABI);
+export const sdk_OG_wallet = await sdk_OG.wallet.getAddress();
+export const sdk_JR = ThirdwebSDK.fromPrivateKey(
+    process.env.JR_PRIVATE_KEY,
+    "binance"
+);
+export const contractJR = await sdk_JR.getContractFromAbi(JRContractAddress, JR_ABI);
+export const sdk_JR_wallet = await sdk_JR.wallet.getAddress();
+export const sdk_DL = ThirdwebSDK.fromPrivateKey(
+    process.env.DL_WALLET_PRIVATE_KEY,
+    "ethereum"
+);
+export const contractDL = await sdk_DL.getContract(DLContractAddress);
+export const sdk_DL_wallet = await sdk_DL.wallet.getAddress();
+
+
+//functions
+export async function transferNFT(_user_id, _token_id, _address) {
+    let resp;
+    const balanceRaw = await contractCasinoNFT.balanceOf(sdk_casino_nfts_wallet, _token_id);
+    const balance = parseInt(balanceRaw);
+    // Verify sdk wallet / contract has enough balance to disburse prize
+    if(balance && (balance >= 1)){
+        //sdk wallet has enough balance to allow prize redemption
+        //console.log("Transferring NFT.......");
+            //initiate transfer from sdk wallet to redeemer wallet
+            try {
+                const transferStatus = await contractCasinoNFT.transfer(_address, _token_id, 1).then((transfer)=>{
+                    //console.log('Transfer Status: ', transfer.receipt.status);
+                    resp = true;
+                });
+            } catch (error) {
+                console.log('Transaction Failed');
+                resp = false;
+            }
+    } else {
+        //sdk wallet does not have enough balance to allow prize redemption
+        //console.log("Balance unacceptable");
+        resp = 'Balance Unacceptable';
+    }
+    return resp;
+};
+
+export async function getOGBalance(req){
+    let resp;
+    const address = req.params.address;
+    const balRaw = await contractOG.erc20.balanceOf(address).then(async (rawBal)=>{
+        if(rawBal.value>0){
+            const bal = parseInt(rawBal.value / 10**18);
+            resp = bal.toString();
+        } else {
+            resp = '0';
+        }
+    });
+    return resp;
+}
+
+// Route to disburse Free Tokens
+export async function getFreeTokens(req) {
+    let resp;
+    const address = req.params.address;
+    const token_id = req.params.token_id;
+    const user_id = req.params.user_id;
+    const qty = req.params.qty;
+    const aff_id = req.params.aff_id;
+    if(address && token_id && user_id){
+        const query = await db.get_marketplace_itemsDB().findOne({"token_id" : parseInt(token_id)}).then(async (item)=>{
+            const chipsAdded = await addChips(user_id, parseInt(item.chip_value), address).then((trans)=>{
+                if(aff_id && (aff_id != user_id)){
+                    affAddOrder(aff_id, trans.toString(), item.chip_value, item._id.toString(), user_id, address);
+                };
+                resp = item.chip_value.toString();
+            });
+        });
+    };
+    return resp;
+};
+
+// Route to get user's NFT balance
+export async function getWalletNFTBalanceByTokenID(req) {
+    let resp;
+    const address = req.params.address;
+    const token_id = req.params.token_id;
+    const user_id = req.params.user_id;
+    const qty = req.params.qty;
+    if(address && token_id){
+        const bal = await contractCasinoNFT.erc1155.balanceOf(address, token_id);
+        resp = bal.toString();
+    } else {
+        resp = '0';
+    }
+    return resp;
+};
+
+export async function getOGCurrentPrice() {
+    let curr_price;
+    await fetch('https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/0xfa1ba18067ac6884fb26e329e60273488a247fc3')
+        .then(response => response.json())
+        .then((data) => {
+            curr_price = data.market_data.current_price.usd;
+        })
+        .catch((e) => {
+            console.log(e);
+            curr_price = false;
+    });
+    return curr_price;
+};
+
+export async function getJRCurrentPrice() {
+    let curr_price;
+    await fetch('https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/0x2e9f79af51dd1bb56bbb1627fbe4cc90aa8985dd')
+        .then(response => response.json())
+        .then((data) => {
+            curr_price = data.market_data.current_price.usd;
+        })
+        .catch((e) => {
+            console.log(e);
+            curr_price = false;
+    });
+    return curr_price;
+};
+
+export async function getWalletDLBalance(req) {
+    let balanceRaw, balance, resp;
+    const address = req.params.address;
+    if(address){
+        balanceRaw = await contractDL.call("balanceOf", address);
+        balance = parseInt(balanceRaw);
+        if(balance>0){
+            resp = balance.toString();
+        } else {
+            resp = "Not Enough Balance";
+        }
+    }
+    return resp;
+};
+
+//export default sdk;

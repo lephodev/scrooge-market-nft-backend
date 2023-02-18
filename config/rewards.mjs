@@ -1,0 +1,604 @@
+import * as db from './mongodb.mjs';
+import * as useSDK from './sdk.mjs';
+import * as email from '../email/email.mjs';
+import * as commons from './commons.mjs';
+import { ObjectId } from 'mongodb';
+
+export async function addChips(_user_id, _qty, _address) {
+    let trans_id;
+    const query = await db.get_scrooge_usersDB().findOneAndUpdate({_id : ObjectId(_user_id)},{$inc:{"wallet":_qty}}).then(async (user)=>{
+        const queryCT = await db.get_marketplace_chip_transactionsDB().insertOne({"user_id" : user.value._id, "address":_address,"chips":_qty,"timestamp":new Date() }).then((trans)=>{
+            trans_id = trans.insertedId;
+        });
+    });
+    return trans_id;
+};
+
+export async function getNextClaimDate(req) {
+    let resp;
+    const address = req.params.address;
+    const type = req.params.type;
+    const user_id = req.params.user_id;
+    const token_id = req.params.token_id;
+    let collection, qry, nextClaimDate, lastClaimDate;
+    if(type==='holder'){
+        collection = db.get_marketplace_holder_claim_chips_transactionsDB();
+        qry = {address: address};
+    } else if(type==='dl'){
+        collection = db.get_marketplace_ducky_lucks_chip_claimsDB();
+        qry = {token_id: token_id};
+    } else if(type==='daily'){
+        collection = db.get_marketplace_daily_reward_token_claimsDB();
+        qry = {user_id: user_id};
+    }
+    const sort = { "claimDate" : -1 };
+    const cursor = collection.find(qry).sort(sort);
+    const arr = await cursor.toArray().then((data)=>{
+        if(typeof data[0]!='undefined'){
+            if (type==='daily') {
+                lastClaimDate = data[0].claimDate;
+                nextClaimDate = new Date(data[0].claimDate);
+                nextClaimDate.setDate(nextClaimDate.getDate() + 1);
+                data[0].nextClaimDate = nextClaimDate;
+                if(typeof nextClaimDate !='undefined'){
+                    resp = data[0];
+                } else {
+                    resp = "CLAIM NOW";
+                }
+            } else {
+                lastClaimDate = data[0].claimDate;
+                nextClaimDate = new Date(data[0].claimDate);
+                nextClaimDate.setDate(nextClaimDate.getDate() + 30);
+                if(typeof nextClaimDate !='undefined'){
+                    resp = nextClaimDate.toString();
+                } else {
+                    resp = "CLAIM NOW";
+                }
+            }
+        } else {
+            resp = "CLAIM NOW";
+        }
+    });
+    return resp;
+};
+
+export async function claimDLTokens(req) {
+    let resp;
+    const address = req.params.address;
+    const user_id = req.params.user_id;
+    const token_id = req.params.token_id;
+    let balance, balanceRaw, rarity_pct, prevmonth, lastClaimDate, isClaimable = false;
+    if(address && user_id && token_id){
+        const checkOwner = await useSDK.contractDL.call("ownerOf", token_id);
+        const getNFT = await useSDK.contractDL.erc721.get(token_id);
+        rarity_pct = getNFT.metadata.attributes[12].value;
+        /*balanceRaw = await useSDK.contractDL.call("balanceOf", address);
+        balance = parseInt(balanceRaw);*/
+        if(getNFT.owner === address){
+            const qty = (1500 * (rarity_pct/100)).toFixed(0);
+            const qry = {token_id: token_id};
+            const sort = { "claimDate" : -1 };
+            const cursor = db.get_marketplace_ducky_lucks_chip_claimsDB().find(qry).sort(sort);
+            const arr = await cursor.toArray().then(async (data)=>{
+                const today = new Date();
+                let nextmonth = new Date();
+                nextmonth.setDate(nextmonth.getDate() + 30);
+                if(typeof data[0]!='undefined'){
+                    lastClaimDate = data[0].claimDate;
+                    prevmonth = new Date(data[0].claimDate);
+                    prevmonth.setDate(prevmonth.getDate() - 30);
+                }
+                if(typeof lastClaimDate !='undefined'){
+                    //console.log(today);
+                    //console.log(nextmonth);
+                    //console.log(lastClaimDate);
+                    //console.log(prevmonth);
+                    if(lastClaimDate <= prevmonth) {
+                        //console.log("Available");
+                        isClaimable = true;
+                    } else {
+                        //console.log("Unavailable");
+                        isClaimable = false;
+                    }
+                } else {
+                    //console.log("No Claim Date");
+                    isClaimable = true;
+                }
+                if(isClaimable){
+                    //console.log("isClaimable is true");
+                    const queryCT = await db.get_marketplace_ducky_lucks_chip_claimsDB().insertOne({"token_id":token_id, "address":address, "user_id" : user_id, "qty":parseInt(qty), "claimDate":new Date() }).then(async (trans)=>{
+                        //console.log("Transaction recorded");
+                        const chipsAdded = await addChips(user_id, parseInt(qty), address).then(()=>{
+                            //console.log("after send qty: ", qty);
+                            resp = qty.toString();
+                        });  
+                    });
+                } else {
+                    //console.log("isClaimable is false");
+                    resp = "ZERO! You are not allowed to claim yet.";
+                }
+            });
+            
+        } else {
+            resp = "Not Enough Balance";
+        }
+    };
+    return resp;
+};
+
+// Route to claim daily rewards
+export async function claimDailyRewards(req) {
+    let resp;
+    const user_id = req.params.user_id;
+    let isClaimable = false;
+    let isConsecutive = false;
+    let consecutive_days = 0;
+    let lastClaimDate;
+    let prevday, consecutiveDate;
+    let qty = 25;
+    const qry = {user_id: user_id};
+    const sort = { "claimDate" : -1 };
+    const cursor = db.get_marketplace_daily_reward_token_claimsDB().find(qry).sort(sort);
+    const arr = await cursor.toArray().then(async (data)=>{
+        const today = new Date();
+        let nextday = new Date();
+        nextday.setDate(nextday.getDate() + 1);
+        if(typeof data[0]!='undefined'){
+            lastClaimDate = data[0].claimDate;
+            prevday = new Date();
+            prevday.setDate(prevday.getDate() - 1);
+            consecutiveDate = new Date(data[0].claimDate);
+            consecutiveDate.setDate(consecutiveDate.getDate() - 2);
+        }
+        if(typeof lastClaimDate !='undefined'){
+            if(lastClaimDate.getTime() <= prevday.getTime()) {
+                //console.log("Available");
+                isClaimable = true;
+                if(lastClaimDate.getTime() >= consecutiveDate.getTime()){
+                    //console.log("is consecutive");
+                    isConsecutive = true;
+                    consecutive_days = data[0].consecutive_days+1;
+                    //console.log('cons days: ', consecutive_days);
+                    if (consecutive_days === 1){
+                        qty = 25;
+                    } else if (consecutive_days === 2) {
+                        qty = 35;
+                    } else if (consecutive_days === 3) {
+                        qty = 45;
+                    }  else if (consecutive_days === 4) {
+                        qty = 65;
+                    }  else if (consecutive_days === 5) {
+                        qty = 25;
+                        consecutive_days = 1;
+                    }
+                }
+            } else {
+                //console.log("Unavailable");
+                isClaimable = false;
+            }
+        } else {
+            //console.log("No Claim Date");
+            isClaimable = true;
+        }
+        if(isClaimable){
+            //console.log("isClaimable is true");
+            const queryCT = await db.get_marketplace_daily_reward_token_claimsDB().insertOne({"user_id" : user_id, "qty":qty, "claimDate":new Date(), "consecutive_days":consecutive_days }).then(async (trans)=>{
+                //console.log("Transaction recorded");
+                const chipsAdded = await addChips(user_id, qty, user_id).then(()=>{
+                    resp = qty.toString();
+                });  
+            });
+        } else {
+            //console.log("isClaimable is false");
+            resp = "ZERO! You are not allowed to claim yet.";
+        }
+    });
+    return resp;
+};
+
+// Route to claim holder monthly Tokens
+export async function claimHolderTokens(req) {
+    let resp;
+    const address = req.params.address;
+    const user_id = req.params.user_id;
+    let isClaimable = false, prevmonth, OGValue, lastClaimDate, current_price;
+    if(address && user_id){
+        const balRaw = await useSDK.contractOG.erc20.balanceOf(address).then(async (rawBal)=>{
+            const bal = parseInt(rawBal.value / 10**18);
+            //console.log('Wallet OG Balance: ',bal);
+            await fetch('https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/0xfa1ba18067ac6884fb26e329e60273488a247fc3')
+            .then(response => response.json())
+            .then((data) => {
+                current_price = data.market_data.current_price.usd;
+                OGValue = ((current_price*bal)*.1).toFixed(0);
+                resp = OGValue;
+            })
+            .catch((e) => {
+                console.log(e);
+                resp = false;
+            });
+        });
+        //console.log('Value: ',OGValue);
+        if(OGValue>0){
+            const qry = {address: address};
+            const sort = { "claimDate" : -1 };
+            const cursor = db.get_marketplace_holder_claim_chips_transactionsDB().find(qry).sort(sort);
+            const arr = await cursor.toArray().then(async (data)=>{
+                const today = new Date();
+                let nextmonth = new Date();
+                nextmonth.setDate(nextmonth.getDate() + 30);
+                if(typeof data[0]!='undefined'){
+                    lastClaimDate = data[0].claimDate;
+                    prevmonth = new Date(data[0].claimDate);
+                    prevmonth.setDate(prevmonth.getDate() - 30);
+                }
+                if(typeof lastClaimDate !='undefined'){
+                    if(lastClaimDate <= prevmonth) {
+                        //console.log("Available");
+                        isClaimable = true;
+                    } else {
+                        //console.log("Unavailable");
+                        isClaimable = false;
+                    }
+                } else {
+                    //console.log("No Claim Date");
+                    isClaimable = true;
+                }
+                if(isClaimable){
+                    //console.log("isClaimable is true");
+                    const queryCT = await db.get_marketplace_holder_claim_chips_transactionsDB().insertOne({"address":address, "user_id" : user_id, "qty":parseInt(OGValue), "claimDate":new Date() }).then(async (trans)=>{
+                        //console.log("Transaction recorded");
+                        const chipsAdded = await addChips(user_id, parseInt(OGValue), address).then(()=>{
+                            resp = OGValue;
+                        });  
+                    });
+                } else {
+                    //console.log("isClaimable is false");
+                    resp = "ZERO! You are not allowed to claim yet.";
+                }
+            });
+        } else {
+            //console.log("ZERO Balance");
+            resp = "ZERO! You do not hold enough Scrooge Coin crypto.";
+        }
+    } 
+    return resp;
+};
+
+export async function getPrizes(req) {
+    const qry = {};
+    const sort = { "price" : 1 };
+    let resp;
+    const cursor = db.get_marketplace_prizesDB().find(qry).sort(sort);
+    const arr = await cursor.toArray().then((data)=>{
+        //console.log('prizes arr: ', data);
+        resp = data;
+    });
+    return resp;
+};
+
+export async function getItems(req) {
+    const type = req.params.type;
+    let qry;
+    if(type){
+        qry = {"type":"entry"};
+    } else {
+        qry = {};
+    }
+    const sort = { "price" : 1 };
+    let resp;
+    const cursor = db.get_marketplace_itemsDB().find(qry).sort(sort);
+    const arr = await cursor.toArray().then((data)=>{
+        //console.log('prizes arr: ', data);
+        resp = data;
+    });
+    return resp;
+};
+
+export async function postPrizeRedemption(prize_id, user_id, coupon_code=null, markRedeemed=null) {
+    let resp;
+    try {
+        const queryCT = await db.get_marketplace_redeem_prize_transactionsDB().insertOne({"user_id" : user_id, "prize_id":prize_id, "timestamp":new Date(), "coupon_code": coupon_code, "markRedeemed":markRedeemed }).then((trans)=>{
+            resp = true;
+        });
+    } catch (error) {
+        console.log(error);
+        resp = false;
+    }
+    return resp;
+}
+
+export async function getUserRedeemed(req) {
+    let resp;
+    const user_id = req.params.user_id;
+    const qry = {"user_id" : user_id};
+    const sort = { "timestamp" : -1 };
+    const aggCursor = await db.get_marketplace_redeem_prize_transactionsDB().aggregate([
+        { $match: { user_id: user_id}},
+        { $sort: { "timestamp" : -1}},
+        {
+        $lookup: {
+            from: 'prizes',
+            let: {"searchID": {$toObjectId: "$prize_id"}},
+            pipeline: [
+            {$match: {
+            $expr: {
+            $eq: [
+            '$_id', '$$searchID'
+            ]
+            }
+        }},
+            {"$project":{"category": 1, "name": 1, "image_url": 1}},
+        ],
+            as: 'prize_details'
+        }}
+    ]);
+    const arr = await aggCursor.toArray().then((data)=>{
+        resp = data;
+    });
+    return resp;
+};
+
+export async function getMerchCouponCode(store_id, discount_type) {
+    let coupon, coupon_code;
+    const query = await db.get_marketplace_coupons_merchDB().findOne({"isClaimed" : false, "store_id":"JR", "coupon_code": new RegExp('^'+discount_type+'') }).then((coup)=>{
+        coupon = coup;
+        //return true;
+    });
+    return coupon;
+};
+
+export async function updateMerchClaimFlag(coupon_obj_id, user_id) {
+    let resp;
+    try {
+        const query = await db.get_marketplace_coupons_merchDB().findOneAndUpdate({_id : ObjectId(coupon_obj_id)},{$set:{"isClaimed":true, "user_id":user_id, "claim_time":new Date()}}).then(async (data)=>{
+            resp = true;
+        });
+    } catch (error) {
+        console.log(error);
+        resp = false;
+    }
+    return resp;
+}
+
+export async function updateMerchRedeemedFlag(trans_id, user_id) {
+    let resp;
+    try {
+        const query = await db.get_marketplace_redeem_prize_transactionsDB().findOneAndUpdate({_id : ObjectId(trans_id)},{$set:{"markRedeemed":true, "user_id":user_id}}).then(async (data)=>{
+            resp = true;
+        });
+    } catch (error) {
+        console.log(error);
+        resp = false;
+    }
+    return resp;
+}
+
+export async function markMerchCouponRedeemed(req) {
+    const trans_id = req.params.trans_id;
+    const user_id = req.params.user_id;
+    const updatedFlag = await updateMerchRedeemedFlag(trans_id, user_id);
+    return 'Code Marked as Redeemed';
+};
+
+export async function updateDLClaimFlag(DL_token_obj_id) {
+    let resp;
+    try {
+        const query = await db.get_marketplace_ducky_lucks_prizesDB().findOneAndUpdate({_id : ObjectId(DL_token_obj_id)},{$set:{"claimed":true}}).then(async (data)=>{
+            resp = true;
+        });
+    } catch (error) {
+        console.log(error);
+        resp = false;
+    }
+    return resp;
+}
+
+export async function redeemPrize(req) {
+    let resp;
+    const user_id = req.params.user_id;
+    const address = req.params.address;
+    const prize_id = req.params.prize_id;
+    let sdk, balance, balanceRaw, curr_price, prize_name, prize_price, coupon, coupon_code, coupon_obj_id, discount_type, store_id, prize_token_qty, prize_contract,
+    prize_contract_name, user_ticket, prize_token_type, prize_redeem_action, prize_token_id,DL_token_id, DL_token_obj_id, prize_category, use_sdk;
+    
+        const query = db.get_marketplace_prizesDB().findOne({_id : ObjectId(prize_id)}).then(async (prize)=>{
+            // assign prize attributes to variables
+            prize_name = prize.name; // price of selected prize in tickets
+            prize_price = prize.price; // price of selected prize in tickets
+            if(prize.isDynamic){
+                //coupon_code = await getMerchCouponCode('JR', 'pr10off');
+                //console.log("post coupon code: ", coupon_code);
+                if (prize.contract === '0xfA1BA18067aC6884fB26e329e60273488a247FC3') {
+                    curr_price = await getOGCurrentPrice();
+                } else if (prize.contract === '0x2e9F79aF51dD1bb56Bbb1627FBe4Cc90aa8985Dd') {
+                    curr_price = await getJRCurrentPrice();
+                }
+                prize_token_qty = (((prize_price/100)/curr_price)/2).toFixed(0);
+            } else {
+                prize_token_qty = prize.token_qty; // quantity of tokens to be transferred upon redemption
+            }
+            prize_category = prize.category; // category of prize
+            if (prize_category === 'Merch') {
+                store_id = prize.store_id;
+                discount_type = prize.discount_type;
+                coupon = await getMerchCouponCode(store_id, discount_type);
+                coupon_obj_id = coupon._id;
+                coupon_code = coupon.coupon_code;
+            }
+            prize_contract = prize.contract; // contract address of prize
+            prize_contract_name = prize.contract_name; // shorthand name for contract of prize
+            prize_token_type = prize.token_type; // token type (erc20/erc721/erc1155) of prize
+            prize_token_id = prize.token_id; // token_id of prize (null if erc20)
+            prize_redeem_action = prize.redeem_action; // action to execute redemption of prize
+            if(prize_name==="Ducky Lucks NFT"){
+                const queryDL = await db.get_marketplace_ducky_lucks_prizesDB().findOne({claimed : false});
+                DL_token_id = queryDL.token_id;
+                DL_token_obj_id = queryDL._id;
+            }
+        }).then(()=>{
+            // get user record from users table by _id
+            const query2 = db.get_scrooge_usersDB().findOne({_id : ObjectId(user_id)}).then((user)=>{
+                user_ticket = user.ticket; //user's available ticket balance
+                // verify user has more (or equal) tickets than price of prize
+                if(user_ticket >= prize_price){
+                    const query3 = db.get_scrooge_usersDB().findOneAndUpdate({_id : ObjectId(user_id)},{$inc:{"ticket":-prize_price}}).then(async (user)=>{
+                        // Check for contract name to connect to from prize record
+                        if (prize_contract_name === 'OG') {
+                            use_sdk = useSDK.sdk_OG;
+                        } else if (prize_contract_name === 'JR') {
+                            use_sdk = useSDK.sdk_JR;
+                        } else if (prize_contract_name === 'Casino NFTS') {
+                            use_sdk = useSDK.sdk_casino_nfts;
+                        } else if (prize_contract_name === 'DL') {
+                            use_sdk = useSDK.sdk_DL;
+                        } else if (prize_category==='Merch') {
+                            use_sdk = useSDK.sdk;
+                        } else {
+                            // prize_contract_name does not match any known contract names
+                            resp = 'Invalid Prize Data';
+                        }
+
+                        if (prize_token_type === 'erc20') {
+                            balanceRaw = await use_sdk.wallet.balance(prize_contract);
+                            balance = parseInt(balanceRaw.displayValue);
+                            //console.log('Balance: ',balance);
+                            // Verify sdk wallet / contract has enough balance to disburse prize
+                            if(balance && (balance >= prize_token_qty)){
+                                //sdk wallet has enough balance to allow prize redemption
+                                //check for redeem_action from prize record
+                                if (prize_redeem_action === 'transfer') {
+                                    //initiate transfer from sdk wallet to redeemer wallet
+                                    try {
+                                        //const transfer = await use_sdk.wallet.transfer(address, prize_token_qty, prize_contract);
+                                        //console.log('Status: ', transfer.receipt.status);
+                                        postPrizeRedemption(prize_id, user_id);
+                                        resp = prize_name;
+                                    } catch (error) {
+                                        //console.log('Transaction Failed');
+                                        resp = 'Transaction Failed';
+                                    }
+                                } else if (prize_redeem_action === 'burn') {
+                                    //initiate burn from sdk wallet
+                                    try {
+                                        //const burn = await use_sdk.wallet.transfer(useSDK.BurnContractAddress, prize_token_qty, prize_contract);
+                                        //console.log('Status: ', transfer.receipt.status);
+                                        postPrizeRedemption(prize_id, user_id);
+                                        resp = prize_name;
+                                    } catch (error) {
+                                        //console.log('Transaction Failed');
+                                        resp = 'Transaction Failed';
+                                    }
+                                } else {
+                                    // prize_redeem_action does not match any known redeem actions
+                                    resp = 'Invalid Prize Data';
+                                }  
+                            } else {
+                                //sdk wallet does not have enough balance to allow prize redemption
+                                //console.log("Balance unacceptable");
+                                resp = 'Balance Unacceptable';
+                            }
+                        } else if (prize_token_type === 'erc1155') {
+                            //start erc1155 process
+                            const sdk_wallet = await use_sdk.wallet.getAddress();
+                            balanceRaw = await useSDK.contractCasinoNFT.balanceOf(sdk_wallet, prize_token_id);
+                            balance = parseInt(balanceRaw);
+                            // Verify sdk wallet / contract has enough balance to disburse prize
+                            if(balance && (balance >= prize_token_qty)){
+                                //sdk wallet has enough balance to allow prize redemption
+                                //check for redeem_action from prize record
+                                if (prize_redeem_action === 'transfer') {
+                                    //initiate transfer from sdk wallet to redeemer wallet
+                                    try {
+                                        const transfer = await useSDK.contractCasinoNFT.transfer(address, prize_token_id, prize_token_qty);
+                                        postPrizeRedemption(prize_id, user_id);
+                                        resp = prize_name;
+                                    } catch (error) {
+                                        resp = 'Transaction Failed';
+                                    }
+                                } else if (prize_redeem_action === 'burn') {
+                                    //initiate burn from sdk contract
+                                    try {
+                                        //const burn = await use_sdk.wallet.transfer(useSDK.BurnContractAddress, prize_token_qty, prize_contract);
+                                        //const burn = await useSDK.contractCasinoNFT.burnTokens(prize_token_id, prize_token_qty);
+                                        postPrizeRedemption(prize_id, user_id);
+                                        resp = prize_name;
+                                    } catch (error) {
+                                        resp = 'Transaction Failed';
+                                    }
+                                } else {
+                                    // prize_redeem_action does not match any known redeem actions
+                                    resp = 'Invalid Prize Data';
+                                }                    
+                            } else {
+                                //sdk wallet does not have enough balance to allow prize redemption
+                                //console.log("Balance unacceptable");
+                                resp = 'Balance Unacceptable';
+                            }
+                        } else if (prize_token_type === 'merch') {
+                            const markRedeemed = false;
+                            postPrizeRedemption(prize_id, user_id, coupon_code, markRedeemed);
+                            updateMerchClaimFlag(coupon_obj_id, user_id);
+                            const getUserByID = await commons.getUserByUserID(user_id).then((getUser)=>{
+                                const affEmailSend = email.sendemail('merchEmail', getUser.email, coupon_code);
+                            });
+                            resp = prize_name;
+                        } else if (prize_token_type === 'erc721') {
+                            //start erc721 process
+                            //if there are no unclaimed NFTs in DL table, do not execute functions
+                            if (!DL_token_id){
+                                //console.log("No DL NFTs available.");
+                                resp = 'Prize Currently Unavailable';
+                            } else {
+                                const sdk_wallet = await use_sdk.wallet.getAddress();
+                                balanceRaw = await useSDK.contractDL.call("balanceOf", sdk_wallet);
+                                balance = parseInt(balanceRaw);
+                                // Verify sdk wallet / contract has enough balance to disburse prize
+                                if(balance && (balance >= prize_token_qty)){
+                                    //sdk wallet has enough balance to allow prize redemption
+                                    //check for redeem_action from prize record
+                                    if (prize_redeem_action === 'transfer') {
+                                        //initiate transfer from sdk wallet to redeemer wallet
+                                        try {
+                                            //const transfer = await useSDK.contractDL.call("safeTransferFrom", sdk_wallet, address, DL_token_id);
+                                            //update claim flag to true in ducky_lucks_prizes table
+                                            updateDLClaimFlag(DL_token_obj_id);
+                                            postPrizeRedemption(prize_id, user_id);
+                                            resp = prize_name;
+                                        } catch (error) {
+                                            console.log('Error');
+                                            resp = 'Transaction Failed';
+                                        }
+                                    } else if (prize_redeem_action === 'burn') {
+                                        //initiate burn from sdk contract
+                                        try {
+                                            //const burn = await useSDK.contractDL.call("burn", prize_token_id);
+                                            postPrizeRedemption(prize_id, user_id);
+                                            resp = prize_name;
+                                        } catch (error) {
+                                            //console.log('Transaction Failed');
+                                            resp = 'Transaction Failed';
+                                        }
+                                    } else {
+                                        // prize_redeem_action does not match any known redeem actions
+                                        resp = 'Invalid Prize Data';
+                                    }                    
+                                } else {
+                                    //sdk wallet does not have enough balance to allow prize redemption
+                                    //console.log("Balance unacceptable");
+                                    resp = 'Balance Unacceptable';
+                                }
+                            }
+                        } else {
+                            //console.log("Prize token type not recognized.")
+                            resp = 'Invalid Prize Data';
+                        }
+                    });
+                } else {
+                    //console.log("User does not have enough tickets.");
+                    resp = "Not Enough Tickets";
+                }
+            });
+        });
+    return resp;    
+};
