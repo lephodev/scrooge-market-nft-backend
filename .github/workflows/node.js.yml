@@ -1,0 +1,27 @@
+name: Node.js CI
+
+on:
+  push:
+    branches: [ "master" ]
+    
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Deploy to ec2
+      uses: easingthemes/ssh-deploy@main
+      env:
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+          REMOTE_HOST: ${{ secrets.HOST_DNS }}
+          REMOTE_USER: ${{ secrets.USERNAME }}
+          TARGET: ${{ secrets.TARGET_DIR }}
+          SCRIPT_BEFORE: |
+            cd /home/ubuntu/market-nft-backend && git add .
+            cd /home/ubuntu/market-nft-backend && git commit -m update
+            cd /home/ubuntu/market-nft-backend && git pull origin master
+            cd /home/ubuntu/market-nft-backend && npm install
+            pm2 kill
+            cd /home/ubuntu/market-nft-backend && pm2 start ecosystem.config.json
