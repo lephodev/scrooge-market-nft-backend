@@ -12,7 +12,7 @@ import * as utilities from './config/utilities.mjs';
 import { processStripeWebhook } from './config/stripe.mjs';
 import cors from 'cors';
 const app = express();
-const PORT = 9001;
+const PORT = process.env.PORT;
 app.use(cors());
 app.use(json());
 app.use(async (req, res, next) => {
