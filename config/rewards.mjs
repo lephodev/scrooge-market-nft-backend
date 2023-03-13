@@ -410,9 +410,9 @@ export async function redeemPrize(req) {
                 //coupon_code = await getMerchCouponCode('JR', 'pr10off');
                 //console.log("post coupon code: ", coupon_code);
                 if (prize.contract === '0xfA1BA18067aC6884fB26e329e60273488a247FC3') {
-                    curr_price = await getOGCurrentPrice();
+                    curr_price = await useSDK.getOGCurrentPrice();
                 } else if (prize.contract === '0x2e9F79aF51dD1bb56Bbb1627FBe4Cc90aa8985Dd') {
-                    curr_price = await getJRCurrentPrice();
+                    curr_price = await useSDK.getJRCurrentPrice();
                 }
                 prize_token_qty = (((prize_price/100)/curr_price)/2).toFixed(0);
             } else {
