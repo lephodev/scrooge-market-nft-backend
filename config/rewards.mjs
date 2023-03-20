@@ -1,8 +1,8 @@
-import * as db from './mongodb.mjs';
-import * as useSDK from './sdk.mjs';
-import * as email from '../email/email.mjs';
-import * as commons from './commons.mjs';
-import { ObjectId } from 'mongodb';
+import * as db from "./mongodb.mjs";
+import * as useSDK from "./sdk.mjs";
+import * as email from "../email/email.mjs";
+import * as commons from "./commons.mjs";
+import { ObjectId } from "mongodb";
 
 export async function addChips(_user_id, _qty, _address) {
   let trans_id;
@@ -28,62 +28,62 @@ export async function addChips(_user_id, _qty, _address) {
 export async function getNextClaimDate(req, res) {
   let resp;
   const { address, type, user_id, token_id } = req.params;
-  console.log('add', address);
+  console.log("add", address);
   let collection, qry, nextClaimDate, lastClaimDate;
-  if (type === 'holder') {
+  if (type === "holder") {
     collection = db.get_marketplace_holder_claim_chips_transactionsDB();
     qry = { address: address };
-  } else if (type === 'dl') {
+  } else if (type === "dl") {
     collection = db.get_marketplace_ducky_lucks_chip_claimsDB();
     qry = { token_id: token_id };
-  } else if (type === 'daily') {
+  } else if (type === "daily") {
     collection = db.get_marketplace_daily_reward_token_claimsDB();
     qry = { user_id: user_id };
   }
   const sort = { claimDate: -1 };
   const cursor = collection.find(qry).sort(sort);
-  console.log('cursor', await cursor.toArray());
+  console.log("cursor", await cursor.toArray());
   try {
     const data = await cursor.toArray();
-    console.log('----------', data);
-    if (typeof data[0] !== 'undefined') {
-      if (type === 'daily') {
+    console.log("----------", data);
+    if (typeof data[0] !== "undefined") {
+      if (type === "daily") {
         lastClaimDate = data[0].claimDate;
         nextClaimDate = new Date(data[0].claimDate);
         nextClaimDate.setDate(nextClaimDate.getDate() + 1);
         data[0].nextClaimDate = nextClaimDate;
-        if (typeof nextClaimDate != 'undefined') {
+        if (typeof nextClaimDate != "undefined") {
           return res.status(200).send({ success: true, data: data });
         } else {
           return res.send({
             success: false,
-            message: 'No Entries Found',
+            message: "No Entries Found",
           });
         }
       } else {
         lastClaimDate = data[0].claimDate;
         nextClaimDate = new Date(data[0].claimDate);
         nextClaimDate.setDate(nextClaimDate.getDate() + 30);
-        if (typeof nextClaimDate != 'undefined') {
+        if (typeof nextClaimDate != "undefined") {
           return res.status(200).send({ success: true, data: data });
         } else {
           return res.send({
             success: false,
-            message: 'No Entries Found',
+            message: "No Entries Found",
           });
         }
       }
     } else {
-      console.log('else');
+      console.log("else");
       return res.send({
         success: false,
-        message: 'No Entries Found',
+        message: "No Entries Found",
       });
     }
   } catch (error) {
     return res
       .status(500)
-      .send({ success: false, message: 'Error in Request Process' });
+      .send({ success: false, message: "Error in Request Process" });
   }
 }
 
@@ -99,7 +99,7 @@ export async function claimDLTokens(req) {
     lastClaimDate,
     isClaimable = false;
   if (address && user_id && token_id) {
-    const checkOwner = await useSDK.contractDL.call('ownerOf', token_id);
+    const checkOwner = await useSDK.contractDL.call("ownerOf", token_id);
     const getNFT = await useSDK.contractDL.erc721.get(token_id);
     rarity_pct = getNFT.metadata.attributes[12].value;
     /*balanceRaw = await useSDK.contractDL.call("balanceOf", address);
@@ -116,12 +116,12 @@ export async function claimDLTokens(req) {
         const today = new Date();
         let nextmonth = new Date();
         nextmonth.setDate(nextmonth.getDate() + 30);
-        if (typeof data[0] != 'undefined') {
+        if (typeof data[0] != "undefined") {
           lastClaimDate = data[0].claimDate;
           prevmonth = new Date(data[0].claimDate);
           prevmonth.setDate(prevmonth.getDate() - 30);
         }
-        if (typeof lastClaimDate != 'undefined') {
+        if (typeof lastClaimDate != "undefined") {
           //console.log(today);
           //console.log(nextmonth);
           //console.log(lastClaimDate);
@@ -161,11 +161,11 @@ export async function claimDLTokens(req) {
             });
         } else {
           //console.log("isClaimable is false");
-          resp = 'ZERO! You are not allowed to claim yet.';
+          resp = "ZERO! You are not allowed to claim yet.";
         }
       });
     } else {
-      resp = 'Not Enough Balance';
+      resp = "Not Enough Balance";
     }
   }
   return resp;
@@ -191,14 +191,14 @@ export async function claimDailyRewards(req) {
     const today = new Date();
     let nextday = new Date();
     nextday.setDate(nextday.getDate() + 1);
-    if (typeof data[0] != 'undefined') {
+    if (typeof data[0] != "undefined") {
       lastClaimDate = data[0].claimDate;
       prevday = new Date();
       prevday.setDate(prevday.getDate() - 1);
       consecutiveDate = new Date(data[0].claimDate);
       consecutiveDate.setDate(consecutiveDate.getDate() - 2);
     }
-    if (typeof lastClaimDate != 'undefined') {
+    if (typeof lastClaimDate != "undefined") {
       if (lastClaimDate.getTime() <= prevday.getTime()) {
         //console.log("Available");
         isClaimable = true;
@@ -246,7 +246,7 @@ export async function claimDailyRewards(req) {
         });
     } else {
       //console.log("isClaimable is false");
-      resp = 'ZERO! You are not allowed to claim yet.';
+      resp = "ZERO! You are not allowed to claim yet.";
     }
   });
   return resp;
@@ -269,7 +269,7 @@ export async function claimHolderTokens(req) {
         const bal = parseInt(rawBal.value / 10 ** 18);
         //console.log('Wallet OG Balance: ',bal);
         await fetch(
-          'https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/0xfa1ba18067ac6884fb26e329e60273488a247fc3'
+          "https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/0xfa1ba18067ac6884fb26e329e60273488a247fc3"
         )
           .then((response) => response.json())
           .then((data) => {
@@ -294,12 +294,12 @@ export async function claimHolderTokens(req) {
         const today = new Date();
         let nextmonth = new Date();
         nextmonth.setDate(nextmonth.getDate() + 30);
-        if (typeof data[0] != 'undefined') {
+        if (typeof data[0] != "undefined") {
           lastClaimDate = data[0].claimDate;
           prevmonth = new Date(data[0].claimDate);
           prevmonth.setDate(prevmonth.getDate() - 30);
         }
-        if (typeof lastClaimDate != 'undefined') {
+        if (typeof lastClaimDate != "undefined") {
           if (lastClaimDate <= prevmonth) {
             //console.log("Available");
             isClaimable = true;
@@ -333,12 +333,12 @@ export async function claimHolderTokens(req) {
             });
         } else {
           //console.log("isClaimable is false");
-          resp = 'ZERO! You are not allowed to claim yet.';
+          resp = "ZERO! You are not allowed to claim yet.";
         }
       });
     } else {
       //console.log("ZERO Balance");
-      resp = 'ZERO! You do not hold enough Scrooge Coin crypto.';
+      resp = "ZERO! You do not hold enough Scrooge Coin crypto.";
     }
   }
   return resp;
@@ -360,7 +360,7 @@ export async function getItems(req) {
   const type = req.params.type;
   let qry;
   if (type) {
-    qry = { type: 'entry' };
+    qry = { type: "entry" };
   } else {
     qry = {};
   }
@@ -413,19 +413,19 @@ export async function getUserRedeemed(req) {
       { $sort: { timestamp: -1 } },
       {
         $lookup: {
-          from: 'prizes',
-          let: { searchID: { $toObjectId: '$prize_id' } },
+          from: "prizes",
+          let: { searchID: { $toObjectId: "$prize_id" } },
           pipeline: [
             {
               $match: {
                 $expr: {
-                  $eq: ['$_id', '$$searchID'],
+                  $eq: ["$_id", "$$searchID"],
                 },
               },
             },
             { $project: { category: 1, name: 1, image_url: 1 } },
           ],
-          as: 'prize_details',
+          as: "prize_details",
         },
       },
     ]);
@@ -441,8 +441,8 @@ export async function getMerchCouponCode(store_id, discount_type) {
     .get_marketplace_coupons_merchDB()
     .findOne({
       isClaimed: false,
-      store_id: 'JR',
-      coupon_code: new RegExp('^' + discount_type + ''),
+      store_id: "JR",
+      coupon_code: new RegExp("^" + discount_type + ""),
     })
     .then((coup) => {
       coupon = coup;
@@ -493,7 +493,7 @@ export async function markMerchCouponRedeemed(req) {
   const trans_id = req.params.trans_id;
   const user_id = req.params.user_id;
   const updatedFlag = await updateMerchRedeemedFlag(trans_id, user_id);
-  return 'Code Marked as Redeemed';
+  return "Code Marked as Redeemed";
 }
 
 export async function updateDLClaimFlag(DL_token_obj_id) {
@@ -547,20 +547,20 @@ export async function redeemPrize(req) {
     const prize = await db
       .get_marketplace_prizesDB()
       .findOne({ _id: ObjectId(prize_id) });
-    console.log('prise', prize);
+    console.log("prise", prize);
     // assign prize attributes to variables
     prize_name = prize.name; // price of selected prize in tickets
     prize_price = prize.price; // price of selected prize in tickets
     if (prize.isDynamic) {
       //coupon_code = await getMerchCouponCode('JR', 'pr10off');
       //console.log("post coupon code: ", coupon_code);
-      if (prize.contract === '0xfA1BA18067aC6884fB26e329e60273488a247FC3') {
-        console.log('OG');
+      if (prize.contract === "0xfA1BA18067aC6884fB26e329e60273488a247FC3") {
+        console.log("OG");
         curr_price = await getOGCurrentPrice();
       } else if (
-        prize.contract === '0x2e9F79aF51dD1bb56Bbb1627FBe4Cc90aa8985Dd'
+        prize.contract === "0x2e9F79aF51dD1bb56Bbb1627FBe4Cc90aa8985Dd"
       ) {
-        console.log('JR');
+        console.log("JR");
         curr_price = await getJRCurrentPrice();
       }
       prize_token_qty = (prize_price / 100 / curr_price / 2).toFixed(0);
@@ -568,8 +568,8 @@ export async function redeemPrize(req) {
       prize_token_qty = prize.token_qty; // quantity of tokens to be transferred upon redemption
     }
     prize_category = prize.category; // category of prize
-    console.log('cat', prize_category);
-    if (prize_category === 'Merch') {
+    console.log("cat", prize_category);
+    if (prize_category === "Merch") {
       store_id = prize.store_id;
       discount_type = prize.discount_type;
       coupon = await getMerchCouponCode(store_id, discount_type);
@@ -581,7 +581,7 @@ export async function redeemPrize(req) {
     prize_token_type = prize.token_type; // token type (erc20/erc721/erc1155) of prize
     prize_token_id = prize.token_id; // token_id of prize (null if erc20)
     prize_redeem_action = prize.redeem_action; // action to execute redemption of prize
-    if (prize_name === 'Ducky Lucks NFT') {
+    if (prize_name === "Ducky Lucks NFT") {
       const queryDL = await db
         .get_marketplace_ducky_lucks_prizesDB()
         .findOne({ claimed: false });
@@ -609,22 +609,22 @@ export async function redeemPrize(req) {
 
       console.log(query3);
 
-      if (prize_contract_name === 'OG') {
+      if (prize_contract_name === "OG") {
         use_sdk = useSDK.sdk_OG;
-      } else if (prize_contract_name === 'JR') {
+      } else if (prize_contract_name === "JR") {
         use_sdk = useSDK.sdk_JR;
-      } else if (prize_contract_name === 'Casino NFTS') {
+      } else if (prize_contract_name === "Casino NFTS") {
         use_sdk = useSDK.sdk_casino_nfts;
         console.log(use_sdk);
-      } else if (prize_contract_name === 'DL') {
+      } else if (prize_contract_name === "DL") {
         use_sdk = useSDK.sdk_DL;
-      } else if (prize_category === 'Merch') {
+      } else if (prize_category === "Merch") {
         use_sdk = useSDK.sdk;
       } else {
         // prize_contract_name does not match any known contract names
-        resp = 'Invalid Prize Data';
+        resp = "Invalid Prize Data";
       }
-      if (prize_token_type === 'erc20') {
+      if (prize_token_type === "erc20") {
         balanceRaw = await use_sdk.wallet.balance(prize_contract);
         balance = parseInt(balanceRaw.displayValue);
         //console.log('Balance: ',balance);
@@ -632,7 +632,7 @@ export async function redeemPrize(req) {
         if (balance && balance >= prize_token_qty) {
           //sdk wallet has enough balance to allow prize redemption
           //check for redeem_action from prize record
-          if (prize_redeem_action === 'transfer') {
+          if (prize_redeem_action === "transfer") {
             //initiate transfer from sdk wallet to redeemer wallet
             try {
               //const transfer = await use_sdk.wallet.transfer(address, prize_token_qty, prize_contract);
@@ -641,9 +641,9 @@ export async function redeemPrize(req) {
               resp = prize_name;
             } catch (error) {
               //console.log('Transaction Failed');
-              resp = 'Transaction Failed';
+              resp = "Transaction Failed";
             }
-          } else if (prize_redeem_action === 'burn') {
+          } else if (prize_redeem_action === "burn") {
             //initiate burn from sdk wallet
             try {
               //const burn = await use_sdk.wallet.transfer(useSDK.BurnContractAddress, prize_token_qty, prize_contract);
@@ -652,18 +652,18 @@ export async function redeemPrize(req) {
               resp = prize_name;
             } catch (error) {
               //console.log('Transaction Failed');
-              resp = 'Transaction Failed';
+              resp = "Transaction Failed";
             }
           } else {
             // prize_redeem_action does not match any known redeem actions
-            resp = 'Invalid Prize Data';
+            resp = "Invalid Prize Data";
           }
         } else {
           //sdk wallet does not have enough balance to allow prize redemption
           //console.log("Balance unacceptable");
-          resp = 'Balance Unacceptable';
+          resp = "Balance Unacceptable";
         }
-      } else if (prize_token_type === 'erc1155') {
+      } else if (prize_token_type === "erc1155") {
         //start erc1155 process
 
         const sdk_wallet = await use_sdk.wallet.getAddress();
@@ -672,15 +672,15 @@ export async function redeemPrize(req) {
           sdk_wallet,
           prize_token_id
         );
-        console.log('balraw', balanceRaw);
+        console.log("balraw", balanceRaw);
         balance = parseInt(balanceRaw);
         // Verify sdk wallet / contract has enough balance to disburse prize
-        console.log('balance', balance);
+        console.log("balance", balance);
         if (balance && balance >= prize_token_qty) {
           //sdk wallet has enough balance to allow prize redemption
           //check for redeem_action from prize record
-          if (prize_redeem_action === 'transfer') {
-            console.log('trans');
+          if (prize_redeem_action === "transfer") {
+            console.log("trans");
             //initiate transfer from sdk wallet to redeemer wallet
             try {
               const transfer = await useSDK.contractCasinoNFT.transfer(
@@ -691,9 +691,9 @@ export async function redeemPrize(req) {
               postPrizeRedemption(prize_id, user_id);
               resp = prize_name;
             } catch (error) {
-              resp = 'Transaction Failed';
+              resp = "Transaction Failed";
             }
-          } else if (prize_redeem_action === 'burn') {
+          } else if (prize_redeem_action === "burn") {
             //initiate burn from sdk contract
             try {
               //const burn = await use_sdk.wallet.transfer(useSDK.BurnContractAddress, prize_token_qty, prize_contract);
@@ -701,21 +701,21 @@ export async function redeemPrize(req) {
               postPrizeRedemption(prize_id, user_id);
               resp = prize_name;
             } catch (error) {
-              resp = 'Transaction Failed';
+              resp = "Transaction Failed";
             }
           } else {
             // prize_redeem_action does not match any known redeem actions
-            resp = 'Invalid Prize Data';
+            resp = "Invalid Prize Data";
           }
         } else {
           //sdk wallet does not have enough balance to allow prize redemption
           //console.log("Balance unacceptable");
-          console.log('else');
-          resp = 'Balance Unacceptable';
-          console.log('resddp', resp);
+          console.log("else");
+          resp = "Balance Unacceptable";
+          console.log("resddp", resp);
           return resp;
         }
-      } else if (prize_token_type === 'merch') {
+      } else if (prize_token_type === "merch") {
         const markRedeemed = false;
         postPrizeRedemption(prize_id, user_id, coupon_code, markRedeemed);
         updateMerchClaimFlag(coupon_obj_id, user_id);
@@ -723,27 +723,27 @@ export async function redeemPrize(req) {
           .getUserByUserID(user_id)
           .then((getUser) => {
             const affEmailSend = email.sendemail(
-              'merchEmail',
+              "merchEmail",
               getUser.email,
               coupon_code
             );
           });
         resp = prize_name;
-      } else if (prize_token_type === 'erc721') {
+      } else if (prize_token_type === "erc721") {
         //start erc721 process
         //if there are no unclaimed NFTs in DL table, do not execute functions
         if (!DL_token_id) {
           //console.log("No DL NFTs available.");
-          resp = 'Prize Currently Unavailable';
+          resp = "Prize Currently Unavailable";
         } else {
           const sdk_wallet = await use_sdk.wallet.getAddress();
-          balanceRaw = await useSDK.contractDL.call('balanceOf', sdk_wallet);
+          balanceRaw = await useSDK.contractDL.call("balanceOf", sdk_wallet);
           balance = parseInt(balanceRaw);
           // Verify sdk wallet / contract has enough balance to disburse prize
           if (balance && balance >= prize_token_qty) {
             //sdk wallet has enough balance to allow prize redemption
             //check for redeem_action from prize record
-            if (prize_redeem_action === 'transfer') {
+            if (prize_redeem_action === "transfer") {
               //initiate transfer from sdk wallet to redeemer wallet
               try {
                 //const transfer = await useSDK.contractDL.call("safeTransferFrom", sdk_wallet, address, DL_token_id);
@@ -752,10 +752,10 @@ export async function redeemPrize(req) {
                 postPrizeRedemption(prize_id, user_id);
                 resp = prize_name;
               } catch (error) {
-                console.log('Error');
-                resp = 'Transaction Failed';
+                console.log("Error");
+                resp = "Transaction Failed";
               }
-            } else if (prize_redeem_action === 'burn') {
+            } else if (prize_redeem_action === "burn") {
               //initiate burn from sdk contract
               try {
                 //const burn = await useSDK.contractDL.call("burn", prize_token_id);
@@ -763,29 +763,29 @@ export async function redeemPrize(req) {
                 resp = prize_name;
               } catch (error) {
                 //console.log('Transaction Failed');
-                resp = 'Transaction Failed';
+                resp = "Transaction Failed";
               }
             } else {
               // prize_redeem_action does not match any known redeem actions
-              resp = 'Invalid Prize Data';
+              resp = "Invalid Prize Data";
             }
           } else {
             //sdk wallet does not have enough balance to allow prize redemption
             //console.log("Balance unacceptable");
-            resp = 'Balance Unacceptable';
+            resp = "Balance Unacceptable";
           }
         }
       } else {
         //console.log("Prize token type not recognized.")
-        resp = 'Invalid Prize Data';
+        resp = "Invalid Prize Data";
         return resp;
       }
     } else {
-      resp = 'Not Enough Tickets';
+      resp = "Not Enough Tickets";
       return resp;
     }
   } catch (e) {
-    console.log('outerCatch', e);
+    console.log("outerCatch", e);
   }
 
   //   const query = db
