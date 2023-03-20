@@ -215,7 +215,7 @@ export async function getAffiliateUser(req, res) {
     if (query) {
       return res.status(200).send({ success: true, data: query });
     }
-    return res.status(404).send({ success: false, message: "User not found." });
+    return res.send({ success: false, message: "User not found." });
   } catch (error) {
     console.log("affialcatch");
     return res
@@ -234,14 +234,14 @@ export async function createAffiliateUser(req, res) {
   try {
     const user = await db.get_affiliatesDB().findOne({ user_id: user_id });
     if (user) {
-      res.status(403).send({
+      res.send({
         success: false,
         message: "You are already registered as an affiliate.",
       });
     } else {
       const user = await commons.getUserByUserID(user_id);
       if (!user) {
-        res.status(403).send({
+        res.send({
           success: false,
           message: "User ID Not Found.",
         });
@@ -296,6 +296,7 @@ async function createAffShortLink(user_id, username) {
 
 // *-tested get affiliate leaders by Tokens
 export async function getAffLeadersByCount(req, res) {
+  console.log("getAffLeadersByCount");
   let { limit, days } = req.params;
 
   if (!limit || limit <= 0) {
@@ -317,6 +318,7 @@ export async function getAffLeadersByCount(req, res) {
       .sort({ count: -1 })
       .limit(limit);
     const data = await cursor.toArray();
+    console.log("countby", data);
     if (typeof data[0] != "undefined") {
       return res.status(200).send({ success: true, data: data });
     } else {
