@@ -15,6 +15,7 @@ export const connectToDB = async () => {
     uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1}
   );
   _db_scrooge_users = client.db(process.env.SCROOGE_DB).collection("users");
+  _db_scrooge_transaction = client.db(process.env.SCROOGE_DB).collection("transcations");
   _db_affiliates = client.db(process.env.AFFILIATES_DB).collection("affiliates");
   _db_affiliates_successful_actions = client.db(process.env.AFFILIATES_DB).collection("successful-actions");
   _db_marketplace_chip_transactions = client.db(process.env.CASINO_NFT_MARKETPLACE_DB).collection("chip_transactions");
@@ -43,6 +44,9 @@ export const connectToDB = async () => {
 };
 
 export const get_scrooge_usersDB = () => _db_scrooge_users;
+export const get_scrooge_transactionDB = () => _db_scrooge_transaction
+;
+
 export const get_affiliatesDB = () => _db_affiliates;
 export const get_affiliates_successful_actionsDB = () => _db_affiliates_successful_actions;
 export const get_marketplace_chip_transactionsDB = () => _db_marketplace_chip_transactions;
