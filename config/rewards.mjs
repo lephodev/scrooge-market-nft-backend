@@ -19,6 +19,18 @@ export async function addChips(_user_id, _qty, _address) {
           chips: _qty,
           timestamp: new Date(),
         })
+        let getUserData=await db.get_scrooge_usersDB().findOne({_id: ObjectId(_user_id)})
+        // console.log("getUserData",getUserData);
+
+        const transactionPayload={
+          amount:_qty,
+          transactionType:"nft purchase",
+          prevWallet:getUserData?.wallet,
+          updatedWallet:getUserData?.wallet+_qty,
+          userId:user.value._id
+        }
+        // console.log("transactionPayload",transactionPayload);
+        await db.get_scrooge_transactionDB().insertOne(transactionPayload)
         .then((trans) => {
           trans_id = trans.insertedId;
         });
@@ -352,8 +364,10 @@ export async function getPrizes(req) {
   const sort = { price: 1 };
   let resp;
   const cursor = db.get_marketplace_prizesDB().find(qry).sort(sort);
+  console.log('cursor: ', cursor);
+
   const arr = await cursor.toArray().then((data) => {
-    //console.log('prizes arr: ', data);
+    console.log('prizes arr: ', data);
     resp = data;
   });
   return resp;
