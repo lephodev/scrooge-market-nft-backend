@@ -65,10 +65,14 @@ export async function processStripeWebhook(request) {
         */
         break;
       case 'checkout.session.completed':
-        console.log(`---------checkout.session.completed--------` )
-
+        console.log(`---------checkout.session.completed--------`,event )
+        console.log(`-----------------`,event.data )
+        console.log(`-----------------122222`,event.data.object )
         const checkoutComplete = event.data.object;
+        console.log(`checkoutComplete`,checkoutComplete )
         const item_id = checkoutComplete.metadata.item_id;
+        console.log(`item_id`,item_id )
+
         const userArray = checkoutComplete.client_reference_id;
         const address = userArray.split("_")[0];
         const user_id = userArray.split("_")[1];
