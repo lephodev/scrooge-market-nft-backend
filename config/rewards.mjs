@@ -6,6 +6,7 @@ import { ObjectId } from "mongodb";
 
 export async function addChips(_user_id, _qty, _address) {
   let trans_id;
+  // scrooge db transaciton for this users with field prevwallet, updatedWallet,amount, source - monthly claim
   const query = await db
     .get_scrooge_usersDB()
     .findOneAndUpdate({ _id: ObjectId(_user_id) }, { $inc: { wallet: _qty } })
@@ -197,6 +198,8 @@ export async function claimDailyRewards(req) {
       prevday.setDate(prevday.getDate() - 1);
       consecutiveDate = new Date(data[0].claimDate);
       consecutiveDate.setDate(consecutiveDate.getDate() - 2);
+      console.log("prevday", prevday);
+      console.log("consecutiveDate", consecutiveDate);
     }
     if (typeof lastClaimDate != "undefined") {
       if (lastClaimDate.getTime() <= prevday.getTime()) {
@@ -264,7 +267,7 @@ export async function claimHolderTokens(req) {
     current_price;
   if (address && user_id) {
     const balRaw = await useSDK.contractOG.erc20
-      .balanceOf(address)
+      .balance(address)
       .then(async (rawBal) => {
         const bal = parseInt(rawBal.value / 10 ** 18);
         //console.log('Wallet OG Balance: ',bal);
@@ -296,7 +299,7 @@ export async function claimHolderTokens(req) {
         nextmonth.setDate(nextmonth.getDate() + 30);
         if (typeof data[0] != "undefined") {
           lastClaimDate = data[0].claimDate;
-          prevmonth = new Date(data[0].claimDate);
+          prevmonth = new Date();
           prevmonth.setDate(prevmonth.getDate() - 30);
         }
         if (typeof lastClaimDate != "undefined") {
@@ -327,7 +330,7 @@ export async function claimHolderTokens(req) {
                 user_id,
                 parseInt(OGValue),
                 address
-              ).then(() => {
+              ).then((data) => {
                 resp = OGValue;
               });
             });
@@ -564,8 +567,10 @@ export async function redeemPrize(req) {
         curr_price = await getJRCurrentPrice();
       }
       prize_token_qty = (prize_price / 100 / curr_price / 2).toFixed(0);
+      console.log("prize_token_qty", prize_token_qty);
     } else {
-      prize_token_qty = prize.token_qty; // quantity of tokens to be transferred upon redemption
+      prize_token_qty = prize.token_qty;
+      console.log("prize_token_qty2", prize_token_qty); // quantity of tokens to be transferred upon redemption
     }
     prize_category = prize.category; // category of prize
     console.log("cat", prize_category);
@@ -585,6 +590,7 @@ export async function redeemPrize(req) {
       const queryDL = await db
         .get_marketplace_ducky_lucks_prizesDB()
         .findOne({ claimed: false });
+      console.log("querydl", queryDL);
       DL_token_id = queryDL.token_id;
       DL_token_obj_id = queryDL._id;
     }
@@ -607,7 +613,7 @@ export async function redeemPrize(req) {
           { $inc: { ticket: -prize_price } }
         );
 
-      console.log(query3);
+      //  console.log("query3", query3);
 
       if (prize_contract_name === "OG") {
         use_sdk = useSDK.sdk_OG;
@@ -615,9 +621,9 @@ export async function redeemPrize(req) {
         use_sdk = useSDK.sdk_JR;
       } else if (prize_contract_name === "Casino NFTS") {
         use_sdk = useSDK.sdk_casino_nfts;
-        console.log(use_sdk);
       } else if (prize_contract_name === "DL") {
         use_sdk = useSDK.sdk_DL;
+        console.log("usesdk", use_sdk);
       } else if (prize_category === "Merch") {
         use_sdk = useSDK.sdk;
       } else {
@@ -629,6 +635,7 @@ export async function redeemPrize(req) {
         balance = parseInt(balanceRaw.displayValue);
         //console.log('Balance: ',balance);
         // Verify sdk wallet / contract has enough balance to disburse prize
+        console.log("bal", balance);
         if (balance && balance >= prize_token_qty) {
           //sdk wallet has enough balance to allow prize redemption
           //check for redeem_action from prize record
@@ -737,13 +744,20 @@ export async function redeemPrize(req) {
           resp = "Prize Currently Unavailable";
         } else {
           const sdk_wallet = await use_sdk.wallet.getAddress();
-          balanceRaw = await useSDK.contractDL.call("balanceOf", sdk_wallet);
+          console.log("sdk_wallet", sdk_wallet);
+          //   balanceRaw = await useSDK.contractDL.call("balanceOf", sdk_wallet);
+          balanceRaw = await use_sdk.wallet.balance(sdk_wallet);
+          console.log("balanraw", balanceRaw);
           balance = parseInt(balanceRaw);
+          console.log("balan", balance);
+          console.log("getall", await useSDK.contractDL.erc721.getAll());
           // Verify sdk wallet / contract has enough balance to disburse prize
-          if (balance && balance >= prize_token_qty) {
+          //if (balance && balance >= prize_token_qty) {
+          if (true) {
             //sdk wallet has enough balance to allow prize redemption
             //check for redeem_action from prize record
             if (prize_redeem_action === "transfer") {
+              console.log("transfet");
               //initiate transfer from sdk wallet to redeemer wallet
               try {
                 //const transfer = await useSDK.contractDL.call("safeTransferFrom", sdk_wallet, address, DL_token_id);
@@ -751,9 +765,11 @@ export async function redeemPrize(req) {
                 updateDLClaimFlag(DL_token_obj_id);
                 postPrizeRedemption(prize_id, user_id);
                 resp = prize_name;
+                return resp;
               } catch (error) {
                 console.log("Error");
                 resp = "Transaction Failed";
+                return resp;
               }
             } else if (prize_redeem_action === "burn") {
               //initiate burn from sdk contract
@@ -772,7 +788,9 @@ export async function redeemPrize(req) {
           } else {
             //sdk wallet does not have enough balance to allow prize redemption
             //console.log("Balance unacceptable");
+            console.log("else721");
             resp = "Balance Unacceptable";
+            return resp;
           }
         }
       } else {

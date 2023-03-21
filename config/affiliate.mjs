@@ -207,6 +207,7 @@ export async function getAffLeadersByType(req, res) {
 // *-tested
 export async function getAffiliateUser(req, res) {
   const { user_id } = req.params;
+  console.log("user_id", user_id);
   if (!user_id) return res.status(500).send({ message: "Invalid UserId" });
   console.log("affiatestart");
   try {

@@ -330,7 +330,7 @@ app.get("/api/getWalletDLBalance/:address", async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log("Server is running.");
+  console.log("Server is running.", 3001);
 });
 
 export default app;
