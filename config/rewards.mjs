@@ -349,8 +349,10 @@ export async function getPrizes(req) {
   const sort = { price: 1 };
   let resp;
   const cursor = db.get_marketplace_prizesDB().find(qry).sort(sort);
+  console.log('cursor: ', cursor);
+
   const arr = await cursor.toArray().then((data) => {
-    //console.log('prizes arr: ', data);
+    console.log('prizes arr: ', data);
     resp = data;
   });
   return resp;

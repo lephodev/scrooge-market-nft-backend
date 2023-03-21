@@ -13,7 +13,7 @@ import { processStripeWebhook } from "./config/stripe.mjs";
 import cors from "cors";
 const app = express();
 const PORT = process.env.PORT;
-app.use(cors());
+app.use(cors('*'));
 app.use(json());
 app.use(async (req, res, next) => {
   if (
@@ -123,8 +123,9 @@ app.get("/api/getItems/:type", async (req, res) => {
 //################################# Prizes #################################//
 // Route to get available prizes
 app.get("/api/getPrizes", async (req, res) => {
+    console.log("abcccc");
   const resp = await rewards.getPrizes(req).then((data) => {
-    //console.log('prizes resp: ', data);
+    console.log('prizes resp: ', data);
     res.send(data);
   });
 });
@@ -330,7 +331,7 @@ app.get("/api/getWalletDLBalance/:address", async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log("Server is running.");
+  console.log("Server is running.",PORT);
 });
 
 export default app;
