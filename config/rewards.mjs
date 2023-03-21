@@ -24,10 +24,12 @@ export async function addChips(_user_id, _qty, _address) {
         const transactionPayload={
           amount:_qty,
           transactionType:"nft",
+          prevWallet:getUserData?.wallet,
+          updatedWallet:getUserData?.wallet+_qty,
           userId:user.value._id
         }
         console.log("transactionPayload",transactionPayload);
-        await db.get_scrooge_transactionDB().create(transactionPayload)
+        await db.get_scrooge_transactionDB().insertOne(transactionPayload)
         .then((trans) => {
           trans_id = trans.insertedId;
         });
