@@ -19,16 +19,16 @@ export async function addChips(_user_id, _qty, _address) {
           timestamp: new Date(),
         })
         let getUserData=await db.get_scrooge_usersDB().findOne({_id: ObjectId(_user_id)})
-        console.log("getUserData",getUserData);
+        // console.log("getUserData",getUserData);
 
         const transactionPayload={
           amount:_qty,
-          transactionType:"nft",
+          transactionType:"nft purchase",
           prevWallet:getUserData?.wallet,
           updatedWallet:getUserData?.wallet+_qty,
           userId:user.value._id
         }
-        console.log("transactionPayload",transactionPayload);
+        // console.log("transactionPayload",transactionPayload);
         await db.get_scrooge_transactionDB().insertOne(transactionPayload)
         .then((trans) => {
           trans_id = trans.insertedId;

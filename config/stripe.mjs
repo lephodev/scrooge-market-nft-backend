@@ -70,12 +70,12 @@ export async function processStripeWebhook(request) {
         break;
       case 'checkout.session.completed':
         console.log(`---------checkout.session.completed--------`,event )
-        console.log(`-----------------`,event.data )
-        console.log(`-----------------122222`,event.data.object )
+        // console.log(`-----------------`,event.data )
+        // console.log(`-----------------122222`,event.data.object )
         const checkoutComplete = event.data.object;
-        console.log(`checkoutComplete`,checkoutComplete )
+        // console.log(`checkoutComplete`,checkoutComplete )
         const item_id = checkoutComplete.metadata.item_id;
-        console.log(`item_id`,item_id )
+        // console.log(`item_id`,item_id )
 
         const userArray = checkoutComplete.client_reference_id;
         const address = userArray.split("_")[0];
@@ -95,10 +95,10 @@ export async function processStripeWebhook(request) {
                             isError = false;
                             try {
                                 const chipsAdded = await addChips(user_id, parseInt(item.chip_value), address).then((trans)=>{
-                                    console.log(item.chip_value,"<------Chips sent to user.");
+                                    // console.log(item.chip_value,"<------Chips sent to user.");
                                     //client.close();
                                     if(aff_id){
-                                        console.log("affAddOrder success");
+                                        // console.log("affAddOrder success");
                                         affAddOrder(aff_id, trans.toString(), item.chip_value, item._id.toString(), user_id, address);
                                     };
                                 });
