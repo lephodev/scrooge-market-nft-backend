@@ -98,11 +98,12 @@ export async function processStripeWebhook(request) {
                                     //console.log(item.chip_value,"<------Chips sent to user.");
                                     //client.close();
                                     if(aff_id){
+                                        console.log("affAddOrder success");
                                         affAddOrder(aff_id, trans.toString(), item.chip_value, item._id.toString(), user_id, address);
                                     };
                                 });
                                 const NFTTransferred = await useSDK.transferNFT(user_id, item.token_id, address).then(async ()=>{
-                                    //console.log(item.name,"------NFT transferred to user.");
+                                    console.log(item.name,"------NFT transferred to user.");
                                 });
                             } catch (error) {
                                 console.log(error);
