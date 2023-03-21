@@ -15,7 +15,7 @@ export const connectToDB = async () => {
     uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1}
   );
   _db_scrooge_users = client.db(process.env.SCROOGE_DB).collection("users");
-  _db_scrooge_transaction = client.db(process.env.SCROOGE_DB).collection("transcations");
+  _db_scrooge_transaction = client.db(process.env.SCROOGE_DB).collection("transactions");
   _db_affiliates = client.db(process.env.AFFILIATES_DB).collection("affiliates");
   _db_affiliates_successful_actions = client.db(process.env.AFFILIATES_DB).collection("successful-actions");
   _db_marketplace_chip_transactions = client.db(process.env.CASINO_NFT_MARKETPLACE_DB).collection("chip_transactions");
