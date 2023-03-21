@@ -4,8 +4,8 @@
     "description": "",
     "main": "index.mjs",
     "scripts": {
-        "start": "node index.mjs",
-        "devStart": "nodemon index.mjs"
+        "start": "node --experimental-json-modules index.mjs",
+        "devStart": "nodemon --experimental-json-modules index.mjs"
     },
     "keywords": [],
     "author": "",

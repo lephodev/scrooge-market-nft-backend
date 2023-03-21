@@ -10,6 +10,7 @@ const stripe = Stripe(process.env.STRIPE_API_TEST_KEY);
 
 /* Stripe Webhooks */
 export async function processStripeWebhook(request) {
+    console.log("Webhook Calleddddd");
     let event = request.body;
     // Only verify the event if you have an endpoint secret defined.
     // Otherwise use the basic event deserialized with JSON.parse
@@ -64,6 +65,8 @@ export async function processStripeWebhook(request) {
         */
         break;
       case 'checkout.session.completed':
+        console.log(`---------checkout.session.completed--------` )
+
         const checkoutComplete = event.data.object;
         const item_id = checkoutComplete.metadata.item_id;
         const userArray = checkoutComplete.client_reference_id;

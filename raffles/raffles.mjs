@@ -9,6 +9,7 @@ import JR_ABI from '../config/JR_ABI.json' assert {type: 'json'};
 
 /// get all current raffles
 export async function getCurrentRaffles(req) {
+    console.log("rafflesss");
     let resp;
     const limit = req.params.limit;
     const days = req.params.days;
@@ -19,7 +20,8 @@ export async function getCurrentRaffles(req) {
                     $lt: moment(new Date()).toDate()
                 }};
     const sort = { "end_date" : 1 };
-    const cursor = db.get_rafflesDB().find(qry).sort(sort);
+    const cursor = db.get_rafflesDB().find();
+    // console.log("cursor",cursor);
     const arr = await cursor.toArray();
     let newArr = [];
     await asyncArrayMap(arr, async (prize, index) => {
@@ -207,6 +209,7 @@ export async function getDrawByRaffleID(req) {
 };
 
 export async function enterRaffle(req) {
+    console.log("-----------------------------------------------");
     let resp;
     const raffle_id = req.params.raffle_id;
     const user_id = req.params.user_id;
