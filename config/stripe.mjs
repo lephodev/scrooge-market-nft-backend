@@ -95,7 +95,7 @@ export async function processStripeWebhook(request) {
                             isError = false;
                             try {
                                 const chipsAdded = await addChips(user_id, parseInt(item.chip_value), address).then((trans)=>{
-                                    //console.log(item.chip_value,"<------Chips sent to user.");
+                                    console.log(item.chip_value,"<------Chips sent to user.");
                                     //client.close();
                                     if(aff_id){
                                         console.log("affAddOrder success");
