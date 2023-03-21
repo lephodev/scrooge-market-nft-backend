@@ -1,5 +1,6 @@
 import Stripe from 'stripe';
 import dotenv from 'dotenv';
+import { ObjectId } from 'mongodb';
 import * as db from './mongodb.mjs';
 import affAddOrder from './affiliate.mjs';
 import { addChips } from './rewards.mjs';
@@ -12,6 +13,9 @@ const stripe = Stripe(process.env.STRIPE_API_TEST_KEY);
 export async function processStripeWebhook(request) {
     console.log("Webhook Calleddddd");
     let event = request.body;
+    // let id="63b436f12ff492a21d19cca9"
+    // const query = await db.get_marketplace_itemsDB().findOne({_id : ObjectId(id)})
+    // console.log("query",query);
     // Only verify the event if you have an endpoint secret defined.
     // Otherwise use the basic event deserialized with JSON.parse
     /*if (endpointSecret) {
