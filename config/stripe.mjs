@@ -1,5 +1,6 @@
 import Stripe from 'stripe';
 import dotenv from 'dotenv';
+import { ObjectId } from 'mongodb';
 import * as db from './mongodb.mjs';
 import affAddOrder from './affiliate.mjs';
 import { addChips } from './rewards.mjs';
@@ -12,6 +13,9 @@ const stripe = Stripe(process.env.STRIPE_API_TEST_KEY);
 export async function processStripeWebhook(request) {
     console.log("Webhook Calleddddd");
     let event = request.body;
+    // let id="63b436f12ff492a21d19cca9"
+    // const query = await db.get_marketplace_itemsDB().findOne({_id : ObjectId(id)})
+    // console.log("query",query);
     // Only verify the event if you have an endpoint secret defined.
     // Otherwise use the basic event deserialized with JSON.parse
     /*if (endpointSecret) {
@@ -91,14 +95,15 @@ export async function processStripeWebhook(request) {
                             isError = false;
                             try {
                                 const chipsAdded = await addChips(user_id, parseInt(item.chip_value), address).then((trans)=>{
-                                    //console.log(item.chip_value,"<------Chips sent to user.");
+                                    console.log(item.chip_value,"<------Chips sent to user.");
                                     //client.close();
                                     if(aff_id){
+                                        console.log("affAddOrder success");
                                         affAddOrder(aff_id, trans.toString(), item.chip_value, item._id.toString(), user_id, address);
                                     };
                                 });
                                 const NFTTransferred = await useSDK.transferNFT(user_id, item.token_id, address).then(async ()=>{
-                                    //console.log(item.name,"------NFT transferred to user.");
+                                    console.log(item.name,"------NFT transferred to user.");
                                 });
                             } catch (error) {
                                 console.log(error);
