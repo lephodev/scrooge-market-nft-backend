@@ -4,6 +4,8 @@ import * as db from '../config/mongodb.mjs';
 let merch_coupon_code, email_subject, email_text, email_html;
 
 export async function sendemail(message, email_address, coupon_code=null) {
+
+    console.log("message",message,"email_address",email_address,"coupon_code",coupon_code);
     if (coupon_code) {
         merch_coupon_code = coupon_code;
     }
@@ -23,13 +25,18 @@ export async function sendemail(message, email_address, coupon_code=null) {
     }
     // create reusable transporter object using the default SMTP transport
     let transporter = nodemailer.createTransport({
-      host: "scrooge.team",
-      port: 465,
-      secure: true, // true for 465, false for other ports
-      auth: {
-        user: "notifications@scrooge.team",
-        pass: process.env.NODEMAILER_PASS,
-      },
+        host: "websultanate.com",
+        port: 587,  
+        secure: false,
+        auth: {
+          user: 'jivan@websultanate.com',
+          pass: 'Welcome@123',
+        },
+        tls: {
+            rejectUnauthorized: false,
+          },
+          debug: true,
+        
     });
   
     // send mail with defined transport object
@@ -41,7 +48,7 @@ export async function sendemail(message, email_address, coupon_code=null) {
       html: email_html
     });
   
-    //console.log("Message sent: %s", info.messageId);
+    console.log("Message sent: %s", email_address);
     return info.messageId;
   }
 
