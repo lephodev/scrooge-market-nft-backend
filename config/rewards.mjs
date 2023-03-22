@@ -647,7 +647,7 @@ export async function redeemPrize(req) {
       if (prize_token_type === "erc20") {
         balanceRaw = await use_sdk.wallet.balance(prize_contract);
         balance = parseInt(balanceRaw.displayValue);
-        //console.log('Balance: ',balance);
+        console.log('Balance: ',use_sdk);
         // Verify sdk wallet / contract has enough balance to disburse prize
         console.log("bal", balance);
         if (balance && balance >= prize_token_qty) {
@@ -743,9 +743,10 @@ export async function redeemPrize(req) {
         const getUserByID = await commons
           .getUserByUserID(user_id)
           .then((getUser) => {
+            console.log("getUser",getUser,"CoupanCode",coupon_code);
             const affEmailSend = email.sendemail(
               "merchEmail",
-              getUser.email,
+              getUser?.email,
               coupon_code
             );
           });
