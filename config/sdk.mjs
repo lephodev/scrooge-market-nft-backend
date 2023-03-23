@@ -23,10 +23,15 @@ export const sdk_casino_nfts = ThirdwebSDK.fromPrivateKey(
   process.env.CASINO_NFTS_PRIVATE_KEY,
   "binance"
 );
+
+console.log("sdk_casino_nfts",sdk_casino_nfts);
 export const contractCasinoNFT = await sdk_casino_nfts.getContract(
   CasinoNFTEditionContractAddress,
   "edition"
 );
+
+// console.log("CasinoNFTEditionContractAddress",CasinoNFTEditionContractAddress);
+// console.log("contractCasinoNFT",contractCasinoNFT);
 export const sdk_casino_nfts_wallet = await sdk_casino_nfts.wallet.getAddress();
 export const sdk_OG = ThirdwebSDK.fromPrivateKey(
   process.env.OG_PRIVATE_KEY,
@@ -55,12 +60,15 @@ export const sdk_DL_wallet = await sdk_DL.wallet.getAddress();
 
 //functions
 export async function transferNFT(_user_id, _token_id, _address) {
+  console.log("transferNFT",_user_id, _token_id, _address.trim(),"sdk_casino_nfts_wallet",sdk_casino_nfts_wallet);
   let resp;
   const balanceRaw = await contractCasinoNFT.balanceOf(
     sdk_casino_nfts_wallet,
     _token_id
   );
+  console.log("balanceRaw",balanceRaw);
   const balance = parseInt(balanceRaw);
+  console.log("balance===?>>>>",balance);
   // Verify sdk wallet / contract has enough balance to disburse prize
   if (balance && balance >= 1) {
     //sdk wallet has enough balance to allow prize redemption
@@ -68,18 +76,19 @@ export async function transferNFT(_user_id, _token_id, _address) {
     //initiate transfer from sdk wallet to redeemer wallet
     try {
       const transferStatus = await contractCasinoNFT
-        .transfer(_address, _token_id, 1)
+        .transfer(_address.trim(), _token_id, 1)
         .then((transfer) => {
-          //console.log('Transfer Status: ', transfer.receipt.status);
+          console.log('Transfer Status: ', transfer.receipt.status);
           resp = true;
         });
     } catch (error) {
+      console.log("error",error);
       console.log("Transaction Failed");
       resp = false;
     }
   } else {
     //sdk wallet does not have enough balance to allow prize redemption
-    //console.log("Balance unacceptable");
+    console.log("Balance unacceptable");
     resp = "Balance Unacceptable";
   }
   return resp;

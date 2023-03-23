@@ -9,7 +9,7 @@ import * as email from "./email/email.mjs";
 import * as chatgpt from "./config/chatgpt.mjs";
 import * as common from "./config/commons.mjs";
 import * as utilities from "./config/utilities.mjs";
-import { processStripeWebhook } from "./config/stripe.mjs";
+import { processStripeCheckOut, processStripeWebhook } from "./config/stripe.mjs";
 import cors from "cors";
 const app = express();
 const PORT = process.env.PORT;
@@ -283,12 +283,22 @@ app.get("/api/getAIMessage/:prompt/:user_id/:type", async (req, res) => {
 });
 
 //################################# Stripe #################################//
-app.post(
+app.get(
   "/webhook/stripe",
   express.raw({ type: "application/json" }),
   (request, response) => {
-    const res = processStripeWebhook(request);
-    response.send();
+    console.log("reee", request.query, request.params, request.body)
+    const res = processStripeWebhook(request,response);
+    // response.send();
+  }
+);
+app.post(
+  "/api/user/depositMoney",
+  (request, response) => {
+    // console.log("request",request?.body
+    // );
+    processStripeCheckOut(request, response);
+   
   }
 );
 
