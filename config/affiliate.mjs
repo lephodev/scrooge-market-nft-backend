@@ -19,20 +19,33 @@ export async function affAddOrder(
   user_id,
   address
 ) {
+  console.log("aff_id","order_id",
+  "order_total",
+  "product_id",
+  "user_id",
+  "address", aff_id,
+  order_id,
+  order_total,
+  product_id,
+  user_id,
+  address);
   //write transaction to successful_actions table
   let resp;
   let trans_id;
+
+  console.log("order_total",order_total);
   const commission = (order_total / order_commission_pct).toFixed(0);
   const query = await db
     .get_affiliatesDB()
-    .findOne({ user_id: aff_id })
+    .findOne({ _id: ObjectId(aff_id) })
     .then(async (user) => {
+      console.log("userrrrrrr",user);
       if (user) {
         const queryCT = await db
           .get_affiliates_successful_actionsDB()
           .insertOne({
             type: "order",
-            user_id: aff_id,
+            user_id: user_id,
             url: base_url,
             data: {
               order_id: order_id,
@@ -40,7 +53,7 @@ export async function affAddOrder(
               order_value: order_total,
               referred_user_address: address,
             },
-            commission: commission,
+            commission: parseInt(commission),
             referred_user_id: user_id,
             timestamp: new Date(),
             affiliate_id: user._id.toString(),
@@ -152,6 +165,7 @@ export async function getAffLeadersByTokens(req, res) {
 //* get affiliate leaders by Type
 export async function getAffLeadersByType(req, res) {
   let { type, limit, days } = req.params;
+  console.log("req.params",req.params);
 
   if (!type) return res.status(500).send({ message: "Invalid type" });
 
@@ -166,8 +180,11 @@ export async function getAffLeadersByType(req, res) {
     days = parseInt(days);
   }
   try {
+    console.log("days",days);
+
     let daterange = new Date();
     daterange.setDate(daterange.getDate() - days);
+    console.log("daterange",moment(daterange).toDate());
     const cursor = await db
       .get_affiliates_successful_actionsDB()
       .aggregate([
@@ -248,6 +265,7 @@ export async function createAffiliateUser(req, res) {
         });
       } else {
         const affShortLink = await createAffShortLink(user_id, user.username);
+        console.log("affShortLink",affShortLink);
         const aff = await db.get_affiliatesDB().insertOne({
           user_id: user_id,
           is_vendor: false,
@@ -269,8 +287,9 @@ export async function createAffiliateUser(req, res) {
 
 //
 async function createAffShortLink(user_id, username) {
+  console.log("KKKKKKLLLLLIIINKKKKK");
   let shortLink;
-  const link = "https://scrooge.casino/?" + user_id + "";
+  const link = `${process.env.CLIENT}?uid=` + user_id + "";
   const config = {
     headers: {
       Authorization: "Bearer " + process.env.OPENMYLINK_API_KEY + "",
@@ -280,7 +299,7 @@ async function createAffShortLink(user_id, username) {
   const url = "https://openmy.link/api/url/add";
   const data = {
     url: link,
-    custom: username,
+    custom: "bbn",
     domain: "https://go.scrooge.to",
     metatitle: "Join me at Scrooge Casino!",
     metadescription:

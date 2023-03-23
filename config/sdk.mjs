@@ -78,7 +78,7 @@ export async function transferNFT(_user_id, _token_id, _address) {
       const transferStatus = await contractCasinoNFT
         .transfer(_address.trim(), _token_id, 1)
         .then((transfer) => {
-          console.log('Transfer Status: ', transfer.receipt.status);
+          console.log('Transfer Status: ', transfer);
           resp = true;
         });
     } catch (error) {
