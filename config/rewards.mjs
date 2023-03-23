@@ -573,12 +573,12 @@ export async function redeemPrize(req) {
       //console.log("post coupon code: ", coupon_code);
       if (prize.contract === "0xfA1BA18067aC6884fB26e329e60273488a247FC3") {
         console.log("OG");
-        curr_price = await getOGCurrentPrice();
+        curr_price = await useSDK.getOGCurrentPrice();
       } else if (
         prize.contract === "0x2e9F79aF51dD1bb56Bbb1627FBe4Cc90aa8985Dd"
       ) {
         console.log("JR");
-        curr_price = await getJRCurrentPrice();
+        curr_price = await useSDK.getJRCurrentPrice();
       }
       prize_token_qty = (prize_price / 100 / curr_price / 2).toFixed(0);
       console.log("prize_token_qty", prize_token_qty);
@@ -627,7 +627,8 @@ export async function redeemPrize(req) {
           { $inc: { ticket: -prize_price } }
         );
 
-      //  console.log("query3", query3);
+      console.log("prize_contract_name", prize_contract_name);
+      console.log("prize_token_type",prize_token_type);
 
       if (prize_contract_name === "OG") {
         use_sdk = useSDK.sdk_OG;
@@ -637,7 +638,7 @@ export async function redeemPrize(req) {
         use_sdk = useSDK.sdk_casino_nfts;
       } else if (prize_contract_name === "DL") {
         use_sdk = useSDK.sdk_DL;
-        console.log("usesdk", use_sdk);
+       // console.log("usesdk", use_sdk);
       } else if (prize_category === "Merch") {
         use_sdk = useSDK.sdk;
       } else {
@@ -686,11 +687,13 @@ export async function redeemPrize(req) {
         }
       } else if (prize_token_type === "erc1155") {
         //start erc1155 process
+       
 
         const sdk_wallet = await use_sdk.wallet.getAddress();
-        console.log(sdk_wallet);
-        balanceRaw = await useSDK.contractCasinoNFT.balanceOf(
-          sdk_wallet,
+         console.log("useSDK.contractCasinoNFT",sdk_wallet);
+        // balanceRaw = await use_sdk.wallet.balance(sdk_wallet);
+        balanceRaw = await useSDK.contractCasinoNFT.erc1155.balance(
+           sdk_wallet,
           prize_token_id
         );
         console.log("balraw", balanceRaw);
@@ -760,15 +763,15 @@ export async function redeemPrize(req) {
         } else {
           const sdk_wallet = await use_sdk.wallet.getAddress();
           console.log("sdk_wallet", sdk_wallet);
-          //   balanceRaw = await useSDK.contractDL.call("balanceOf", sdk_wallet);
-          balanceRaw = await use_sdk.wallet.balance(sdk_wallet);
+             balanceRaw = await useSDK.contractDL.call("balanceOf", sdk_wallet);
+         // balanceRaw = await use_sdk.wallet.balance(sdk_wallet);
           console.log("balanraw", balanceRaw);
           balance = parseInt(balanceRaw);
           console.log("balan", balance);
-          console.log("getall", await useSDK.contractDL.erc721.getAll());
+          // console.log("getall", await useSDK.contractDL.erc721.getAll());
           // Verify sdk wallet / contract has enough balance to disburse prize
-          //if (balance && balance >= prize_token_qty) {
-          if (true) {
+          if (balance && balance >= prize_token_qty) {
+          // if (true) {
             //sdk wallet has enough balance to allow prize redemption
             //check for redeem_action from prize record
             if (prize_redeem_action === "transfer") {
