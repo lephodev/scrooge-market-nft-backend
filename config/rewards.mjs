@@ -290,7 +290,7 @@ export async function claimHolderTokens(req) {
           .then((data) => {
             current_price = data.market_data.current_price.usd;
             OGValue = (current_price * bal * 0.1).toFixed(0);
-            resp = OGValue;
+            resp = {data:OGValue,code:200};
           })
           .catch((e) => {
             console.log(e);
@@ -343,17 +343,17 @@ export async function claimHolderTokens(req) {
                 parseInt(OGValue),
                 address
               ).then((data) => {
-                resp = OGValue;
+                resp = {data:OGValue,code:200};
               });
             });
         } else {
           //console.log("isClaimable is false");
-          resp = "ZERO! You are not allowed to claim yet.";
+          resp = {msg:"ZERO! You are not allowed to claim yet.",code:400};
         }
       });
     } else {
       //console.log("ZERO Balance");
-      resp = "ZERO! You do not hold enough Scrooge Coin crypto.";
+      resp = {msg:"ZERO! You do not hold enough Scrooge Coin crypto.",code:400};
     }
   }
   return resp;
