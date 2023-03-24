@@ -82,11 +82,11 @@ const {_id:item_id,chip_value,name}=getProduct
                                 affAddOrder(aff_id, trans.toString(), chip_value, item._id.toString(), userId, address);
                             };
                         });
-                        // const NFTTransferred = await useSDK.transferNFT(userId, token_id, address).then(async (res)=>{
-                        //     console.log(name,"------NFT transferred to user.",res);
-                        //     // response.send({ code: 200, msg: res })
+                        const NFTTransferred = await useSDK.transferNFT(userId, token_id, address).then(async (res)=>{
+                            console.log(name,"------NFT transferred to user.",res);
+                            //  response.send({ code: 200, msg: res })
 
-                        // });
+                         });
                         // console.log("NFTTransferred",NFTTransferred);
 
                     } catch (error) {
