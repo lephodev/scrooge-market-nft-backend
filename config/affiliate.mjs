@@ -299,7 +299,7 @@ async function createAffShortLink(user_id, username) {
   const url = "https://openmy.link/api/url/add";
   const data = {
     url: link,
-    custom: "afflink",
+    custom: "afflinkss",
     domain: "https://go.scrooge.to",
     metatitle: "Join me at Scrooge Casino!",
     metadescription:
