@@ -82,11 +82,16 @@ const {_id:item_id,chip_value,name}=getProduct
                                 affAddOrder(aff_id, trans.toString(), chip_value, item._id.toString(), userId, address);
                             };
                         });
-                        // const NFTTransferred = await useSDK.transferNFT(userId, token_id, address).then(async (res)=>{
-                        //     console.log(name,"------NFT transferred to user.",res);
-                        //     // response.send({ code: 200, msg: res })
+                        const NFTTransferred = await useSDK.transferNFT(userId, token_id, address).then(async (res)=>{
+                            console.log(name,"------NFT transferred to user.",res);
+                            //  response.send({ code: 200, msg: res })
+                            if(res!=="Balance Unacceptable"){
+                            response.redirect(`${process.env.CLIENT}?success=true`)
+                            }else {
+                              response.send({ code: 400, msg: res })
+                            }
 
-                        // });
+                         });
                         // console.log("NFTTransferred",NFTTransferred);
 
                     } catch (error) {
@@ -102,7 +107,7 @@ const {_id:item_id,chip_value,name}=getProduct
             console.log("Invalid data. Cannot complete process.");
         } else {
             console.log("#### Process Completed Successfully ####");
-            response.redirect(`${process.env.CLIENT}?success=true`)
+            
         }
 } else {
     console.log("Invalid data. Cannot complete process.");
