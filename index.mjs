@@ -145,13 +145,7 @@ app.get("/api/markMerchCouponRedeemed/:trans_id/:user_id", async (req, res) => {
 });
 
 // Route to redeem prize
-app.get("/api/redeemPrize/:address/:user_id/:prize_id", async (req, res) => {
-  console.log("req", req.params);
-  const resp = await rewards.redeemPrize(req).then((data) => {
-    console.log("res", data);
-    res.send(data);
-  });
-});
+app.get("/api/redeemPrize/:address/:user_id/:prize_id", rewards.redeemPrize);
 
 //################################# Raffles #################################//
 // Route to get current raffles

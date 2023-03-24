@@ -11,26 +11,28 @@ export async function addChips(_user_id, _qty, _address) {
     .get_scrooge_usersDB()
     .findOneAndUpdate({ _id: ObjectId(_user_id) }, { $inc: { wallet: _qty } })
     .then(async (user) => {
-      const queryCT = await db
-        .get_marketplace_chip_transactionsDB()
-        .insertOne({
-          user_id: user.value._id,
-          address: _address,
-          chips: _qty,
-          timestamp: new Date(),
-        })
-        let getUserData=await db.get_scrooge_usersDB().findOne({_id: ObjectId(_user_id)})
-        // console.log("getUserData",getUserData);
+      const queryCT = await db.get_marketplace_chip_transactionsDB().insertOne({
+        user_id: user.value._id,
+        address: _address,
+        chips: _qty,
+        timestamp: new Date(),
+      });
+      let getUserData = await db
+        .get_scrooge_usersDB()
+        .findOne({ _id: ObjectId(_user_id) });
+      // console.log("getUserData",getUserData);
 
-        const transactionPayload={
-          amount:_qty,
-          transactionType:"nft purchase",
-          prevWallet:getUserData?.wallet,
-          updatedWallet:getUserData?.wallet+_qty,
-          userId:user.value._id
-        }
-        // console.log("transactionPayload",transactionPayload);
-        await db.get_scrooge_transactionDB().insertOne(transactionPayload)
+      const transactionPayload = {
+        amount: _qty,
+        transactionType: "nft purchase",
+        prevWallet: getUserData?.wallet,
+        updatedWallet: getUserData?.wallet + _qty,
+        userId: user.value._id,
+      };
+      // console.log("transactionPayload",transactionPayload);
+      await db
+        .get_scrooge_transactionDB()
+        .insertOne(transactionPayload)
         .then((trans) => {
           trans_id = trans.insertedId;
         });
@@ -53,19 +55,20 @@ export async function getNextClaimDate(req, res) {
     collection = db.get_marketplace_daily_reward_token_claimsDB();
     qry = { user_id: user_id };
   }
-  const sort = { claimDate: -1 };
-  const cursor = collection.find(qry).sort(sort);
-  console.log("cursor", await cursor.toArray());
   try {
-    const data = await cursor.toArray();
-    console.log("----------", data);
+    const sort = { claimDate: -1 };
+    const data = await collection.find(qry).sort(sort).toArray();
+    //const data = await cursor.toArray();
+    console.log("------", data);
     if (typeof data[0] !== "undefined") {
       if (type === "daily") {
         lastClaimDate = data[0].claimDate;
         nextClaimDate = new Date(data[0].claimDate);
         nextClaimDate.setDate(nextClaimDate.getDate() + 1);
         data[0].nextClaimDate = nextClaimDate;
+        console.log("data---", data);
         if (typeof nextClaimDate != "undefined") {
+          console.log("data-=-", data);
           return res.status(200).send({ success: true, data: data });
         } else {
           return res.send({
@@ -94,6 +97,7 @@ export async function getNextClaimDate(req, res) {
       });
     }
   } catch (error) {
+    console.log("error", error);
     return res
       .status(500)
       .send({ success: false, message: "Error in Request Process" });
@@ -364,10 +368,10 @@ export async function getPrizes(req) {
   const sort = { price: 1 };
   let resp;
   const cursor = db.get_marketplace_prizesDB().find(qry).sort(sort);
-  console.log('cursor: ', cursor);
+  console.log("cursor: ", cursor);
 
   const arr = await cursor.toArray().then((data) => {
-    console.log('prizes arr: ', data);
+    console.log("prizes arr: ", data);
     resp = data;
   });
   return resp;
@@ -409,6 +413,7 @@ export async function postPrizeRedemption(
         markRedeemed: markRedeemed,
       })
       .then((trans) => {
+        console.log(trans);
         resp = true;
       });
   } catch (error) {
@@ -532,7 +537,7 @@ export async function updateDLClaimFlag(DL_token_obj_id) {
   return resp;
 }
 
-export async function redeemPrize(req) {
+export async function redeemPrize(req, res) {
   let resp;
   const user_id = req.params.user_id;
   const address = req.params.address;
@@ -573,12 +578,12 @@ export async function redeemPrize(req) {
       //console.log("post coupon code: ", coupon_code);
       if (prize.contract === "0xfA1BA18067aC6884fB26e329e60273488a247FC3") {
         console.log("OG");
-        curr_price = await getOGCurrentPrice();
+        curr_price = await useSDK.getOGCurrentPrice();
       } else if (
         prize.contract === "0x2e9F79aF51dD1bb56Bbb1627FBe4Cc90aa8985Dd"
       ) {
         console.log("JR");
-        curr_price = await getJRCurrentPrice();
+        curr_price = await useSDK.getJRCurrentPrice();
       }
       prize_token_qty = (prize_price / 100 / curr_price / 2).toFixed(0);
       console.log("prize_token_qty", prize_token_qty);
@@ -620,13 +625,6 @@ export async function redeemPrize(req) {
     user_ticket = user.ticket; //user's available ticket balance
     // verify user has more (or equal) tickets than price of prize
     if (user_ticket >= prize_price) {
-      const query3 = await db
-        .get_scrooge_usersDB()
-        .findOneAndUpdate(
-          { _id: ObjectId(user_id) },
-          { $inc: { ticket: -prize_price } }
-        );
-
       //  console.log("query3", query3);
 
       if (prize_contract_name === "OG") {
@@ -637,12 +635,13 @@ export async function redeemPrize(req) {
         use_sdk = useSDK.sdk_casino_nfts;
       } else if (prize_contract_name === "DL") {
         use_sdk = useSDK.sdk_DL;
-        console.log("usesdk", use_sdk);
+        //console.log("usesdk", use_sdk);
       } else if (prize_category === "Merch") {
         use_sdk = useSDK.sdk;
       } else {
         // prize_contract_name does not match any known contract names
         resp = "Invalid Prize Data";
+        return res.send({ success: false, message: resp });
       }
       if (prize_token_type === "erc20") {
         balanceRaw = await use_sdk.wallet.balance(prize_contract);
@@ -656,33 +655,63 @@ export async function redeemPrize(req) {
           if (prize_redeem_action === "transfer") {
             //initiate transfer from sdk wallet to redeemer wallet
             try {
-              //const transfer = await use_sdk.wallet.transfer(address, prize_token_qty, prize_contract);
-              //console.log('Status: ', transfer.receipt.status);
+              console.log(address);
+              console.log(useSDK.contractOG);
+              const transfer = await useSDK.contractOG.call(
+                "transfer",
+                address,
+                prize_token_qty
+              );
+              // const transfer = await use_sdk.wallet.transfer(
+              //   address,
+              //   prize_token_qty,
+              //   prize_contract
+              // );
+              const query3 = await db
+                .get_scrooge_usersDB()
+                .findOneAndUpdate(
+                  { _id: ObjectId(user_id) },
+                  { $inc: { ticket: -prize_price } }
+                );
+              console.log("transfer erc20 ", transfer);
               postPrizeRedemption(prize_id, user_id);
               resp = prize_name;
+              return res.status(200).send({ success: true, message: resp });
             } catch (error) {
+              console.log(error);
               //console.log('Transaction Failed');
               resp = "Transaction Failed";
+              return res.send({ success: false, message: resp });
             }
           } else if (prize_redeem_action === "burn") {
             //initiate burn from sdk wallet
             try {
               //const burn = await use_sdk.wallet.transfer(useSDK.BurnContractAddress, prize_token_qty, prize_contract);
               //console.log('Status: ', transfer.receipt.status);
+              const query3 = await db
+                .get_scrooge_usersDB()
+                .findOneAndUpdate(
+                  { _id: ObjectId(user_id) },
+                  { $inc: { ticket: -prize_price } }
+                );
               postPrizeRedemption(prize_id, user_id);
               resp = prize_name;
+              return res.status(200).send({ success: true, message: resp });
             } catch (error) {
               //console.log('Transaction Failed');
               resp = "Transaction Failed";
+              return res.send({ success: false, message: resp });
             }
           } else {
             // prize_redeem_action does not match any known redeem actions
             resp = "Invalid Prize Data";
+            return res.send({ success: false, message: resp });
           }
         } else {
           //sdk wallet does not have enough balance to allow prize redemption
           //console.log("Balance unacceptable");
           resp = "Balance Unacceptable";
+          return res.send({ success: false, message: resp });
         }
       } else if (prize_token_type === "erc1155") {
         //start erc1155 process
@@ -697,6 +726,7 @@ export async function redeemPrize(req) {
         balance = parseInt(balanceRaw);
         // Verify sdk wallet / contract has enough balance to disburse prize
         console.log("balance", balance);
+        console.log("prizeTokenQty", prize_token_qty);
         if (balance && balance >= prize_token_qty) {
           //sdk wallet has enough balance to allow prize redemption
           //check for redeem_action from prize record
@@ -709,24 +739,43 @@ export async function redeemPrize(req) {
                 prize_token_id,
                 prize_token_qty
               );
+
+              console.log("transferERC5511", transfer);
+              const query3 = await db
+                .get_scrooge_usersDB()
+                .findOneAndUpdate(
+                  { _id: ObjectId(user_id) },
+                  { $inc: { ticket: -prize_price } }
+                );
               postPrizeRedemption(prize_id, user_id);
               resp = prize_name;
+              return res.status(200).send({ success: true, message: resp });
             } catch (error) {
               resp = "Transaction Failed";
+              return res.send({ success: false, message: resp });
             }
           } else if (prize_redeem_action === "burn") {
             //initiate burn from sdk contract
             try {
               //const burn = await use_sdk.wallet.transfer(useSDK.BurnContractAddress, prize_token_qty, prize_contract);
               //const burn = await useSDK.contractCasinoNFT.burnTokens(prize_token_id, prize_token_qty);
+              const query3 = await db
+                .get_scrooge_usersDB()
+                .findOneAndUpdate(
+                  { _id: ObjectId(user_id) },
+                  { $inc: { ticket: -prize_price } }
+                );
               postPrizeRedemption(prize_id, user_id);
               resp = prize_name;
+              return res.status(200).send({ success: true, message: resp });
             } catch (error) {
               resp = "Transaction Failed";
+              return res.send({ success: false, message: resp });
             }
           } else {
             // prize_redeem_action does not match any known redeem actions
             resp = "Invalid Prize Data";
+            return res.send({ success: false, message: resp });
           }
         } else {
           //sdk wallet does not have enough balance to allow prize redemption
@@ -734,12 +783,18 @@ export async function redeemPrize(req) {
           console.log("else");
           resp = "Balance Unacceptable";
           console.log("resddp", resp);
-          return resp;
+          return res.send({ success: false, message: resp });
         }
       } else if (prize_token_type === "merch") {
         const markRedeemed = false;
         postPrizeRedemption(prize_id, user_id, coupon_code, markRedeemed);
         updateMerchClaimFlag(coupon_obj_id, user_id);
+        const query3 = await db
+          .get_scrooge_usersDB()
+          .findOneAndUpdate(
+            { _id: ObjectId(user_id) },
+            { $inc: { ticket: -prize_price } }
+          );
         const getUserByID = await commons
           .getUserByUserID(user_id)
           .then((getUser) => {
@@ -750,12 +805,14 @@ export async function redeemPrize(req) {
             );
           });
         resp = prize_name;
+        return res.status(200).send({ success: true, message: resp });
       } else if (prize_token_type === "erc721") {
         //start erc721 process
         //if there are no unclaimed NFTs in DL table, do not execute functions
         if (!DL_token_id) {
           //console.log("No DL NFTs available.");
           resp = "Prize Currently Unavailable";
+          return res.send({ success: false, message: resp });
         } else {
           const sdk_wallet = await use_sdk.wallet.getAddress();
           console.log("sdk_wallet", sdk_wallet);
@@ -764,10 +821,10 @@ export async function redeemPrize(req) {
           console.log("balanraw", balanceRaw);
           balance = parseInt(balanceRaw);
           console.log("balan", balance);
-          console.log("getall", await useSDK.contractDL.erc721.getAll());
+          //console.log("getall", await useSDK.contractDL.erc721.getAll());
           // Verify sdk wallet / contract has enough balance to disburse prize
-          //if (balance && balance >= prize_token_qty) {
-          if (true) {
+          if (balance && balance >= prize_token_qty) {
+            //if (true) {
             //sdk wallet has enough balance to allow prize redemption
             //check for redeem_action from prize record
             if (prize_redeem_action === "transfer") {
@@ -777,47 +834,66 @@ export async function redeemPrize(req) {
                 //const transfer = await useSDK.contractDL.call("safeTransferFrom", sdk_wallet, address, DL_token_id);
                 //update claim flag to true in ducky_lucks_prizes table
                 updateDLClaimFlag(DL_token_obj_id);
+                const query3 = await db
+                  .get_scrooge_usersDB()
+                  .findOneAndUpdate(
+                    { _id: ObjectId(user_id) },
+                    { $inc: { ticket: -prize_price } }
+                  );
                 postPrizeRedemption(prize_id, user_id);
+
                 resp = prize_name;
-                return resp;
+                return res.status(200).send({ success: true, message: resp });
               } catch (error) {
                 console.log("Error");
                 resp = "Transaction Failed";
-                return resp;
+                return res.send({ success: false, message: resp });
               }
             } else if (prize_redeem_action === "burn") {
               //initiate burn from sdk contract
               try {
                 //const burn = await useSDK.contractDL.call("burn", prize_token_id);
+                const query3 = await db
+                  .get_scrooge_usersDB()
+                  .findOneAndUpdate(
+                    { _id: ObjectId(user_id) },
+                    { $inc: { ticket: -prize_price } }
+                  );
                 postPrizeRedemption(prize_id, user_id);
                 resp = prize_name;
+                return res.status(200).send({ success: true, message: resp });
               } catch (error) {
                 //console.log('Transaction Failed');
                 resp = "Transaction Failed";
+                return res.send({ success: false, message: resp });
               }
             } else {
               // prize_redeem_action does not match any known redeem actions
               resp = "Invalid Prize Data";
+              return res.send({ success: false, message: resp });
             }
           } else {
             //sdk wallet does not have enough balance to allow prize redemption
             //console.log("Balance unacceptable");
             console.log("else721");
             resp = "Balance Unacceptable";
-            return resp;
+            return res.send({ success: false, message: resp });
           }
         }
       } else {
         //console.log("Prize token type not recognized.")
         resp = "Invalid Prize Data";
-        return resp;
+        return res.send({ success: false, message: resp });
       }
     } else {
       resp = "Not Enough Tickets";
-      return resp;
+      return res.send({ success: false, message: resp });
     }
   } catch (e) {
     console.log("outerCatch", e);
+    return res
+      .status(500)
+      .send({ success: false, message: "Error in Request Process" });
   }
 
   //   const query = db
