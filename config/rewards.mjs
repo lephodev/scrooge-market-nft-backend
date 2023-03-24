@@ -294,7 +294,7 @@ export async function claimHolderTokens(req) {
           .then((data) => {
             current_price = data.market_data.current_price.usd;
             OGValue = (current_price * bal * 0.1).toFixed(0);
-            resp = OGValue;
+            resp = { data: OGValue, code: 200 };
           })
           .catch((e) => {
             console.log(e);
@@ -347,17 +347,20 @@ export async function claimHolderTokens(req) {
                 parseInt(OGValue),
                 address
               ).then((data) => {
-                resp = OGValue;
+                resp = { data: OGValue, code: 200 };
               });
             });
         } else {
           //console.log("isClaimable is false");
-          resp = "ZERO! You are not allowed to claim yet.";
+          resp = { msg: "ZERO! You are not allowed to claim yet.", code: 400 };
         }
       });
     } else {
       //console.log("ZERO Balance");
-      resp = "ZERO! You do not hold enough Scrooge Coin crypto.";
+      resp = {
+        msg: "ZERO! You do not hold enough Scrooge Coin crypto.",
+        code: 400,
+      };
     }
   }
   return resp;
@@ -646,7 +649,7 @@ export async function redeemPrize(req, res) {
       if (prize_token_type === "erc20") {
         balanceRaw = await use_sdk.wallet.balance(prize_contract);
         balance = parseInt(balanceRaw.displayValue);
-        //console.log('Balance: ',balance);
+        console.log("Balance: ", use_sdk);
         // Verify sdk wallet / contract has enough balance to disburse prize
         console.log("bal", balance);
         if (balance && balance >= prize_token_qty) {
@@ -717,8 +720,9 @@ export async function redeemPrize(req, res) {
         //start erc1155 process
 
         const sdk_wallet = await use_sdk.wallet.getAddress();
-        console.log(sdk_wallet);
-        balanceRaw = await useSDK.contractCasinoNFT.balanceOf(
+        console.log("useSDK.contractCasinoNFT", sdk_wallet);
+        // balanceRaw = await use_sdk.wallet.balance(sdk_wallet);
+        balanceRaw = await useSDK.contractCasinoNFT.erc1155.balance(
           sdk_wallet,
           prize_token_id
         );
@@ -798,9 +802,10 @@ export async function redeemPrize(req, res) {
         const getUserByID = await commons
           .getUserByUserID(user_id)
           .then((getUser) => {
+            console.log("getUser", getUser, "CoupanCode", coupon_code);
             const affEmailSend = email.sendemail(
               "merchEmail",
-              getUser.email,
+              getUser?.email,
               coupon_code
             );
           });
@@ -816,8 +821,8 @@ export async function redeemPrize(req, res) {
         } else {
           const sdk_wallet = await use_sdk.wallet.getAddress();
           console.log("sdk_wallet", sdk_wallet);
-          //   balanceRaw = await useSDK.contractDL.call("balanceOf", sdk_wallet);
-          balanceRaw = await use_sdk.wallet.balance(sdk_wallet);
+          balanceRaw = await useSDK.contractDL.call("balanceOf", sdk_wallet);
+          // balanceRaw = await use_sdk.wallet.balance(sdk_wallet);
           console.log("balanraw", balanceRaw);
           balance = parseInt(balanceRaw);
           console.log("balan", balance);
