@@ -660,16 +660,11 @@ export async function redeemPrize(req, res) {
             try {
               console.log(address);
               console.log(useSDK.contractOG);
-              const transfer = await useSDK.contractOG.call(
-                "transfer",
+              const transfer = await use_sdk.wallet.transfer(
                 address,
-                prize_token_qty
+                prize_token_qty,
+                prize_contract
               );
-              // const transfer = await use_sdk.wallet.transfer(
-              //   address,
-              //   prize_token_qty,
-              //   prize_contract
-              // );
               const query3 = await db
                 .get_scrooge_usersDB()
                 .findOneAndUpdate(
