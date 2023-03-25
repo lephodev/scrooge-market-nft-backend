@@ -109,7 +109,7 @@ const {_id:item_id,chip_value,name}=getProduct
             response.redirect(`${process.env.CLIENT+"/payment"}?status=fail`)
         } else {
             console.log("#### Process Completed Successfully ####");
-            response.redirect(`${process.env.CLIENT+"/payment"}?status=success`)
+            // response.redirect(`${process.env.CLIENT+"/payment"}?status=success`)
             
         }
 } else {
