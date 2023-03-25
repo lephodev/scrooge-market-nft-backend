@@ -42,7 +42,7 @@ const session = await stripe.checkout.sessions.create({
     ],
     mode: 'payment',
     success_url: `${process.env.SERVER}/webhook/stripe?session_id={CHECKOUT_SESSION_ID}&method=${"card"}&userId=${userId}&address=${address} &token_id=${id}&aff_id=${affID}`,
-    cancel_url: `${process.env.CLIENT}?success=fail`
+    cancel_url: `${process.env.CLIENT}/payment?status=fail`
   })
 
 //   console.log("session",session);
@@ -86,9 +86,10 @@ const {_id:item_id,chip_value,name}=getProduct
                             console.log(name,"------NFT transferred to user.",res);
                             //  response.send({ code: 200, msg: res })
                             if(res!=="Balance Unacceptable"){
-                            response.redirect(`${process.env.CLIENT}?success=true`)
+                            response.redirect(`${process.env.CLIENT+"/payment"}?status=success`)
                             }else {
-                              response.send({ code: 400, msg: res })
+                            //   response.send({ code: 400, msg: res })
+                              response.redirect(`${process.env.CLIENT+"/payment"}?status=fail`)
                             }
 
                          });
@@ -105,8 +106,10 @@ const {_id:item_id,chip_value,name}=getProduct
         }
         if(isError){
             console.log("Invalid data. Cannot complete process.");
+            response.redirect(`${process.env.CLIENT+"/payment"}?status=fail`)
         } else {
             console.log("#### Process Completed Successfully ####");
+            response.redirect(`${process.env.CLIENT+"/payment"}?status=success`)
             
         }
 } else {
