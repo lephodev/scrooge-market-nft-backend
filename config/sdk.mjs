@@ -24,7 +24,7 @@ export const sdk_casino_nfts = ThirdwebSDK.fromPrivateKey(
   "binance"
 );
 
-console.log("sdk_casino_nfts",sdk_casino_nfts);
+console.log("sdk_casino_nfts", sdk_casino_nfts);
 export const contractCasinoNFT = await sdk_casino_nfts.getContract(
   CasinoNFTEditionContractAddress,
   "edition"
@@ -60,15 +60,20 @@ export const sdk_DL_wallet = await sdk_DL.wallet.getAddress();
 
 //functions
 export async function transferNFT(_user_id, _token_id, _address) {
-  console.log("transferNFT",_user_id, _token_id, _address.trim(),"sdk_casino_nfts_wallet",sdk_casino_nfts_wallet);
+  console.log(
+    "transferNFT",
+    _user_id,
+    _token_id,
+    _address.trim(),
+    "sdk_casino_nfts_wallet",
+    sdk_casino_nfts_wallet
+  );
   let resp;
   const balanceRaw = await contractCasinoNFT.balanceOf(
     sdk_casino_nfts_wallet,
     _token_id
   );
-  console.log("balanceRaw",balanceRaw);
   const balance = parseInt(balanceRaw);
-  console.log("balance===?>>>>",balance);
   // Verify sdk wallet / contract has enough balance to disburse prize
   if (balance && balance >= 1) {
     //sdk wallet has enough balance to allow prize redemption
@@ -78,12 +83,10 @@ export async function transferNFT(_user_id, _token_id, _address) {
       const transferStatus = await contractCasinoNFT
         .transfer(_address.trim(), _token_id, 1)
         .then((transfer) => {
-          console.log('Transfer Status: ', transfer);
+          console.log("Transfer Status: ", transfer);
           resp = true;
         });
     } catch (error) {
-      console.log("error",error);
-      console.log("Transaction Failed");
       resp = false;
     }
   } else {
@@ -94,22 +97,18 @@ export async function transferNFT(_user_id, _token_id, _address) {
   return resp;
 }
 
-export async function getOGBalance(req) {
+export async function getOGBalance(req, res) {
   let resp;
-  console.log(req.params.address);
-  const address = req.params.address;
-  const balRaw = await contractOG.erc20
-    .balance(address)
-    .then(async (rawBal) => {
-      console.log("rawBal", rawBal);
-      if (rawBal.value > 0) {
-        const bal = parseInt(rawBal.value / 10 ** 18);
-        resp = bal.toString();
-      } else {
-        resp = "0";
-      }
-    });
-  return resp;
+  const { address, signer } = req.params;
+  try {
+    const rawBal = await contractOG.erc20.balance(address);
+    const bal = parseInt(rawBal.value / 10 ** 18);
+    return res.status(200).send({ success: true, data: bal.toString() });
+  } catch (error) {
+    return res
+      .status(500)
+      .send({ success: false, message: "Error in Request Process" });
+  }
 }
 
 // Route to disburse Free Tokens

@@ -9,7 +9,10 @@ import * as email from "./email/email.mjs";
 import * as chatgpt from "./config/chatgpt.mjs";
 import * as common from "./config/commons.mjs";
 import * as utilities from "./config/utilities.mjs";
-import { processStripeCheckOut, processStripeWebhook } from "./config/stripe.mjs";
+import {
+  processStripeCheckOut,
+  processStripeWebhook,
+} from "./config/stripe.mjs";
 import cors from "cors";
 const app = express();
 const PORT = process.env.PORT;
@@ -145,13 +148,7 @@ app.get("/api/markMerchCouponRedeemed/:trans_id/:user_id", async (req, res) => {
 });
 
 // Route to redeem prize
-app.get("/api/redeemPrize/:address/:user_id/:prize_id", async (req, res) => {
-  console.log("req", req.params);
-  const resp = await rewards.redeemPrize(req).then((data) => {
-    console.log("res", data);
-    res.send(data);
-  });
-});
+app.get("/api/redeemPrize/:address/:user_id/:prize_id", rewards.redeemPrize);
 
 //################################# Raffles #################################//
 // Route to get current raffles
@@ -287,20 +284,16 @@ app.get(
   "/webhook/stripe",
   express.raw({ type: "application/json" }),
   (request, response) => {
-    console.log("reee", request.query, request.params, request.body)
-    const res = processStripeWebhook(request,response);
+    console.log("reee", request.query, request.params, request.body);
+    const res = processStripeWebhook(request, response);
     // response.send();
   }
 );
-app.post(
-  "/api/user/depositMoney",
-  (request, response) => {
-    // console.log("request",request?.body
-    // );
-    processStripeCheckOut(request, response);
-   
-  }
-);
+app.post("/api/user/depositMoney", (request, response) => {
+  // console.log("request",request?.body
+  // );
+  processStripeCheckOut(request, response);
+});
 
 //################################# User #################################//
 
@@ -317,11 +310,7 @@ app.get("/api/encrypt/:text", (req, res) => {
 
 //################################# Wallet #################################//
 // Route to get OG Balance
-app.get("/api/getOGBalance/:address", async (req, res) => {
-  const resp = await useSDK.getOGBalance(req).then((data) => {
-    res.send(data);
-  });
-});
+app.get("/api/getOGBalance/:address", useSDK.getOGBalance);
 
 // Route to get user's NFT balance
 app.get(
