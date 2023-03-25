@@ -3,6 +3,8 @@ import affAddOrder from "./affiliate.mjs";
 import { addChips } from "./rewards.mjs";
 import OG_ABI from "./OG_ABI.json" assert { type: "json" };
 import JR_ABI from "./JR_ABI.json" assert { type: "json" };
+import { ObjectId } from 'mongodb';
+import * as db from './mongodb.mjs';
 
 export const sdk = new ThirdwebSDK("https://bsc-dataseed4.binance.org/");
 export const CasinoNFTEditionContractAddress =
@@ -59,31 +61,53 @@ export const contractDL = await sdk_DL.getContract(DLContractAddress);
 export const sdk_DL_wallet = await sdk_DL.wallet.getAddress();
 
 //functions
-export async function transferNFT(_user_id, _token_id, _address) {
+export async function transferNFT(_user_id, _token_id, _address,order_total) {
   console.log(
     "transferNFT",
     _user_id,
     _token_id,
     _address.trim(),
     "sdk_casino_nfts_wallet",
-    sdk_casino_nfts_wallet
+    sdk_casino_nfts_wallet,
+    "order_total",
+    order_total
+    
   );
+  const commission = (0.05*order_total).toFixed(0);
+console.log("Commision",commission
+);
   let resp;
   const balanceRaw = await contractCasinoNFT.balanceOf(
     sdk_casino_nfts_wallet,
     _token_id
   );
   const balance = parseInt(balanceRaw);
+  console.log("jivanBlance",balance);
   // Verify sdk wallet / contract has enough balance to disburse prize
   if (balance && balance >= 1) {
     //sdk wallet has enough balance to allow prize redemption
-    //console.log("Transferring NFT.......");
+  console.log("Transferring NFT.......");
     //initiate transfer from sdk wallet to redeemer wallet
     try {
+        
       const transferStatus = await contractCasinoNFT
         .transfer(_address.trim(), _token_id, 1)
-        .then((transfer) => {
+        .then(async(transfer) => {
           console.log("Transfer Status: ", transfer);
+          let findUserAff=await db.get_scrooge_usersDB()
+          .findOne({ _id: ObjectId(_user_id) })
+          // console.log("avvavavva",findUserAff);
+          let comisData={
+            id:_user_id,
+            commision:parseInt(commission)
+          }
+          const query3 = await db
+                        .get_scrooge_usersDB()
+                        .findOneAndUpdate(
+                          { _id: ObjectId(findUserAff?.refrenceId) },
+                          { $inc: { wallet: parseInt(commission) }, $push: { affliateUser: comisData  } }
+                        )
+
           resp = true;
         });
     } catch (error) {
