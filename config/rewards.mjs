@@ -28,6 +28,7 @@ export async function addChips(_user_id, _qty, _address) {
         prevWallet: getUserData?.wallet,
         updatedWallet: getUserData?.wallet + _qty,
         userId: user.value._id,
+        updatedTicket:getUserData?.ticket+_qty
       };
       // console.log("transactionPayload",transactionPayload);
       await db
@@ -542,6 +543,7 @@ export async function updateDLClaimFlag(DL_token_obj_id) {
 
 export async function redeemPrize(req, res) {
   let resp;
+  let trans_id;
   const user_id = req.params.user_id;
   const address = req.params.address;
   const prize_id = req.params.prize_id;
@@ -633,6 +635,7 @@ export async function redeemPrize(req, res) {
       if (prize_contract_name === "OG") {
         use_sdk = useSDK.sdk_OG;
       } else if (prize_contract_name === "JR") {
+        console.log("JRRRRR");
         use_sdk = useSDK.sdk_JR;
       } else if (prize_contract_name === "Casino NFTS") {
         use_sdk = useSDK.sdk_casino_nfts;
@@ -794,6 +797,31 @@ export async function redeemPrize(req, res) {
             { _id: ObjectId(user_id) },
             { $inc: { ticket: -prize_price } }
           );
+          let getUserData = await db
+          .get_scrooge_usersDB()
+          .findOne({ _id: ObjectId(user_id) });
+         console.log("getUserData",getUserData);
+  
+        const transactionPayload = {
+          amount: prize_price,
+          transactionType: "Redeem",
+          prevWallet: getUserData?.wallet,
+          updatedWallet: getUserData?.wallet + prize_price,
+          userId: ObjectId(user_id),
+          updatedTicket:getUserData?.ticket+prize_price
+        };
+        let trans_id
+         console.log("transactionPayload",transactionPayload);
+        await db
+          .get_scrooge_transactionDB()
+          .insertOne(transactionPayload)
+          .then((trans) => {
+            console.log("transtranstrans",trans);
+            trans_id = trans.insertedId;
+          }).catch((e)=>{
+            console.log("e",e);
+          });
+      
         const getUserByID = await commons
           .getUserByUserID(user_id)
           .then((getUser) => {
