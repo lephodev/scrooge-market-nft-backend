@@ -23,7 +23,7 @@ const balanceRaw = await useSDK.contractCasinoNFT.balanceOf(
   const balance = parseInt(balanceRaw);
 
 console.log("getProduct",balance);
-if(10>0){
+
 const session = await stripe.checkout.sessions.create({
     payment_method_types: ['card'],
     line_items: [
@@ -48,10 +48,7 @@ const session = await stripe.checkout.sessions.create({
 //   console.log("session",session);
 
    res.send({ code: 200, id: session.id })
-}
-else {
-    res.send({ code: 400, msg: "balance Unacceptable" }) 
-}
+
 }
 
 /* Stripe Webhooks */
