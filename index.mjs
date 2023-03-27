@@ -259,11 +259,14 @@ app.get("/api/claimDailyRewards/:user_id", async (req, res) => {
 });
 
 // Route to claim holder monthly Tokens
-app.get("/api/claimHolderTokens/:address/:user_id", async (req, res) => {
-  const resp = await rewards.claimHolderTokens(req).then((data) => {
-    res.send(data);
-  });
-});
+app.get(
+  "/api/claimHolderTokens/:address/:OGbalance/:user_id",
+  async (req, res) => {
+    const resp = await rewards.claimHolderTokens(req).then((data) => {
+      res.send(data);
+    });
+  }
+);
 
 //################################# Sharable Data #################################//
 // Route to get Sharable Messages
