@@ -893,6 +893,33 @@ export async function redeemPrize(req, res) {
       .status(500)
       .send({ success: false, message: "Error in Request Process" });
   }
+}
+  export async function convertPrice(req,res) {
+    let resp;
+    try {
+      // console.log("dbPrice",req.params.convertPrice);
+      let amt=parseInt(req.params.convertPrice)
+      let userId=req.params.user_id
+      console.log("amt",amt);
+                await db
+                  .get_scrooge_usersDB()
+                  .findOneAndUpdate(
+                    { _id: ObjectId(userId) },
+                    { $inc: { ticket: -amt,wallet:amt }}
+                  );
+                 let fData= await db.get_scrooge_usersDB()
+                  .findOne(
+                    { _id: ObjectId(userId) } 
+                  );
+                  resp = "Succesfully converted";
+                  return res.send({ code: 200, message: resp,data:fData });
+        
+    } catch (error) {
+      console.log(error);
+      resp = false;
+    }
+    return resp;
+  }
 
   //   const query = db
   //     .get_marketplace_prizesDB()
@@ -1147,4 +1174,4 @@ export async function redeemPrize(req, res) {
   //           console.log('error', e);
   //         });
   //     });
-}
+

@@ -332,6 +332,11 @@ app.get("/api/getWalletDLBalance/:address", async (req, res) => {
   });
 });
 
+app.get("/api/coverttickettotoken/:convertPrice/:user_id", async (req, res) => {
+  const resp = await rewards.convertPrice(req,res)
+  });
+
+
 app.listen(PORT, () => {
   console.log("Server is running.", PORT);
 });
