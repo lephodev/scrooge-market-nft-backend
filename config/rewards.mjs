@@ -275,6 +275,7 @@ export async function claimDailyRewards(req) {
 // Route to claim holder monthly Tokens
 export async function claimHolderTokens(req) {
   let resp;
+  const bal = req.params.OGbalance;
   const address = req.params.address;
   const user_id = req.params.user_id;
   let isClaimable = false,
@@ -282,25 +283,22 @@ export async function claimHolderTokens(req) {
     OGValue,
     lastClaimDate,
     current_price;
-  if (address && user_id) {
-    const balRaw = await useSDK.contractOG.erc20
-      .balance(address)
-      .then(async (rawBal) => {
-        const bal = parseInt(rawBal.value / 10 ** 18);
-        //console.log('Wallet OG Balance: ',bal);
-        await fetch(
-          "https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/0xfa1ba18067ac6884fb26e329e60273488a247fc3"
-        )
-          .then((response) => response.json())
-          .then((data) => {
-            current_price = data.market_data.current_price.usd;
-            OGValue = (current_price * bal * 0.1).toFixed(0);
-            resp = { data: OGValue, code: 200 };
-          })
-          .catch((e) => {
-            console.log(e);
-            resp = false;
-          });
+  if (address && user_id && bal) {
+    await fetch(
+      "https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/0xfa1ba18067ac6884fb26e329e60273488a247fc3"
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("data", data.market_data.current_price);
+        console.log("bal", bal);
+        current_price = data.market_data.current_price.usd;
+        OGValue = (current_price * bal * 0.1).toFixed(0);
+        console.log(OGValue);
+        resp = { data: OGValue, code: 200 };
+      })
+      .catch((e) => {
+        console.log(e);
+        resp = false;
       });
     //console.log('Value: ',OGValue);
     if (OGValue > 0) {
