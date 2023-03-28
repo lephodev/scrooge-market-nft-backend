@@ -249,8 +249,9 @@ export async function getWalletDLBalance(req) {
   let balanceRaw, balance, resp;
   const address = req.params.address;
   if (address) {
-    balanceRaw = await contractDL.call("balanceOf", address);
+    balanceRaw = await contractDL.erc721.balance(address);
     balance = parseInt(balanceRaw);
+
     if (balance > 0) {
       resp = balance.toString();
     } else {
