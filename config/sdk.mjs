@@ -26,7 +26,7 @@ export const sdk_casino_nfts = ThirdwebSDK.fromPrivateKey(
   "binance"
 );
 
-console.log("sdk_casino_nfts", sdk_casino_nfts);
+// console.log("sdk_casino_nfts", sdk_casino_nfts);
 export const contractCasinoNFT = await sdk_casino_nfts.getContract(
   CasinoNFTEditionContractAddress,
   "edition"
@@ -187,6 +187,7 @@ export async function getWalletNFTBalanceByTokenID(req) {
 }
 
 export async function getOGCurrentPrice() {
+  console.log("jivvvvaavvavannnn");
   let curr_price;
   await fetch(
     "https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/0xfa1ba18067ac6884fb26e329e60273488a247fc3"
@@ -199,6 +200,8 @@ export async function getOGCurrentPrice() {
       console.log(e);
       curr_price = false;
     });
+
+    console.log("curr_pricecurr_pricecurr_price",curr_price);
   return curr_price;
 }
 
