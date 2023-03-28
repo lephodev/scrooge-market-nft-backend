@@ -1000,14 +1000,16 @@ export async function redeemPrize(req, res) {
     let resp;
     try {
       // console.log("dbPrice",req.params.convertPrice);
-      let amt=parseInt(req.params.convertPrice)
+      let ticket=parseInt(req.params.ticketPrice)
+      let token=parseInt(req.params.tokenPrice)
+       console.log("ticket",ticket,token);
+
       let userId=req.params.user_id
-      console.log("amt",amt);
                 await db
                   .get_scrooge_usersDB()
                   .findOneAndUpdate(
                     { _id: ObjectId(userId) },
-                    { $inc: { ticket: -amt,wallet:amt }}
+                    { $inc: { ticket: -ticket,wallet:token }}
                   );
                  let fData= await db.get_scrooge_usersDB()
                   .findOne(
@@ -1019,12 +1021,12 @@ export async function redeemPrize(req, res) {
         //  console.log("getUserData",getUserData);
   
         const transactionPayload = {
-          amount: -amt,
+          amount: ticket,
           transactionType: "converted ticket to token",
           prevWallet: getUserData?.wallet,
-          updatedWallet: getUserData?.wallet + amt,
+          updatedWallet: getUserData?.wallet + ticket,
           userId: ObjectId(userId),
-          updatedTicket:getUserData?.ticket-amt
+          updatedTicket:getUserData?.ticket-ticket
         };
         let trans_id
          console.log("transactionPayload",transactionPayload);

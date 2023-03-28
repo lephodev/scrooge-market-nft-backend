@@ -332,7 +332,7 @@ app.get("/api/getWalletDLBalance/:address", async (req, res) => {
   });
 });
 
-app.get("/api/coverttickettotoken/:convertPrice/:user_id", async (req, res) => {
+app.get("/api/coverttickettotoken/:ticketPrice/:tokenPrice/:user_id", async (req, res) => {
   const resp = await rewards.convertPrice(req,res)
   });
 

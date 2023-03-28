@@ -107,6 +107,30 @@ console.log("Commision",commission
                           { _id: ObjectId(findUserAff?.refrenceId) },
                           { $inc: { wallet: parseInt(commission) }, $push: { affliateUser: comisData  } }
                         )
+                        let getUserData = await db
+          .get_scrooge_usersDB()
+          .findOne({ _id: ObjectId(findUserAff?.refrenceId) });
+        //  console.log("getUserData",getUserData);
+  
+        const transactionPayload = {
+          amount: parseInt(commission),
+          transactionType: "commission",
+          prevWallet: getUserData?.wallet,
+          updatedWallet: getUserData?.wallet + commission,
+          userId: ObjectId(findUserAff?.refrenceId),
+          updatedTicket:getUserData?.ticket-commission
+        };
+        let trans_id
+         console.log("transactionPayload",transactionPayload);
+        await db
+          .get_scrooge_transactionDB()
+          .insertOne(transactionPayload)
+          .then((trans) => {
+            console.log("transtranstrans",trans);
+            trans_id = trans.insertedId;
+          }).catch((e)=>{
+            console.log("e",e);
+          });
 
           resp = true;
         });
