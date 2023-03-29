@@ -264,7 +264,7 @@ export async function checkPurchaseEvent() {
     // Configure event filters (filter on indexed event parameters)
     filters: {
         from: "0x77eA7d7428178f676a16E620E705e8fAF63402B6",
-        to: "0xEcc9A9EFB21e71c2a794DEb28CA512dD05363a45",
+        to: "0x29efb15bdcd0a6ce5bcf0b7811f227080fba0427",
     },
     };
 
