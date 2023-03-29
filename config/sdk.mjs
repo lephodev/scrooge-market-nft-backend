@@ -160,30 +160,69 @@ export async function getOGBalance(req, res) {
 }
 
 // Route to disburse Free Tokens
-export async function getFreeTokens(req) {
+// export async function getFreeTokens(req) {
+//   let resp;
+//   const address = req.params.address;
+//   const token_id = req.params.token_id;
+//   const user_id = req.params.user_id;
+//   const qty = req.params.qty;
+//   const aff_id = req.params.aff_id;
+
+//   console.log("address==>>",address,"token_id===>>",token_id,"user_id===>>>",user_id,"qty===>>",qty,"aff_id===>>",aff_id);
+  // if (address && token_id && user_id) {
+  //   const query = await db
+  //     .get_marketplace_itemsDB()
+  //     .findOne({ token_id: parseInt(token_id) })
+  //     .then(async (item) => {
+  //       console.log("itemDatatataa");
+  //       const chipsAdded = await addChips(
+  //         user_id,
+  //         parseInt(item.chip_value),
+  //         address
+  //       ).then((trans) => {
+  //         console.log("trans",trans);
+  //         if (aff_id && aff_id != user_id) {
+  //           affAddOrder(
+  //             aff_id,
+  //             trans.toString(),
+  //             item.chip_value,
+  //             item._id.toString(),
+  //             user_id,
+  //             address
+  //           );
+  //         }
+  //         resp = item.chip_value.toString();
+  //       });
+  //     });
+  // }
+  // return resp;
+// }
+export async function getFreeTokens(req,res) {
+//  console.log("Calleddddd getFreeTokens",req.body);
+ try {
   let resp;
-  const address = req.params.address;
-  const token_id = req.params.token_id;
-  const user_id = req.params.user_id;
-  const qty = req.params.qty;
-  const aff_id = req.params.aff_id;
-  if (address && token_id && user_id) {
+  
+  const {address,token_id,userid,qty,aff_id}=req?.body|| {}
+  //  console.log("address==>>",address,"token_id===>>",token_id,"user_id===>>>",userid,"qty===>>",qty,"aff_id===>>",aff_id);
+   if (address && token_id && userid) {
     const query = await db
       .get_marketplace_itemsDB()
       .findOne({ token_id: parseInt(token_id) })
       .then(async (item) => {
+        // console.log("itemDatatataa",item);
         const chipsAdded = await addChips(
-          user_id,
+          userid,
           parseInt(item.chip_value),
           address
         ).then((trans) => {
-          if (aff_id && aff_id != user_id) {
+          // console.log("trans",trans);
+          if (aff_id && aff_id != userid) {
             affAddOrder(
               aff_id,
               trans.toString(),
               item.chip_value,
               item._id.toString(),
-              user_id,
+              userid,
               address
             );
           }
@@ -191,7 +230,12 @@ export async function getFreeTokens(req) {
         });
       });
   }
-  return resp;
+  res.send(resp);
+  
+  
+ } catch (error) {
+  console.log("error",error);
+ }
 }
 
 // Route to get user's NFT balance
