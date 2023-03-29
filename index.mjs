@@ -108,14 +108,25 @@ app.get("/api/sendEmail/:to/:subject/:body", async (req, res) => {
 });
 
 //################################# Items #################################//
-app.get(
-  "/api/getFreeTokens/:address/:token_id/:user_id/:qty/:aff_id",
+// app.get(
+//   "/api/getFreeTokens/:address/:token_id/:user_id/:qty/:aff_id",
+//   async (req, res) => {
+//     const resp = await useSDK.getFreeTokens(req).then((data) => {
+//       res.send(data);
+//     });
+//   }
+// );
+
+app.post(
+  "/api/getFreeTokens",
   async (req, res) => {
-    const resp = await useSDK.getFreeTokens(req).then((data) => {
-      res.send(data);
-    });
+    useSDK.getFreeTokens(req, res);
+    // const resp = await useSDK.getFreeTokens(req).then((data) => {
+    //   res.send(data);
+    // });
   }
 );
+
 
 app.get("/api/getItems/:type", async (req, res) => {
   const resp = await rewards.getItems(req).then((data) => {

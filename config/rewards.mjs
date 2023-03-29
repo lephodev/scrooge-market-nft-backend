@@ -5,6 +5,7 @@ import * as commons from "./commons.mjs";
 import { ObjectId } from "mongodb";
 
 export async function addChips(_user_id, _qty, _address) {
+  console.log("Chpis Added");
   let trans_id;
   // scrooge db transaciton for this users with field prevwallet, updatedWallet,amount, source - monthly claim
   const query = await db
@@ -17,6 +18,8 @@ export async function addChips(_user_id, _qty, _address) {
         chips: _qty,
         timestamp: new Date(),
       });
+      console.log("queryCT queryCT");
+
       let getUserData = await db
         .get_scrooge_usersDB()
         .findOne({ _id: ObjectId(_user_id) });
