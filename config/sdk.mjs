@@ -198,18 +198,18 @@ export async function getOGBalance(req, res) {
   // return resp;
 // }
 export async function getFreeTokens(req,res) {
-//  console.log("Calleddddd getFreeTokens",req.body);
+  console.log("Calleddddd getFreeTokens",req.body);
  try {
   let resp;
   
   const {address,token_id,userid,qty,aff_id}=req?.body|| {}
-  //  console.log("address==>>",address,"token_id===>>",token_id,"user_id===>>>",userid,"qty===>>",qty,"aff_id===>>",aff_id);
+  console.log("address==>>",address,"token_id===>>",token_id,"user_id===>>>",userid,"qty===>>",qty,"aff_id===>>",aff_id);
    if (address && token_id && userid) {
     const query = await db
       .get_marketplace_itemsDB()
       .findOne({ token_id: parseInt(token_id) })
       .then(async (item) => {
-        // console.log("itemDatatataa",item);
+         console.log("itemDatatataa",item);
         const chipsAdded = await addChips(
           userid,
           parseInt(item.chip_value),
