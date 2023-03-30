@@ -330,6 +330,7 @@ export async function claimHolderTokens(req) {
               user_id: user_id,
               qty: parseInt(OGValue),
               claimDate: new Date(),
+              nextClaimDate: nextmonth,
             })
             .then(async (trans) => {
               //console.log("Transaction recorded");
