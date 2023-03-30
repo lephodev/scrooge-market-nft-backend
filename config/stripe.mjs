@@ -14,11 +14,13 @@ export async function processStripeCheckOut(req, res){
     
    
 console.log("request",req.body);
-const { asset : { name, description, image },buyoutCurrencyValuePerToken: { displayValue}, address, userId,id, affID } = req.body
+const { asset : { name, description, image,id },buyoutCurrencyValuePerToken: { displayValue}, address, userId, affID } = req.body
 const balanceRaw = await useSDK.contractCasinoNFT.balanceOf(
     useSDK.sdk_casino_nfts_wallet,
     id
   );
+
+  console.log("IDDDDDDDDDDDDDDDDDDDDDDDDDDD",id);
   console.log("balanceRawJivan",balanceRaw);
   const balance = parseInt(balanceRaw);
   if(balance>0){
