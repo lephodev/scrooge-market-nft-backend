@@ -117,16 +117,12 @@ app.get("/api/sendEmail/:to/:subject/:body", async (req, res) => {
 //   }
 // );
 
-app.post(
-  "/api/getFreeTokens",
-  async (req, res) => {
-    useSDK.getFreeTokens(req, res);
-    // const resp = await useSDK.getFreeTokens(req).then((data) => {
-    //   res.send(data);
-    // });
-  }
-);
-
+app.post("/api/getFreeTokens", async (req, res) => {
+  useSDK.getFreeTokens(req, res);
+  // const resp = await useSDK.getFreeTokens(req).then((data) => {
+  //   res.send(data);
+  // });
+});
 
 app.get("/api/getItems/:type", async (req, res) => {
   const resp = await rewards.getItems(req).then((data) => {
@@ -271,7 +267,7 @@ app.get("/api/claimDailyRewards/:user_id", async (req, res) => {
 
 // Route to claim holder monthly Tokens
 app.get(
-  "/api/claimHolderTokens/:address/:OGbalance/:user_id",
+  "/api/claimHolderTokens/:address/:OGbalance/:currentPrice/:user_id",
   async (req, res) => {
     const resp = await rewards.claimHolderTokens(req).then((data) => {
       res.send(data);
@@ -343,10 +339,12 @@ app.get("/api/getWalletDLBalance/:address", async (req, res) => {
   });
 });
 
-app.get("/api/coverttickettotoken/:ticketPrice/:tokenPrice/:user_id", async (req, res) => {
-  const resp = await rewards.convertPrice(req,res)
-  });
-
+app.get(
+  "/api/coverttickettotoken/:ticketPrice/:tokenPrice/:user_id",
+  async (req, res) => {
+    const resp = await rewards.convertPrice(req, res);
+  }
+);
 
 app.listen(PORT, () => {
   console.log("Server is running.", PORT);
