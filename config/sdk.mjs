@@ -3,8 +3,9 @@ import affAddOrder from "./affiliate.mjs";
 import { addChips } from "./rewards.mjs";
 import OG_ABI from "./OG_ABI.json" assert { type: "json" };
 import JR_ABI from "./JR_ABI.json" assert { type: "json" };
-import { ObjectId } from 'mongodb';
-import * as db from './mongodb.mjs';
+import { ObjectId } from "mongodb";
+import * as db from "./mongodb.mjs";
+import { allChains } from "wagmi-core";
 
 export const sdk = new ThirdwebSDK("https://bsc-dataseed4.binance.org/");
 export const CasinoNFTEditionContractAddress =
@@ -60,8 +61,15 @@ export const sdk_DL = ThirdwebSDK.fromPrivateKey(
 export const contractDL = await sdk_DL.getContract(DLContractAddress);
 export const sdk_DL_wallet = await sdk_DL.wallet.getAddress();
 
+export async function getDLNFTs(req, res) {
+  const { address } = req.params;
+  const allNFTs = await contractDL.erc721.getAll(address);
+  console.log(contractDL);
+  res.send({ allNFTs });
+}
+
 //functions
-export async function transferNFT(_user_id, _token_id, _address,order_total) {
+export async function transferNFT(_user_id, _token_id, _address, order_total) {
   console.log(
     "transferNFT",
     _user_id,
@@ -71,66 +79,66 @@ export async function transferNFT(_user_id, _token_id, _address,order_total) {
     sdk_casino_nfts_wallet,
     "order_total",
     order_total
-    
   );
-  const commission = (0.05*order_total).toFixed(0);
-console.log("Commision",commission
-);
+  const commission = (0.05 * order_total).toFixed(0);
+  console.log("Commision", commission);
   let resp;
   const balanceRaw = await contractCasinoNFT.balanceOf(
     sdk_casino_nfts_wallet,
     _token_id
   );
   const balance = parseInt(balanceRaw);
-  console.log("jivanBlance",balance);
+  console.log("jivanBlance", balance);
   // Verify sdk wallet / contract has enough balance to disburse prize
   if (balance && balance >= 1) {
     //sdk wallet has enough balance to allow prize redemption
-  console.log("Transferring NFT.......");
+    console.log("Transferring NFT.......");
     //initiate transfer from sdk wallet to redeemer wallet
     try {
-        
       const transferStatus = await contractCasinoNFT
         .transfer(_address.trim(), _token_id, 1)
-        .then(async(transfer) => {
+        .then(async (transfer) => {
           console.log("Transfer Status: ", transfer);
-          let findUserAff=await db.get_scrooge_usersDB()
-          .findOne({ _id: ObjectId(_user_id) })
+          let findUserAff = await db
+            .get_scrooge_usersDB()
+            .findOne({ _id: ObjectId(_user_id) });
           // console.log("avvavavva",findUserAff);
-          let comisData={
-            id:_user_id,
-            commision:parseInt(commission)
-          }
-          const query3 = await db
-                        .get_scrooge_usersDB()
-                        .findOneAndUpdate(
-                          { _id: ObjectId(findUserAff?.refrenceId) },
-                          { $inc: { wallet: parseInt(commission) }, $push: { affliateUser: comisData  } }
-                        )
-                        let getUserData = await db
-          .get_scrooge_usersDB()
-          .findOne({ _id: ObjectId(findUserAff?.refrenceId) });
-        //  console.log("getUserData",getUserData);
-  
-        const transactionPayload = {
-          amount: parseInt(commission),
-          transactionType: "commission",
-          prevWallet: getUserData?.wallet,
-          updatedWallet: getUserData?.wallet + commission,
-          userId: ObjectId(findUserAff?.refrenceId),
-          updatedTicket:getUserData?.ticket-commission
-        };
-        let trans_id
-         console.log("transactionPayload",transactionPayload);
-        await db
-          .get_scrooge_transactionDB()
-          .insertOne(transactionPayload)
-          .then((trans) => {
-            console.log("transtranstrans",trans);
-            trans_id = trans.insertedId;
-          }).catch((e)=>{
-            console.log("e",e);
-          });
+          let comisData = {
+            id: _user_id,
+            commision: parseInt(commission),
+          };
+          const query3 = await db.get_scrooge_usersDB().findOneAndUpdate(
+            { _id: ObjectId(findUserAff?.refrenceId) },
+            {
+              $inc: { wallet: parseInt(commission) },
+              $push: { affliateUser: comisData },
+            }
+          );
+          let getUserData = await db
+            .get_scrooge_usersDB()
+            .findOne({ _id: ObjectId(findUserAff?.refrenceId) });
+          //  console.log("getUserData",getUserData);
+
+          const transactionPayload = {
+            amount: parseInt(commission),
+            transactionType: "commission",
+            prevWallet: getUserData?.wallet,
+            updatedWallet: getUserData?.wallet + commission,
+            userId: ObjectId(findUserAff?.refrenceId),
+            updatedTicket: getUserData?.ticket - commission,
+          };
+          let trans_id;
+          console.log("transactionPayload", transactionPayload);
+          await db
+            .get_scrooge_transactionDB()
+            .insertOne(transactionPayload)
+            .then((trans) => {
+              console.log("transtranstrans", trans);
+              trans_id = trans.insertedId;
+            })
+            .catch((e) => {
+              console.log("e", e);
+            });
 
           resp = true;
         });
@@ -169,73 +177,82 @@ export async function getOGBalance(req, res) {
 //   const aff_id = req.params.aff_id;
 
 //   console.log("address==>>",address,"token_id===>>",token_id,"user_id===>>>",user_id,"qty===>>",qty,"aff_id===>>",aff_id);
-  // if (address && token_id && user_id) {
-  //   const query = await db
-  //     .get_marketplace_itemsDB()
-  //     .findOne({ token_id: parseInt(token_id) })
-  //     .then(async (item) => {
-  //       console.log("itemDatatataa");
-  //       const chipsAdded = await addChips(
-  //         user_id,
-  //         parseInt(item.chip_value),
-  //         address
-  //       ).then((trans) => {
-  //         console.log("trans",trans);
-  //         if (aff_id && aff_id != user_id) {
-  //           affAddOrder(
-  //             aff_id,
-  //             trans.toString(),
-  //             item.chip_value,
-  //             item._id.toString(),
-  //             user_id,
-  //             address
-  //           );
-  //         }
-  //         resp = item.chip_value.toString();
-  //       });
-  //     });
-  // }
-  // return resp;
+// if (address && token_id && user_id) {
+//   const query = await db
+//     .get_marketplace_itemsDB()
+//     .findOne({ token_id: parseInt(token_id) })
+//     .then(async (item) => {
+//       console.log("itemDatatataa");
+//       const chipsAdded = await addChips(
+//         user_id,
+//         parseInt(item.chip_value),
+//         address
+//       ).then((trans) => {
+//         console.log("trans",trans);
+//         if (aff_id && aff_id != user_id) {
+//           affAddOrder(
+//             aff_id,
+//             trans.toString(),
+//             item.chip_value,
+//             item._id.toString(),
+//             user_id,
+//             address
+//           );
+//         }
+//         resp = item.chip_value.toString();
+//       });
+//     });
 // }
-export async function getFreeTokens(req,res) {
-  console.log("Calleddddd getFreeTokens",req.body);
- try {
-  let resp;
-  
-  const {address,token_id,userid,qty,aff_id}=req?.body|| {}
-  console.log("address==>>",address,"token_id===>>",token_id,"user_id===>>>",userid,"qty===>>",qty,"aff_id===>>",aff_id);
-   if (address && token_id && userid) {
-    const query = await db
-      .get_marketplace_itemsDB()
-      .findOne({ token_id: parseInt(token_id) })
-      .then(async (item) => {
-         console.log("itemDatatataa",item);
-        const chipsAdded = await addChips(
-          userid,
-          parseInt(item.chip_value),
-          address
-        ).then((trans) => {
-          // console.log("trans",trans);
-          if (aff_id && aff_id != userid) {
-            affAddOrder(
-              aff_id,
-              trans.toString(),
-              item.chip_value,
-              item._id.toString(),
-              userid,
-              address
-            );
-          }
-          resp = item.chip_value.toString();
+// return resp;
+// }
+export async function getFreeTokens(req, res) {
+  console.log("Calleddddd getFreeTokens", req.body);
+  try {
+    let resp;
+
+    const { address, token_id, userid, qty, aff_id } = req?.body || {};
+    console.log(
+      "address==>>",
+      address,
+      "token_id===>>",
+      token_id,
+      "user_id===>>>",
+      userid,
+      "qty===>>",
+      qty,
+      "aff_id===>>",
+      aff_id
+    );
+    if (address && token_id && userid) {
+      const query = await db
+        .get_marketplace_itemsDB()
+        .findOne({ token_id: parseInt(token_id) })
+        .then(async (item) => {
+          console.log("itemDatatataa", item);
+          const chipsAdded = await addChips(
+            userid,
+            parseInt(item.chip_value),
+            address
+          ).then((trans) => {
+            // console.log("trans",trans);
+            if (aff_id && aff_id != userid) {
+              affAddOrder(
+                aff_id,
+                trans.toString(),
+                item.chip_value,
+                item._id.toString(),
+                userid,
+                address
+              );
+            }
+            resp = item.chip_value.toString();
+          });
         });
-      });
+    }
+    res.send(resp);
+  } catch (error) {
+    console.log("error", error);
   }
-  res.send(resp);
-  
-  
- } catch (error) {
-  console.log("error",error);
- }
 }
 
 // Route to get user's NFT balance
@@ -269,7 +286,7 @@ export async function getOGCurrentPrice() {
       curr_price = false;
     });
 
-    console.log("curr_pricecurr_pricecurr_price",curr_price);
+  console.log("curr_pricecurr_pricecurr_price", curr_price);
   return curr_price;
 }
 
