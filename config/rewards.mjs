@@ -4,7 +4,7 @@ import * as email from "../email/email.mjs";
 import * as commons from "./commons.mjs";
 import { ObjectId } from "mongodb";
 
-export async function addChips(_user_id, _qty, _address) {
+export async function addChips(_user_id, _qty, _address, transactionType) {
   console.log("Chpis Added");
   let trans_id;
   // scrooge db transaciton for this users with field prevwallet, updatedWallet,amount, source - monthly claim
@@ -27,7 +27,7 @@ export async function addChips(_user_id, _qty, _address) {
 
       const transactionPayload = {
         amount: _qty,
-        transactionType: "nft purchase",
+        transactionType: transactionType || "nft purchase",
         prevWallet: getUserData?.wallet,
         updatedWallet: getUserData?.wallet + _qty,
         userId: user.value._id,
@@ -993,6 +993,26 @@ export async function redeemPrize(req, res) {
       .send({ success: false, message: "Error in Request Process" });
   }
 }
+
+export async function convertCryptoToToken(req, res) {
+  const { userId, address, tokens } = req.params;
+  console.log("cryptoToTokenadress", await useSDK.sdk_OG.wallet.getAddress());
+  try {
+    const response = await addChips(
+      userId,
+      parseInt(tokens),
+      address,
+      "Token Purchase From Crypto"
+    );
+    res.status(200).send({ success: true, data: "Chips Added Successfully" });
+  } catch (error) {
+    console.log("cryptoToToken", error);
+    res
+      .status(500)
+      .send({ success: false, message: "Error in Request Process" });
+  }
+}
+
 export async function convertPrice(req, res) {
   let resp;
   try {
