@@ -288,7 +288,14 @@ export async function claimHolderTokens(req) {
     lastClaimDate;
   if (address && user_id && bal && current_price) {
     console.log("bal", bal);
-    OGValue = (current_price * bal * 0.1).toFixed(0);
+    let OGValueIn = (current_price * bal).toFixed(0);
+    if (OGValueIn < 50) {
+      OGValue = 50;
+    } else if (OGValueIn > 3000) {
+      OGValue = 3000;
+    } else {
+      OGValue = OGValueIn;
+    }
     console.log(OGValue);
     resp = { data: OGValue, code: 200 };
 
@@ -653,7 +660,7 @@ export async function redeemPrize(req, res) {
             //initiate transfer from sdk wallet to redeemer wallet
             try {
               console.log(address);
-              console.log(useSDK.contractOG);
+              //console.log(useSDK.contractOG);
               const transfer = await use_sdk.wallet.transfer(
                 address,
                 prize_token_qty,
