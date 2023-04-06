@@ -290,7 +290,7 @@ export async function claimHolderTokens(req) {
     console.log("bal========12", bal);
     let OGValueIn = (current_price * bal).toFixed(0);
     if (OGValueIn < 50) {
-      OGValue = 50;
+      return (resp = { msg: "You don't have enough OG coins.", code: 400 });
     } else if (OGValueIn > 3000) {
       OGValue = 3000;
     } else {
