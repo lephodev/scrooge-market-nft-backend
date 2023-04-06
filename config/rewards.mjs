@@ -589,8 +589,7 @@ export async function redeemPrize(req, res) {
         curr_price = await useSDK.getJRCurrentPrice();
       }
       console.log("curr_price",curr_price);
-      let token_qty = (prize_price / 100 / curr_price).toFixed(0);
-      prize_token_qty = token_qty - token_qty * 0.16;
+      prize_token_qty = (prize_price / 100 / curr_price / 2).toFixed(0);     // prize_token_qty = token_qty - token_qty * 0.16;
       console.log("prize_token_qtyoooo", prize_token_qty);
     } else {
       prize_token_qty = prize.token_qty;
@@ -655,6 +654,7 @@ export async function redeemPrize(req, res) {
         console.log("Balance: ", use_sdk);
         // Verify sdk wallet / contract has enough balance to disburse prize
         console.log("bal123", balance);
+        console.log("prize_token_qty",prize_token_qty);
         if (balance && balance >= prize_token_qty) {
           //sdk wallet has enough balance to allow prize redemption
           //check for redeem_action from prize record
