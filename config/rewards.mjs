@@ -4,7 +4,7 @@ import * as email from "../email/email.mjs";
 import * as commons from "./commons.mjs";
 import { ObjectId } from "mongodb";
 
-export async function addChips(_user_id, _qty, _address) {
+export async function addChips(_user_id, _qty, _address, transactionType) {
   console.log("Chpis Added");
   let trans_id;
   // scrooge db transaciton for this users with field prevwallet, updatedWallet,amount, source - monthly claim
@@ -27,7 +27,7 @@ export async function addChips(_user_id, _qty, _address) {
 
       const transactionPayload = {
         amount: _qty,
-        transactionType: "nft purchase",
+        transactionType: transactionType || "nft purchase",
         prevWallet: getUserData?.wallet,
         updatedWallet: getUserData?.wallet + _qty,
         userId: user.value._id,
@@ -287,8 +287,15 @@ export async function claimHolderTokens(req) {
     OGValue,
     lastClaimDate;
   if (address && user_id && bal && current_price) {
-    console.log("bal", bal);
-    OGValue = (current_price * bal * 0.1).toFixed(0);
+    console.log("bal========12", bal);
+    let OGValueIn = (current_price * bal).toFixed(0);
+    if (OGValueIn < 50) {
+      return (resp = { msg: "You don't have enough OG coins.", code: 400 });
+    } else if (OGValueIn > 3000) {
+      OGValue = 3000;
+    } else {
+      OGValue = OGValueIn;
+    }
     console.log(OGValue);
     resp = { data: OGValue, code: 200 };
 
@@ -581,8 +588,9 @@ export async function redeemPrize(req, res) {
         console.log("JR");
         curr_price = await useSDK.getJRCurrentPrice();
       }
-      prize_token_qty = (prize_price / 100 / curr_price / 2).toFixed(0);
-      console.log("prize_token_qty", prize_token_qty);
+      console.log("curr_price",curr_price);
+      prize_token_qty = (prize_price / 100 / curr_price / 2).toFixed(0);     // prize_token_qty = token_qty - token_qty * 0.16;
+      console.log("prize_token_qtyoooo", prize_token_qty);
     } else {
       prize_token_qty = prize.token_qty;
       console.log("prize_token_qty2", prize_token_qty); // quantity of tokens to be transferred upon redemption
@@ -645,20 +653,25 @@ export async function redeemPrize(req, res) {
         balance = parseInt(balanceRaw.displayValue);
         console.log("Balance: ", use_sdk);
         // Verify sdk wallet / contract has enough balance to disburse prize
-        console.log("bal", balance);
+        console.log("bal123", balance);
+        console.log("prize_token_qty",prize_token_qty);
         if (balance && balance >= prize_token_qty) {
           //sdk wallet has enough balance to allow prize redemption
           //check for redeem_action from prize record
           if (prize_redeem_action === "transfer") {
             //initiate transfer from sdk wallet to redeemer wallet
             try {
-              console.log(address);
-              console.log(useSDK.contractOG);
+              console.log("addresss",address);
+              console.log(" prize_token_qty", prize_token_qty);
+              console.log("prize_redeem_action",prize_redeem_action);
+              console.log("prize_contract",prize_contract);
+              console.log("address",address);
               const transfer = await use_sdk.wallet.transfer(
                 address,
                 prize_token_qty,
                 prize_contract
               );
+              console.log("transfer",transfer);
               const query3 = await db
                 .get_scrooge_usersDB()
                 .findOneAndUpdate(
@@ -696,8 +709,11 @@ export async function redeemPrize(req, res) {
               return res.status(200).send({ success: true, message: resp });
             } catch (error) {
               console.log(error);
+              console.log("error---",error);
+              console.log('Transaction Failed712',error?.reason);
+              resp = error?.reason || "Transaction Failed";
               //console.log('Transaction Failed');
-              resp = "Transaction Failed";
+              // resp = "Transaction Failed";
               return res.send({ success: false, message: resp });
             }
           } else if (prize_redeem_action === "burn") {
@@ -993,6 +1009,26 @@ export async function redeemPrize(req, res) {
       .send({ success: false, message: "Error in Request Process" });
   }
 }
+
+export async function convertCryptoToToken(req, res) {
+  const { userId, address, tokens } = req.params;
+  console.log("cryptoToTokenadress", await useSDK.sdk_OG.wallet.getAddress());
+  try {
+    const response = await addChips(
+      userId,
+      parseInt(tokens),
+      address,
+      "Token Purchase From Crypto"
+    );
+    res.status(200).send({ success: true, data: "Chips Added Successfully" });
+  } catch (error) {
+    console.log("cryptoToToken", error);
+    res
+      .status(500)
+      .send({ success: false, message: "Error in Request Process" });
+  }
+}
+
 export async function convertPrice(req, res) {
   let resp;
   try {

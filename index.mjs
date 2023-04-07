@@ -265,6 +265,8 @@ app.get("/api/claimDailyRewards/:user_id", async (req, res) => {
   });
 });
 
+app.get("/api/getDLNFTs/:address", useSDK.getDLNFTs);
+
 // Route to claim holder monthly Tokens
 app.get(
   "/api/claimHolderTokens/:address/:OGbalance/:currentPrice/:user_id",
@@ -338,6 +340,11 @@ app.get("/api/getWalletDLBalance/:address", async (req, res) => {
     res.send(data);
   });
 });
+
+app.get(
+  "/api/convertCryptoToToken/:userId/:address/:tokens",
+  rewards.convertCryptoToToken
+);
 
 app.get(
   "/api/coverttickettotoken/:ticketPrice/:tokenPrice/:user_id",
