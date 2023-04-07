@@ -64,7 +64,7 @@ export const sdk_DL_wallet = await sdk_DL.wallet.getAddress();
 export async function getDLNFTs(req, res) {
   const { address } = req.params;
   const allNFTs = await contractDL.erc721.getAll(address);
-  console.log(contractDL);
+  console.log(allNFTs);
   res.send({ allNFTs });
 }
 
