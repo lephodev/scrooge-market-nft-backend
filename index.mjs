@@ -342,6 +342,11 @@ app.get("/api/getWalletDLBalance/:address", async (req, res) => {
 });
 
 app.get(
+  "/api/convertCryptoToToken/:userId/:address/:tokens",
+  rewards.convertCryptoToToken
+);
+
+app.get(
   "/api/coverttickettotoken/:ticketPrice/:tokenPrice/:user_id",
   async (req, res) => {
     const resp = await rewards.convertPrice(req, res);
