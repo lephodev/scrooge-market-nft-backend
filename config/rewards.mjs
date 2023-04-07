@@ -588,7 +588,7 @@ export async function redeemPrize(req, res) {
         console.log("JR");
         curr_price = await useSDK.getJRCurrentPrice();
       }
-      prize_token_qty = (prize_price / 100 / curr_price / 2).toFixed(0);
+      prize_token_qty = (prize_price / 100 / curr_price).toFixed(0);
       console.log("prize_token_qty", prize_token_qty);
     } else {
       prize_token_qty = prize.token_qty;
