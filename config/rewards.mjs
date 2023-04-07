@@ -287,7 +287,7 @@ export async function claimHolderTokens(req) {
     OGValue,
     lastClaimDate;
   if (address && user_id && bal && current_price) {
-    console.log("bal", bal);
+    console.log("bal========12", bal);
     let OGValueIn = (current_price * bal).toFixed(0);
     if (OGValueIn < 50) {
       return (resp = { msg: "You don't have enough OG coins.", code: 400 });
@@ -652,20 +652,25 @@ export async function redeemPrize(req, res) {
         balance = parseInt(balanceRaw.displayValue);
         console.log("Balance: ", use_sdk);
         // Verify sdk wallet / contract has enough balance to disburse prize
-        console.log("bal", balance);
+        console.log("bal123", balance);
+        console.log("prize_token_qty", prize_token_qty);
         if (balance && balance >= prize_token_qty) {
           //sdk wallet has enough balance to allow prize redemption
           //check for redeem_action from prize record
           if (prize_redeem_action === "transfer") {
             //initiate transfer from sdk wallet to redeemer wallet
             try {
-              console.log(address);
-              //console.log(useSDK.contractOG);
+              console.log("addresss", address);
+              console.log(" prize_token_qty", prize_token_qty);
+              console.log("prize_redeem_action", prize_redeem_action);
+              console.log("prize_contract", prize_contract);
+              console.log("address", address);
               const transfer = await use_sdk.wallet.transfer(
                 address,
                 prize_token_qty,
                 prize_contract
               );
+              console.log("transfer", transfer);
               const query3 = await db
                 .get_scrooge_usersDB()
                 .findOneAndUpdate(
@@ -703,8 +708,11 @@ export async function redeemPrize(req, res) {
               return res.status(200).send({ success: true, message: resp });
             } catch (error) {
               console.log(error);
+              console.log("error---", error);
+              console.log("Transaction Failed712", error?.reason);
+              resp = error?.reason || "Transaction Failed";
               //console.log('Transaction Failed');
-              resp = "Transaction Failed";
+              // resp = "Transaction Failed";
               return res.send({ success: false, message: resp });
             }
           } else if (prize_redeem_action === "burn") {
