@@ -289,7 +289,7 @@ export async function createAffiliateUser(req, res) {
 async function createAffShortLink(user_id, username) {
   console.log("KKKKKKLLLLLIIINKKKKK");
   let shortLink;
-  const link = `${process.env.LANDING_CLIENT}?uid=` + user_id + "";
+  const link = `${process.env.LANDING_CLIENT}?aff_id=` + user_id + "";
   const config = {
     headers: {
       Authorization: "Bearer " + process.env.OPENMYLINK_API_KEY + "",
