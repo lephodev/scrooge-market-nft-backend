@@ -296,10 +296,11 @@ async function createAffShortLink(user_id, username) {
       "Content-Type": "application/json",
     },
   };
+  let substr=user_id?.toString()?.substring(0,5)||"dummy"
   const url = "https://openmy.link/api/url/add";
   const data = {
     url: link,
-    custom: user_id,
+    custom: substr,
     domain: "https://go.scrooge.to",
     metatitle: "Join me at Scrooge Casino!",
     metadescription:
