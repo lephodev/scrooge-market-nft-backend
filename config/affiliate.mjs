@@ -274,7 +274,7 @@ export async function createAffiliateUser(req, res) {
           aff_short_link: affShortLink,
           ai_tickets: 25,
         });
-        const affEmailSend = email.sendemail("newAffEmail", user.email);
+        // const affEmailSend = email.sendemail("newAffEmail", user.email);
         return res.status(200).send({ success: true, data: aff.insertedId });
       }
     }
