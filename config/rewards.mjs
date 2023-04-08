@@ -885,11 +885,11 @@ export async function redeemPrize(req, res) {
           .getUserByUserID(user_id)
           .then((getUser) => {
             console.log("getUser", getUser, "CoupanCode", coupon_code);
-            const affEmailSend = email.sendemail(
-              "merchEmail",
-              getUser?.email,
-              coupon_code
-            );
+            // const affEmailSend = email.sendemail(
+            //   "merchEmail",
+            //   getUser?.email,
+            //   coupon_code
+            // );
           });
         resp = prize_name;
         return res.status(200).send({ success: true, message: resp });
