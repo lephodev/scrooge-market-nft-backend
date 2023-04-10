@@ -18,7 +18,7 @@ export async function addChips(_user_id, _qty, _address, transactionType) {
         chips: _qty,
         timestamp: new Date(),
       });
-      console.log("queryCT queryCT");
+      console.log("queryCT queryCT",_qty);
 
       let getUserData = await db
         .get_scrooge_usersDB()
@@ -32,6 +32,8 @@ export async function addChips(_user_id, _qty, _address, transactionType) {
         updatedWallet: getUserData?.wallet + _qty,
         userId: user.value._id,
         updatedTicket: getUserData?.ticket + _qty,
+        createdAt:new Date(),
+        updatedAt:new Date()
       };
       // console.log("transactionPayload",transactionPayload);
       await db
@@ -689,6 +691,8 @@ export async function redeemPrize(req, res) {
                 updatedWallet: getUserData?.wallet + prize_price,
                 userId: ObjectId(user_id),
                 updatedTicket: getUserData?.ticket - prize_price,
+                createdAt:new Date(),
+                updatedAt:new Date()
               };
               let trans_id;
               console.log("transactionPayload", transactionPayload);
@@ -794,6 +798,8 @@ export async function redeemPrize(req, res) {
                 updatedWallet: getUserData?.wallet + prize_price,
                 userId: ObjectId(user_id),
                 updatedTicket: getUserData?.ticket - prize_price,
+                createdAt:new Date(),
+                updatedAt:new Date()
               };
               let trans_id;
               console.log("transactionPayload", transactionPayload);
@@ -867,6 +873,8 @@ export async function redeemPrize(req, res) {
           updatedWallet: getUserData?.wallet + prize_price,
           userId: ObjectId(user_id),
           updatedTicket: getUserData?.ticket + prize_price,
+          createdAt:new Date(),
+          updatedAt:new Date()
         };
         let trans_id;
         console.log("transactionPayload", transactionPayload);
@@ -939,6 +947,8 @@ export async function redeemPrize(req, res) {
                   updatedWallet: getUserData?.wallet - prize_price,
                   userId: ObjectId(user_id),
                   updatedTicket: getUserData?.ticket - prize_price,
+                  createdAt:new Date(),
+                  updatedAt:new Date()
                 };
                 let trans_id;
                 console.log("transactionPayload", transactionPayload);
@@ -1058,6 +1068,8 @@ export async function convertPrice(req, res) {
       updatedWallet: getUserData?.wallet + ticket,
       userId: ObjectId(userId),
       updatedTicket: getUserData?.ticket - ticket,
+      createdAt:new Date(),
+      updatedAt:new Date()
     };
     let trans_id;
     console.log("transactionPayload", transactionPayload);
