@@ -274,7 +274,7 @@ export async function createAffiliateUser(req, res) {
           aff_short_link: affShortLink,
           ai_tickets: 25,
         });
-        const affEmailSend = email.sendemail("newAffEmail", user.email);
+        // const affEmailSend = email.sendemail("newAffEmail", user.email);
         return res.status(200).send({ success: true, data: aff.insertedId });
       }
     }
@@ -289,17 +289,18 @@ export async function createAffiliateUser(req, res) {
 async function createAffShortLink(user_id, username) {
   console.log("KKKKKKLLLLLIIINKKKKK");
   let shortLink;
-  const link = `${process.env.LANDING_CLIENT}?uid=` + user_id + "";
+  const link = `${process.env.LANDING_CLIENT}?aff_id=` + user_id + "";
   const config = {
     headers: {
       Authorization: "Bearer " + process.env.OPENMYLINK_API_KEY + "",
       "Content-Type": "application/json",
     },
   };
+  let substr=user_id?.toString()?.substring(0,20)||"dummy"
   const url = "https://openmy.link/api/url/add";
   const data = {
     url: link,
-    custom: username,
+    custom: substr,
     domain: "https://go.scrooge.to",
     metatitle: "Join me at Scrooge Casino!",
     metadescription:
