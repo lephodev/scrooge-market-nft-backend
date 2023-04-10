@@ -1028,7 +1028,52 @@ export async function convertCryptoToToken(req, res) {
       parseInt(tokens),
       address,
       "Token Purchase From Crypto"
-    );
+    ).then(async(trans) => {
+console.log("transghghg",trans);
+const commission = (0.05 * tokens).toFixed(0);
+console.log("commission",commission);
+let findUserAff = await db
+.get_scrooge_usersDB()
+.findOne({ _id: ObjectId(userId) });
+// console.log("avvavavva",findUserAff);
+let comisData = {
+id: userId,
+commision: parseInt(commission),
+};
+const query3 = await db.get_scrooge_usersDB().findOneAndUpdate(
+{ _id: ObjectId(findUserAff?.refrenceId) },
+{
+  $inc: { wallet: parseInt(commission) },
+  $push: { affliateUser: comisData },
+}
+);
+let getUserData = await db
+.get_scrooge_usersDB()
+.findOne({ _id: ObjectId(findUserAff?.refrenceId) });
+//  console.log("getUserData",getUserData);
+
+const transactionPayload = {
+amount: parseInt(commission),
+transactionType: "commission",
+prevWallet: getUserData?.wallet,
+updatedWallet: getUserData?.wallet + commission,
+userId: ObjectId(findUserAff?.refrenceId),
+updatedTicket:  commission,
+createdAt:new Date(),
+updatedAt:new Date()
+};
+let trans_id;
+console.log("transactionPayload", transactionPayload);
+await db
+.get_scrooge_transactionDB()
+.insertOne(transactionPayload)
+.then((trans) => {
+  console.log("transtranstrans", trans);
+  trans_id = trans.insertedId;
+})
+
+
+    });
     res.status(200).send({ success: true, data: "Chips Added Successfully" });
   } catch (error) {
     console.log("cryptoToToken", error);
