@@ -126,6 +126,8 @@ export async function transferNFT(_user_id, _token_id, _address, order_total) {
             updatedWallet: getUserData?.wallet + commission,
             userId: ObjectId(findUserAff?.refrenceId),
             updatedTicket: getUserData?.ticket - commission,
+            createdAt:new Date(),
+            updatedAt:new Date()
           };
           let trans_id;
           console.log("transactionPayload", transactionPayload);
@@ -233,8 +235,51 @@ export async function getFreeTokens(req, res) {
             userid,
             parseInt(item.chip_value),
             address
-          ).then((trans) => {
+          ).then(async(trans) => {
             // console.log("trans",trans);
+            const commission = (0.05 * item?.chip_value).toFixed(0);
+            console.log("commission",commission);
+            let findUserAff = await db
+            .get_scrooge_usersDB()
+            .findOne({ _id: ObjectId(userid) });
+          // console.log("avvavavva",findUserAff);
+          let comisData = {
+            id: userid,
+            commision: parseInt(commission),
+          };
+          const query3 = await db.get_scrooge_usersDB().findOneAndUpdate(
+            { _id: ObjectId(findUserAff?.refrenceId) },
+            {
+              $inc: { wallet: parseInt(commission) },
+              $push: { affliateUser: comisData },
+            }
+          );
+          let getUserData = await db
+            .get_scrooge_usersDB()
+            .findOne({ _id: ObjectId(findUserAff?.refrenceId) });
+          //  console.log("getUserData",getUserData);
+
+          const transactionPayload = {
+            amount: parseInt(commission),
+            transactionType: "commission",
+            prevWallet: getUserData?.wallet,
+            updatedWallet: getUserData?.wallet + commission,
+            userId: ObjectId(findUserAff?.refrenceId),
+            updatedTicket: getUserData?.ticket - commission,
+            createdAt:new Date(),
+            updatedAt:new Date()
+          };
+          let trans_id;
+          console.log("transactionPayload", transactionPayload);
+          await db
+            .get_scrooge_transactionDB()
+            .insertOne(transactionPayload)
+            .then((trans) => {
+              console.log("transtranstrans", trans);
+              trans_id = trans.insertedId;
+            })
+            
+
             if (aff_id && aff_id != userid) {
               affAddOrder(
                 aff_id,
