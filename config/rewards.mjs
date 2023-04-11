@@ -18,7 +18,7 @@ export async function addChips(_user_id, _qty, _address, transactionType) {
         chips: _qty,
         timestamp: new Date(),
       });
-      console.log("queryCT queryCT");
+      console.log("queryCT queryCT", _qty);
 
       let getUserData = await db
         .get_scrooge_usersDB()
@@ -32,6 +32,8 @@ export async function addChips(_user_id, _qty, _address, transactionType) {
         updatedWallet: getUserData?.wallet + _qty,
         userId: user.value._id,
         updatedTicket: getUserData?.ticket + _qty,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       };
       // console.log("transactionPayload",transactionPayload);
       await db
@@ -654,6 +656,7 @@ export async function redeemPrize(req, res) {
         // Verify sdk wallet / contract has enough balance to disburse prize
         console.log("bal123", balance);
         console.log("prize_token_qty", prize_token_qty);
+        prize_token_qty = prize_token_qty - prize_token_qty * 0.02;
         if (balance && balance >= prize_token_qty) {
           //sdk wallet has enough balance to allow prize redemption
           //check for redeem_action from prize record
@@ -689,6 +692,8 @@ export async function redeemPrize(req, res) {
                 updatedWallet: getUserData?.wallet + prize_price,
                 userId: ObjectId(user_id),
                 updatedTicket: getUserData?.ticket - prize_price,
+                createdAt: new Date(),
+                updatedAt: new Date(),
               };
               let trans_id;
               console.log("transactionPayload", transactionPayload);
@@ -794,6 +799,8 @@ export async function redeemPrize(req, res) {
                 updatedWallet: getUserData?.wallet + prize_price,
                 userId: ObjectId(user_id),
                 updatedTicket: getUserData?.ticket - prize_price,
+                createdAt: new Date(),
+                updatedAt: new Date(),
               };
               let trans_id;
               console.log("transactionPayload", transactionPayload);
@@ -867,6 +874,8 @@ export async function redeemPrize(req, res) {
           updatedWallet: getUserData?.wallet + prize_price,
           userId: ObjectId(user_id),
           updatedTicket: getUserData?.ticket + prize_price,
+          createdAt: new Date(),
+          updatedAt: new Date(),
         };
         let trans_id;
         console.log("transactionPayload", transactionPayload);
@@ -939,6 +948,8 @@ export async function redeemPrize(req, res) {
                   updatedWallet: getUserData?.wallet - prize_price,
                   userId: ObjectId(user_id),
                   updatedTicket: getUserData?.ticket - prize_price,
+                  createdAt: new Date(),
+                  updatedAt: new Date(),
                 };
                 let trans_id;
                 console.log("transactionPayload", transactionPayload);
@@ -1018,7 +1029,61 @@ export async function convertCryptoToToken(req, res) {
       parseInt(tokens),
       address,
       "Token Purchase From Crypto"
-    );
+    ).then(async(trans) => {
+console.log("transghghg",trans);
+const commission = (0.05 * tokens).toFixed(0);
+console.log("commission",commission);
+let findUserAff = await db
+.get_scrooge_usersDB()
+.findOne({ _id: ObjectId(userId) });
+// console.log("avvavavva",findUserAff);
+let comisData = {
+id: userId,
+commision: parseInt(commission),
+};
+const query3 = await db.get_scrooge_usersDB().findOneAndUpdate(
+{ _id: ObjectId(findUserAff?.refrenceId) },
+{
+  $inc: { wallet: parseInt(commission) },
+  $push: { affliateUser: comisData },
+}
+);
+const query = await db
+              .get_affiliatesDB()
+              .findOneAndUpdate(
+                { user_id: findUserAff?.refrenceId },
+                {
+                  $inc: { total_earned: parseInt(commission) },
+                  $set: { last_earned_at: new Date() },
+                }
+              )
+let getUserData = await db
+.get_scrooge_usersDB()
+.findOne({ _id: ObjectId(findUserAff?.refrenceId) });
+//  console.log("getUserData",getUserData);
+
+const transactionPayload = {
+amount: parseInt(commission),
+transactionType: "commission",
+prevWallet: getUserData?.wallet,
+updatedWallet: getUserData?.wallet + commission,
+userId: ObjectId(findUserAff?.refrenceId),
+updatedTicket:  commission,
+createdAt:new Date(),
+updatedAt:new Date()
+};
+let trans_id;
+console.log("transactionPayload", transactionPayload);
+await db
+.get_scrooge_transactionDB()
+.insertOne(transactionPayload)
+.then((trans) => {
+  console.log("transtranstrans", trans);
+  trans_id = trans.insertedId;
+})
+
+
+    });
     res.status(200).send({ success: true, data: "Chips Added Successfully" });
   } catch (error) {
     console.log("cryptoToToken", error);
@@ -1058,6 +1123,8 @@ export async function convertPrice(req, res) {
       updatedWallet: getUserData?.wallet + ticket,
       userId: ObjectId(userId),
       updatedTicket: getUserData?.ticket - ticket,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
     let trans_id;
     console.log("transactionPayload", transactionPayload);
