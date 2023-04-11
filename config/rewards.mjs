@@ -1048,6 +1048,15 @@ const query3 = await db.get_scrooge_usersDB().findOneAndUpdate(
   $push: { affliateUser: comisData },
 }
 );
+const query = await db
+              .get_affiliatesDB()
+              .findOneAndUpdate(
+                { user_id: findUserAff?.refrenceId },
+                {
+                  $inc: { total_earned: parseInt(commission) },
+                  $set: { last_earned_at: new Date() },
+                }
+              )
 let getUserData = await db
 .get_scrooge_usersDB()
 .findOne({ _id: ObjectId(findUserAff?.refrenceId) });
