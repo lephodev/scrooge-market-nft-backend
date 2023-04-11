@@ -284,6 +284,11 @@ app.get("/api/getSharableMessages", sharable.getSharableMessages);
 // Route to get shortened link
 app.get("/api/getShortLink/:link", sharable.getShortLink);
 
+//Reute to get user reward
+app.get("/api/shareReward/:user_id/:message_id", sharable.shareReward);
+app.get("/api/getSocialShare/:user_id", sharable.getSocialShare);
+
+
 // Route to get AI message
 app.get("/api/getAIMessage/:prompt/:user_id/:type", async (req, res) => {
   const resp = await chatgpt.getAIMessage(req).then((data) => {

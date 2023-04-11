@@ -56,3 +56,99 @@ export async function getShortLink(req, res) {
     };
     console.log("data: ", affilateUser); */
 }
+
+export const shareReward = async (req, res) => {
+  try {
+    console.log("req.params", req.params);
+    const { user_id, message_id } = req.params;
+
+    let currentPost = await db
+      .get_scrooge_socialShare()
+      .find({ user: ObjectId(user_id) })
+      .toArray();
+    const lastTransactions = await db
+      .get_scrooge_socialShare()
+      .aggregate([
+        {
+          $match: {
+            createdAt: {
+              $gte: new Date(new Date().getTime() - 1 * 24 * 60 * 60 * 1000),
+            },
+            user: ObjectId(user_id),
+            // post: ObjectId(message_id),
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            totalShare: { $count: {} },
+          },
+        },
+      ])
+      .toArray();
+    console.log("lastTransactions", lastTransactions);
+
+    if (lastTransactions[0]?.totalShare > 19) {
+      return res
+        .status(200)
+        .send({
+          success: true,
+          code: 403,
+          message: `Sorry you have reached your redeem limit for today`,
+        });
+    } else {
+      console.log("currentPost", currentPost.length);
+      const Payload = {
+        user: ObjectId(user_id),
+        post: ObjectId(message_id),
+        reward: 10,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      const query = await db
+        .get_scrooge_socialShare()
+        .insertOne(Payload)
+        .then(async (trans) => {
+          const query = await db
+            .get_scrooge_usersDB()
+            .findOneAndUpdate(
+              { _id: ObjectId(user_id) },
+              { $inc: { wallet: 10 } }
+            );
+          return res.status(200).send({ success: true, code: 200 });
+        });
+    }
+  } catch (error) {
+    console.log("error", error);
+  }
+};
+
+export const getSocialShare=async(req,res)=>{
+  try {
+    console.log("req.params------", req.params);
+    const { user_id } = req.params;
+    const lastTransactions = await db
+      .get_scrooge_socialShare()
+      .aggregate([
+        {
+          $match: {
+            createdAt: {
+              $gte: new Date(new Date().getTime() - 1 * 24 * 60 * 60 * 1000),
+            },
+            user: ObjectId(user_id)
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            totalShare: { $count: {} },
+          },
+        },
+      ])
+      .toArray();
+    console.log("lastTransactions", lastTransactions);
+    return res.status(200).send({ success: true, code: 200,count:lastTransactions[0]?.totalShare });
+  } catch (error) {
+    console.log("error", error);
+  }
+}
