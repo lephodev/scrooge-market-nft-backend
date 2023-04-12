@@ -1081,10 +1081,13 @@ await db
   console.log("transtranstrans", trans);
   trans_id = trans.insertedId;
 })
+let getUserDetail = await db
+.get_scrooge_usersDB()
+.findOne({ _id: ObjectId(userId) });
 
 
     });
-    res.status(200).send({ success: true, data: "Chips Added Successfully" });
+    res.status(200).send({ success: true, data: "Chips Added Successfully",user:getUserDetail });
   } catch (error) {
     console.log("cryptoToToken", error);
     res
