@@ -115,7 +115,11 @@ export const shareReward = async (req, res) => {
               { _id: ObjectId(user_id) },
               { $inc: { wallet: 10 } }
             );
-          return res.status(200).send({ success: true, code: 200 });
+            let getuserData=  await db
+            .get_scrooge_usersDB()
+            .findOne(
+              { _id: ObjectId(user_id) });
+          return res.status(200).send({ success: true, code: 200,user:getuserData });
         });
     }
   } catch (error) {
