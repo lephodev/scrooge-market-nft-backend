@@ -61,6 +61,10 @@ export const shareReward = async (req, res) => {
   try {
     console.log("req.params", req.params);
     const { user_id, message_id } = req.params;
+    let getuser=  await db
+    .get_scrooge_usersDB()
+    .findOne(
+      { _id: ObjectId(user_id) });
 
     let currentPost = await db
       .get_scrooge_socialShare()
@@ -89,12 +93,14 @@ export const shareReward = async (req, res) => {
     console.log("lastTransactions", lastTransactions);
 
     if (lastTransactions[0]?.totalShare > 19) {
+      getuser.id=getuser._id
       return res
         .status(200)
         .send({
           success: true,
           code: 403,
           message: `Sorry you have reached your redeem limit for today`,
+          user:getuser
         });
     } else {
       console.log("currentPost", currentPost.length);
@@ -113,12 +119,16 @@ export const shareReward = async (req, res) => {
             .get_scrooge_usersDB()
             .findOneAndUpdate(
               { _id: ObjectId(user_id) },
-              { $inc: { wallet: 10 } }
+              { $inc: { wallet: 10 } },
+              {new: true}
+
+
             );
             let getuserData=  await db
             .get_scrooge_usersDB()
             .findOne(
               { _id: ObjectId(user_id) });
+           getuserData.id=getuserData._id
           return res.status(200).send({ success: true, code: 200,user:getuserData });
         });
     }
