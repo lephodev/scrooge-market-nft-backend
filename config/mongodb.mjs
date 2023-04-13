@@ -2,10 +2,11 @@ import { MongoClient, ServerApiVersion,ObjectId } from 'mongodb';
 import dotenv from 'dotenv';
 const envconfig = dotenv.config();
 export const uri = process.env.MONGODB_URI;
+console.log("uri",uri);
 export const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1});
 //export const conn = client.connect;
 
-let _db_affiliates, _db_affiliates_successful_actions,_db_scrooge_social_share, _db_marketplace_chip_transactions, _db_marketplace_coupons_merch, _db_marketplace_daily_reward_token_claims, _db_marketplace_ducky_lucks_chip_claims, _db_marketplace_ducky_lucks_prizes,
+let _db_affiliates,_db_scrooge_data, _db_affiliates_successful_actions,_db_scrooge_social_share, _db_marketplace_chip_transactions, _db_marketplace_coupons_merch, _db_marketplace_daily_reward_token_claims, _db_marketplace_ducky_lucks_chip_claims, _db_marketplace_ducky_lucks_prizes,
 _db_marketplace_holder_claim_chips_transactions, _db_marketplace_items, _db_marketplace_prizes, _db_marketplace_redeem_prize_transactions, _db_marketplace_wallet_addresses,
 _db_common_batch_burn_transactions, _db_common_burn_requests, _db_common_common_totals, _db_raffles, _db_raffles_draws, _db_raffles_entries, _db_raffles_users, _db_raffles_purchases,
 _db_scrooge_users,_db_scrooge_transaction, _db_sharing_hashtags, _db_sharing_messages, _db_sharing_responses, _db_sharing_twitterInfluencers, _db_user_details_casino_profile_points;
@@ -15,7 +16,9 @@ export const connectToDB = async () => {
   const client = await MongoClient.connect(
     uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1}
   );
+  console.log("client",client.db(process.env.SCROOGE_DB).collection("users"));
   _db_scrooge_users = client.db(process.env.SCROOGE_DB).collection("users");
+  _db_scrooge_data = client.db("dev-markettt").collection("items");
   _db_scrooge_social_share= client.db(process.env.SCROOGE_DB).collection("socialshares");
   _db_scrooge_transaction = client.db(process.env.SCROOGE_DB).collection("transactions");
   _db_affiliates = client.db(process.env.AFFILIATES_DB).collection("affiliates");
@@ -46,6 +49,7 @@ export const connectToDB = async () => {
 };
 
 export const get_scrooge_usersDB = () => _db_scrooge_users;
+// export const get_scrooge_usersData=()=>_db_scrooge_data
 export const get_scrooge_socialShare = () => _db_scrooge_social_share;
 export const get_scrooge_transactionDB = () => _db_scrooge_transaction;
 export const get_affiliatesDB = () => _db_affiliates;
