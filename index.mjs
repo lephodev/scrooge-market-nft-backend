@@ -135,7 +135,7 @@ app.get("/api/getItems/:type", async (req, res) => {
 app.get("/api/getPrizes", async (req, res) => {
   console.log("abcccc");
   const resp = await rewards.getPrizes(req).then((data) => {
-    console.log("prizes resp: ", data);
+    // console.log("prizes resp: ", data);
     res.send(data);
   });
 });

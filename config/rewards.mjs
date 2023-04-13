@@ -3,6 +3,9 @@ import * as useSDK from "./sdk.mjs";
 import * as email from "../email/email.mjs";
 import * as commons from "./commons.mjs";
 import { ObjectId } from "mongodb";
+import itemModel from "../models/itemModel.mjs";
+import mongoose from "mongoose";
+const { Schema } = mongoose;
 
 export async function addChips(_user_id, _qty, _address, transactionType) {
   console.log("Chpis Added");
@@ -372,10 +375,26 @@ export async function getPrizes(req) {
   const sort = { price: 1 };
   let resp;
   const cursor = db.get_marketplace_prizesDB().find(qry).sort(sort);
-  console.log("cursor: ", cursor);
+  console.log("itemModel",);
+  const data = [{ contract:"hghhh",
+  price:70}];
 
+  // const userSchema = new Schema({
+  //   contract: {type:String}
+  // });
+  
+  // const User = mongoose.model('Usersss', userSchema);
+  
+  // const user = new User({
+  //   contract: 'John'
+  // });
+  
+  // user.save().then(() => {
+  //   console.log('User saved to collection');
+  // }).catch((error) => {
+  //   console.error(error);
+  // });
   const arr = await cursor.toArray().then((data) => {
-    console.log("prizes arr: ", data);
     resp = data;
   });
   return resp;
