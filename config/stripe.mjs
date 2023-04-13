@@ -10,8 +10,7 @@ const envconfig = dotenv.config();
 const stripe = Stripe(process.env.STRIPE_API_TEST_KEY);
 
 export async function processStripeCheckOut(req, res){
-    
-    
+    try {
    
 console.log("request",req.body);
 const { asset : { name, description, image,id },buyoutCurrencyValuePerToken: { displayValue}, address, userId, affID } = req.body
@@ -52,14 +51,16 @@ const session = await stripe.checkout.sessions.create({
   else{
     res.send({ code: 400, msg: "Balance Unacceptable" })
   }
-//   console.log("session",session);
-
-  
+} catch (error) {
+  console.log("Error in Stripe payment checkout creation =>", error)
+  res.send({ code: 500, msg: "Internal Server error", error: error.message })
+}  
 
 }
 
 /* Stripe Webhooks */
 export async function processStripeWebhook(request,response) {
+  try {
     console.log("Webhook Calleddddd",request.body);
     const {query:{address,userId,token_id,aff_id},params,body}= request
     let getProduct=await db.get_marketplace_itemsDB().findOne({token_id :parseInt(token_id)})
@@ -113,11 +114,16 @@ const {_id:item_id,chip_value,name}=getProduct
             response.redirect(`${process.env.CLIENT+"/payment"}?status=fail`)
         } else {
             console.log("#### Process Completed Successfully ####");
-            // response.redirect(`${process.env.CLIENT+"/payment"}?status=success`)
+             response.redirect(`${process.env.CLIENT+"/payment"}?status=success`)
             
         }
 } else {
     console.log("Invalid data. Cannot complete process.");
+    response.redirect(`${process.env.CLIENT+"/payment"}?status=fail`)
+}
+} catch (error) {
+    console.log("Error in Stripe callback webhook =>", error);
+    response.redirect(`${process.env.CLIENT+"/payment"}?status=fail&error=${error.message}`)
 }
   };
 /*End Stripe Webhooks*/
