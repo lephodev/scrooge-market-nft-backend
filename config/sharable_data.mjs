@@ -120,7 +120,6 @@ export const shareReward = async (req, res) => {
             .findOneAndUpdate(
               { _id: ObjectId(user_id) },
               { $inc: { wallet: 10 } },
-              {new: true}
 
 
             );
@@ -128,6 +127,28 @@ export const shareReward = async (req, res) => {
             .get_scrooge_usersDB()
             .findOne(
               { _id: ObjectId(user_id) });
+            const transactionPayload = {
+              amount: 10,
+              transactionType: "share reward",
+              prevWallet: getuserData?.wallet,
+              updatedWallet: getuserData?.wallet + 10,
+              userId: ObjectId(user_id),
+              updatedTicket: 10,
+              createdAt:new Date(),
+              updatedAt:new Date()
+            };
+            let trans_id;
+            console.log("transactionPayload", transactionPayload);
+            await db
+              .get_scrooge_transactionDB()
+              .insertOne(transactionPayload)
+              .then((trans) => {
+                console.log("transtranstrans", trans);
+                trans_id = trans.insertedId;
+              })
+              
+  
+           
            getuserData.id=getuserData._id
           return res.status(200).send({ success: true, code: 200,user:getuserData });
         });
