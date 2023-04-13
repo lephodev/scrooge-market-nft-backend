@@ -61,7 +61,7 @@ export const shareReward = async (req, res) => {
   try {
     console.log("req.params", req.params);
     const { user_id, message_id } = req.params;
-    let getuserData=  await db
+    let getuser=  await db
     .get_scrooge_usersDB()
     .findOne(
       { _id: ObjectId(user_id) });
@@ -93,13 +93,14 @@ export const shareReward = async (req, res) => {
     console.log("lastTransactions", lastTransactions);
 
     if (lastTransactions[0]?.totalShare > 19) {
+      getuser.id=getuser._id
       return res
         .status(200)
         .send({
           success: true,
           code: 403,
           message: `Sorry you have reached your redeem limit for today`,
-          user:getuserData
+          user:getuser
         });
     } else {
       console.log("currentPost", currentPost.length);
