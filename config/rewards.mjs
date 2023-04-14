@@ -1068,9 +1068,9 @@ export async function convertCryptoToToken(req, res) {
         .get_scrooge_usersDB()
         .findOne({ _id: ObjectId(userId) });
       console.log("avvavavva",findUserAff);
-      if(findUserAff?.refrenceId){
+      if(findUserAff?.refrenceId!=="false"){
       let comisData = {
-        id: userId,
+        id: ObjectId(userId),
         commision: parseInt(commission),
       };
       const query3 = await db.get_scrooge_usersDB().findOneAndUpdate(
@@ -1091,7 +1091,7 @@ export async function convertCryptoToToken(req, res) {
       let getUserData = await db
         .get_scrooge_usersDB()
         .findOne({ _id: ObjectId(findUserAff?.refrenceId) });
-       console.log("getUserData",getUserData);
+       console.log("getUserData---->>>>>>",getUserData);
 
       const transactionPayload = {
         amount: parseInt(commission),
@@ -1104,7 +1104,7 @@ export async function convertCryptoToToken(req, res) {
         updatedAt: new Date(),
       };
       let trans_id;
-      console.log("transactionPayload", transactionPayload);
+      console.log("transactionPayload===>>>>", transactionPayload);
       await db
         .get_scrooge_transactionDB()
         .insertOne(transactionPayload)
