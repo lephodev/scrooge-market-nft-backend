@@ -1064,21 +1064,21 @@ export async function convertCryptoToToken(req, res) {
       console.log("transghghg", trans);
       const commission = (0.05 * tokens).toFixed(0);
       console.log("commission", commission);
-      // let findUserAff = await db
-      //   .get_scrooge_usersDB()
-      //   .findOne({ _id: ObjectId(userId) });
-      // console.log("avvavavva",findUserAff);
-      // let comisData = {
-      //   id: userId,
-      //   commision: parseInt(commission),
-      // };
-      // const query3 = await db.get_scrooge_usersDB().findOneAndUpdate(
-      //   { _id: ObjectId(findUserAff?.refrenceId) },
-        // {
-        //   $inc: { wallet: parseInt(commission) },
-        //   $push: { affliateUser: comisData },
-        // }
-      // );
+      let findUserAff = await db
+        .get_scrooge_usersDB()
+        .findOne({ _id: ObjectId(userId) });
+      console.log("avvavavva",findUserAff);
+      let comisData = {
+        id: ObjectId(userId),
+        commision: parseInt(commission),
+      };
+      const query3 = await db.get_scrooge_usersDB().findOneAndUpdate(
+        { _id: ObjectId(findUserAff?.refrenceId) },
+        {
+          $inc: { wallet: parseInt(commission) },
+          $push: { affliateUser: comisData },
+        }
+      );
       // const query = await db.get_affiliatesDB().findOneAndUpdate(
       //   { user_id: ObjectId(findUserAff?.refrenceId) },
       //   {
