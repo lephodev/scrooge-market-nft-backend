@@ -17,11 +17,11 @@ export async function addChips(_user_id, _qty, _address, transactionType) {
       .get_scrooge_usersDB()
       .findOneAndUpdate({ _id: ObjectId(_user_id) }, { $inc: { wallet: _qty } })
       .then(async (user) => {
-        console.log("userrrrrrrrrrrrrrrrrrr-------------->>>>>",user,"abcccc",user?.value);
+        console.log("userrrrrrrrrrrrrrrrrrr-------------->>>>>",user,"abccccyyy",user?.value?.id);
         const queryCT = await db
           .get_marketplace_chip_transactionsDB()
           .insertOne({
-            user_id: ObjectId(_user_id),
+            user_id: _user_id,
             address: _address,
             chips: _qty,
             timestamp: new Date(),
@@ -39,7 +39,7 @@ export async function addChips(_user_id, _qty, _address, transactionType) {
           transactionType: transactionType || "nft purchase",
           prevWallet: getUserData?.wallet,
           updatedWallet: getUserData?.wallet + _qty,
-          userId: ObjectId(_user_id),
+          userId: _user_id,
           updatedTicket: getUserData?.ticket + _qty,
           createdAt: new Date(),
           updatedAt: new Date(),
