@@ -10,12 +10,14 @@ const { Schema } = mongoose;
 export async function addChips(_user_id, _qty, _address, transactionType) {
   try {
     console.log("Chpis Added",_user_id, _qty, _address, transactionType);
+    
     let trans_id;
     // scrooge db transaciton for this users with field prevwallet, updatedWallet,amount, source - monthly claim
     const query = await db
       .get_scrooge_usersDB()
       .findOneAndUpdate({ _id: ObjectId(_user_id) }, { $inc: { wallet: _qty } })
       .then(async (user) => {
+        console.log("userrrrrrrrrrrrrrrrrrr-------------->>>>>",user);
         const queryCT = await db
           .get_marketplace_chip_transactionsDB()
           .insertOne({
@@ -29,7 +31,8 @@ export async function addChips(_user_id, _qty, _address, transactionType) {
         let getUserData = await db
           .get_scrooge_usersDB()
           .findOne({ _id: ObjectId(_user_id) });
-        // console.log("getUserData",getUserData);
+
+         console.log("getUserData",getUserData);
 
         const transactionPayload = {
           amount: _qty,
@@ -1076,7 +1079,7 @@ export async function convertCryptoToToken(req, res) {
         }
       );
       const query = await db.get_affiliatesDB().findOneAndUpdate(
-        { user_id: findUserAff?.refrenceId },
+        { user_id: ObjectId(findUserAff?.refrenceId) },
         {
           $inc: { total_earned: parseInt(commission) },
           $set: { last_earned_at: new Date() },
