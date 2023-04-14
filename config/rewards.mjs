@@ -10,18 +10,18 @@ const { Schema } = mongoose;
 export async function addChips(_user_id, _qty, _address, transactionType) {
   try {
     console.log("Chpis Added",_user_id, _qty, _address, transactionType);
-    
+
     let trans_id;
     // scrooge db transaciton for this users with field prevwallet, updatedWallet,amount, source - monthly claim
     const query = await db
       .get_scrooge_usersDB()
       .findOneAndUpdate({ _id: ObjectId(_user_id) }, { $inc: { wallet: _qty } })
       .then(async (user) => {
-        console.log("userrrrrrrrrrrrrrrrrrr-------------->>>>>",user);
+        console.log("userrrrrrrrrrrrrrrrrrr-------------->>>>>",user,"abcccc",user?.value);
         const queryCT = await db
           .get_marketplace_chip_transactionsDB()
           .insertOne({
-            user_id: ObjectId(user?.value?._id),
+            user_id: ObjectId(_user_id),
             address: _address,
             chips: _qty,
             timestamp: new Date(),
@@ -39,7 +39,7 @@ export async function addChips(_user_id, _qty, _address, transactionType) {
           transactionType: transactionType || "nft purchase",
           prevWallet: getUserData?.wallet,
           updatedWallet: getUserData?.wallet + _qty,
-          userId: ObjectId(user.value._id),
+          userId: ObjectId(_user_id),
           updatedTicket: getUserData?.ticket + _qty,
           createdAt: new Date(),
           updatedAt: new Date(),
