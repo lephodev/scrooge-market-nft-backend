@@ -17,40 +17,40 @@ export async function addChips(_user_id, _qty, _address, transactionType) {
       .get_scrooge_usersDB()
       .findOneAndUpdate({ _id: ObjectId(_user_id) }, { $inc: { wallet: _qty } })
       .then(async (user) => {
-        console.log("userrrrrrrrrrrrrrrrrrr-------------->>>>>",user,"abccccyyy",user?.value?.id);
-        const queryCT = await db
-          .get_marketplace_chip_transactionsDB()
-          .insertOne({
-            user_id: _user_id,
-            address: _address,
-            chips: _qty,
-            timestamp: new Date(),
-          });
-        console.log("queryCT queryCT", _qty);
+        console.log("userrrrrrrrrrrrrrrrrrr-------------->>>>>",user,"abccccyyy",user?.value?._id);
+        // const queryCT = await db
+        //   .get_marketplace_chip_transactionsDB()
+        //   .insertOne({
+        //     user_id: _user_id,
+        //     address: _address,
+        //     chips: _qty,
+        //     timestamp: new Date(),
+        //   });
+        // console.log("queryCT queryCT", _qty);
 
-        let getUserData = await db
-          .get_scrooge_usersDB()
-          .findOne({ _id: ObjectId(_user_id) });
+        // let getUserData = await db
+        //   .get_scrooge_usersDB()
+        //   .findOne({ _id: ObjectId(_user_id) });
 
-         console.log("getUserData",getUserData);
+        //  console.log("getUserData",getUserData);
 
-        const transactionPayload = {
-          amount: _qty,
-          transactionType: transactionType || "nft purchase",
-          prevWallet: getUserData?.wallet,
-          updatedWallet: getUserData?.wallet + _qty,
-          userId: _user_id,
-          updatedTicket: getUserData?.ticket + _qty,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        };
-        // console.log("transactionPayload",transactionPayload);
-        await db
-          .get_scrooge_transactionDB()
-          .insertOne(transactionPayload)
-          .then((trans) => {
-            trans_id = trans.insertedId;
-          });
+        // const transactionPayload = {
+        //   amount: _qty,
+        //   transactionType: transactionType || "nft purchase",
+        //   prevWallet: getUserData?.wallet,
+        //   updatedWallet: getUserData?.wallet + _qty,
+        //   userId: _user_id,
+        //   updatedTicket: getUserData?.ticket + _qty,
+        //   createdAt: new Date(),
+        //   updatedAt: new Date(),
+        // };
+        // // console.log("transactionPayload",transactionPayload);
+        // await db
+        //   .get_scrooge_transactionDB()
+        //   .insertOne(transactionPayload)
+        //   .then((trans) => {
+        //     trans_id = trans.insertedId;
+        //   });
       });
     return {code:200,message:" token buy success"};;
   } catch (error) {
