@@ -1068,8 +1068,9 @@ export async function convertCryptoToToken(req, res) {
         .get_scrooge_usersDB()
         .findOne({ _id: ObjectId(userId) });
       console.log("avvavavva",findUserAff);
+      if(findUserAff?.refrenceId){
       let comisData = {
-        id: ObjectId(userId),
+        id: userId,
         commision: parseInt(commission),
       };
       const query3 = await db.get_scrooge_usersDB().findOneAndUpdate(
@@ -1079,37 +1080,39 @@ export async function convertCryptoToToken(req, res) {
           $push: { affliateUser: comisData },
         }
       );
-      // const query = await db.get_affiliatesDB().findOneAndUpdate(
-      //   { user_id: ObjectId(findUserAff?.refrenceId) },
-      //   {
-      //     $inc: { total_earned: parseInt(commission) },
-      //     $set: { last_earned_at: new Date() },
-      //   }
-      // );
-      // let getUserData = await db
-      //   .get_scrooge_usersDB()
-      //   .findOne({ _id: ObjectId(findUserAff?.refrenceId) });
-      //  console.log("getUserData",getUserData);
+      
+      const query = await db.get_affiliatesDB().findOneAndUpdate(
+        { user_id: ObjectId(findUserAff?.refrenceId) },
+        {
+          $inc: { total_earned: parseInt(commission) },
+          $set: { last_earned_at: new Date() },
+        }
+      );
+      let getUserData = await db
+        .get_scrooge_usersDB()
+        .findOne({ _id: ObjectId(findUserAff?.refrenceId) });
+       console.log("getUserData",getUserData);
 
-      // const transactionPayload = {
-      //   amount: parseInt(commission),
-      //   transactionType: "commission",
-      //   prevWallet: getUserData?.wallet,
-      //   updatedWallet: getUserData?.wallet + commission,
-      //   userId: ObjectId(findUserAff?.refrenceId),
-      //   updatedTicket: commission,
-      //   createdAt: new Date(),
-      //   updatedAt: new Date(),
-      // };
-      // let trans_id;
-      // console.log("transactionPayload", transactionPayload);
-      // await db
-      //   .get_scrooge_transactionDB()
-      //   .insertOne(transactionPayload)
-      //   .then((trans) => {
-      //     console.log("transtranstrans", trans);
-      //     trans_id = trans.insertedId;
-      //   });
+      const transactionPayload = {
+        amount: parseInt(commission),
+        transactionType: "commission",
+        prevWallet: getUserData?.wallet,
+        updatedWallet: getUserData?.wallet + commission,
+        userId: ObjectId(findUserAff?.refrenceId),
+        updatedTicket: commission,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      let trans_id;
+      console.log("transactionPayload", transactionPayload);
+      await db
+        .get_scrooge_transactionDB()
+        .insertOne(transactionPayload)
+        .then((trans) => {
+          console.log("transtranstrans", trans);
+          trans_id = trans.insertedId;
+        });
+      }
         let getUserDetail = await db
       .get_scrooge_usersDB()
       .findOne({ _id: ObjectId(userId) });
@@ -1120,6 +1123,7 @@ export async function convertCryptoToToken(req, res) {
         data: "Chips Added Successfully",
         user: getUserDetail,
       });
+    
       }
       else {
         res
