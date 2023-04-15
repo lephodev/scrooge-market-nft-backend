@@ -310,11 +310,17 @@ export async function getFreeTokens(req, res) {
                 address
               );
             }
-            resp = item.chip_value.toString();
+            resp = item.chip_value.toString()
           });
         });
     }
-    res.send(resp);
+    let GetUser = await db
+    .get_scrooge_usersDB()
+    .findOne({ _id: ObjectId(userid) });
+    
+      GetUser.id=GetUser?._id
+    return res.status(200).send({ success: true, data: resp,user:GetUser });
+
   } catch (error) {
     console.log("error", error);
   }
