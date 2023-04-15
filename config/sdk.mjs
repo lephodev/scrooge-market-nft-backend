@@ -251,7 +251,8 @@ export async function getFreeTokens(req, res) {
             let findUserAff = await db
             .get_scrooge_usersDB()
             .findOne({ _id: ObjectId(userid) });
-          // console.log("avvavavva",findUserAff);
+           console.log("avvavavva",findUserAff);
+           if(findUserAff?.refrenceId!=="false"){
           let comisData = {
             id: userid,
             commision: parseInt(commission),
@@ -287,6 +288,7 @@ export async function getFreeTokens(req, res) {
             createdAt:new Date(),
             updatedAt:new Date()
           };
+        
           let trans_id;
           console.log("transactionPayload", transactionPayload);
           await db
@@ -296,7 +298,7 @@ export async function getFreeTokens(req, res) {
               console.log("transtranstrans", trans);
               trans_id = trans.insertedId;
             })
-            
+          }
 
             if (aff_id && aff_id != userid) {
               affAddOrder(
