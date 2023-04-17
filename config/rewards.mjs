@@ -9,7 +9,7 @@ const { Schema } = mongoose;
 
 export async function addChips(_user_id, _qty, _address, transactionType) {
   try {
-    console.log("Chpis Added",_user_id, _qty, _address, transactionType);
+    console.log("Chpis Added", _user_id, _qty, _address, transactionType);
 
     let trans_id;
     // scrooge db transaciton for this users with field prevwallet, updatedWallet,amount, source - monthly claim
@@ -17,7 +17,12 @@ export async function addChips(_user_id, _qty, _address, transactionType) {
       .get_scrooge_usersDB()
       .findOneAndUpdate({ _id: ObjectId(_user_id) }, { $inc: { wallet: _qty } })
       .then(async (user) => {
-        console.log("userrrrrrrrrrrrrrrrrrr-------------->>>>>",user,"abccccyyy",user?.value?._id);
+        console.log(
+          "userrrrrrrrrrrrrrrrrrr-------------->>>>>",
+          user,
+          "abccccyyy",
+          user?.value?._id
+        );
         const queryCT = await db
           .get_marketplace_chip_transactionsDB()
           .insertOne({
@@ -32,7 +37,7 @@ export async function addChips(_user_id, _qty, _address, transactionType) {
           .get_scrooge_usersDB()
           .findOne({ _id: ObjectId(_user_id) });
 
-         console.log("getUserDatauuuuu",getUserData);
+        console.log("getUserDatauuuuu", getUserData);
 
         const transactionPayload = {
           amount: _qty,
@@ -44,7 +49,7 @@ export async function addChips(_user_id, _qty, _address, transactionType) {
           createdAt: new Date(),
           updatedAt: new Date(),
         };
-         console.log("transactionPayloadPPPPP",transactionPayload);
+        console.log("transactionPayloadPPPPP", transactionPayload);
         await db
           .get_scrooge_transactionDB()
           .insertOne(transactionPayload)
@@ -52,10 +57,10 @@ export async function addChips(_user_id, _qty, _address, transactionType) {
             trans_id = trans.insertedId;
           });
       });
-    return {code:200,message:" token buy success"};;
+    return { code: 200, message: " token buy success" };
   } catch (error) {
     console.log("errrr", error);
-    return {code:400,message:"token buy faild"};
+    return { code: 400, message: "token buy faild" };
   }
 }
 
@@ -183,6 +188,7 @@ export async function claimDLTokens(req) {
               user_id: user_id,
               qty: parseInt(qty),
               claimDate: new Date(),
+              nextClaimDate: nextmonth,
             })
             .then(async (trans) => {
               //console.log("Transaction recorded");
@@ -1050,7 +1056,7 @@ export async function redeemPrize(req, res) {
 
 export async function convertCryptoToToken(req, res) {
   const { userId, address, tokens } = req.params;
-  console.log("req.params",req?.params);
+  console.log("req.params", req?.params);
   console.log("cryptoToTokenadress", await useSDK.sdk_OG.wallet.getAddress());
   try {
     const response = await addChips(
@@ -1060,75 +1066,71 @@ export async function convertCryptoToToken(req, res) {
       "Token Purchase From Crypto"
     ).then(async (trans) => {
       console.log("transghghg123", trans);
-      if(trans.code===200){
-      console.log("transghghg", trans);
-      const commission = (0.05 * tokens).toFixed(0);
-      console.log("commission", commission);
-      let findUserAff = await db
-        .get_scrooge_usersDB()
-        .findOne({ _id: ObjectId(userId) });
-      console.log("avvavavva",findUserAff);
-      if(findUserAff?.refrenceId!=="false"){
-      let comisData = {
-        id: ObjectId(userId),
-        commision: parseInt(commission),
-      };
-      const query3 = await db.get_scrooge_usersDB().findOneAndUpdate(
-        { _id: ObjectId(findUserAff?.refrenceId) },
-        {
-          $inc: { wallet: parseInt(commission) },
-          $push: { affliateUser: comisData },
-        }
-      );
-      
-      const query = await db.get_affiliatesDB().findOneAndUpdate(
-        { user_id: ObjectId(findUserAff?.refrenceId) },
-        {
-          $inc: { total_earned: parseInt(commission) },
-          $set: { last_earned_at: new Date() },
-        }
-      );
-      let getUserData = await db
-        .get_scrooge_usersDB()
-        .findOne({ _id: ObjectId(findUserAff?.refrenceId) });
-       console.log("getUserData---->>>>>>",getUserData);
+      if (trans.code === 200) {
+        console.log("transghghg", trans);
+        const commission = (0.05 * tokens).toFixed(0);
+        console.log("commission", commission);
+        let findUserAff = await db
+          .get_scrooge_usersDB()
+          .findOne({ _id: ObjectId(userId) });
+        console.log("avvavavva", findUserAff);
+        if (findUserAff?.refrenceId !== "false") {
+          let comisData = {
+            id: ObjectId(userId),
+            commision: parseInt(commission),
+          };
+          const query3 = await db.get_scrooge_usersDB().findOneAndUpdate(
+            { _id: ObjectId(findUserAff?.refrenceId) },
+            {
+              $inc: { wallet: parseInt(commission) },
+              $push: { affliateUser: comisData },
+            }
+          );
 
-      const transactionPayload = {
-        amount: parseInt(commission),
-        transactionType: "commission",
-        prevWallet: getUserData?.wallet,
-        updatedWallet: getUserData?.wallet + commission,
-        userId: ObjectId(findUserAff?.refrenceId),
-        updatedTicket: commission,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      let trans_id;
-      console.log("transactionPayload===>>>>", transactionPayload);
-      await db
-        .get_scrooge_transactionDB()
-        .insertOne(transactionPayload)
-        .then((trans) => {
-          console.log("transtranstrans", trans);
-          trans_id = trans.insertedId;
-        });
-      }
+          const query = await db.get_affiliatesDB().findOneAndUpdate(
+            { user_id: ObjectId(findUserAff?.refrenceId) },
+            {
+              $inc: { total_earned: parseInt(commission) },
+              $set: { last_earned_at: new Date() },
+            }
+          );
+          let getUserData = await db
+            .get_scrooge_usersDB()
+            .findOne({ _id: ObjectId(findUserAff?.refrenceId) });
+          console.log("getUserData---->>>>>>", getUserData);
+
+          const transactionPayload = {
+            amount: parseInt(commission),
+            transactionType: "commission",
+            prevWallet: getUserData?.wallet,
+            updatedWallet: getUserData?.wallet + commission,
+            userId: ObjectId(findUserAff?.refrenceId),
+            updatedTicket: commission,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          };
+          let trans_id;
+          console.log("transactionPayload===>>>>", transactionPayload);
+          await db
+            .get_scrooge_transactionDB()
+            .insertOne(transactionPayload)
+            .then((trans) => {
+              console.log("transtranstrans", trans);
+              trans_id = trans.insertedId;
+            });
+        }
         let getUserDetail = await db
-      .get_scrooge_usersDB()
-      .findOne({ _id: ObjectId(userId) });
-    res
-      .status(200)
-      .send({
-        success: true,
-        data: "Chips Added Successfully",
-        user: getUserDetail,
-      });
-    
-      }
-      else {
+          .get_scrooge_usersDB()
+          .findOne({ _id: ObjectId(userId) });
+        res.status(200).send({
+          success: true,
+          data: "Chips Added Successfully",
+          user: getUserDetail,
+        });
+      } else {
         res
-      .status(500)
-      .send({ success: false, message: "Error in buying Process" });
+          .status(500)
+          .send({ success: false, message: "Error in buying Process" });
       }
     });
   } catch (error) {
