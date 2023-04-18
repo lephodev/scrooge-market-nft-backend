@@ -41,7 +41,7 @@ export async function addChips(_user_id, _qty, _address, transactionType) {
 
         const transactionPayload = {
           amount: _qty,
-          transactionType: transactionType || "nft purchase",
+          transactionType: transactionType || "Unknown Transaction",
           prevWallet: getUserData?.wallet,
           updatedWallet: getUserData?.wallet + _qty,
           userId: ObjectId(_user_id),
@@ -195,7 +195,8 @@ export async function claimDLTokens(req) {
               const chipsAdded = await addChips(
                 user_id,
                 parseInt(qty),
-                address
+                address,
+                "DL Token Claim"
               ).then(() => {
                 //console.log("after send qty: ", qty);
                 resp = qty.toString();
@@ -284,7 +285,12 @@ export async function claimDailyRewards(req) {
         })
         .then(async (trans) => {
           //console.log("Transaction recorded");
-          const chipsAdded = await addChips(user_id, qty, user_id).then(() => {
+          const chipsAdded = await addChips(
+            user_id,
+            qty,
+            user_id,
+            "Daily Reward Claim"
+          ).then(() => {
             resp = qty.toString();
           });
         });
@@ -365,7 +371,8 @@ export async function claimHolderTokens(req) {
               const chipsAdded = await addChips(
                 user_id,
                 parseInt(OGValue),
-                address
+                address,
+                "Monthly Reward Claim"
               ).then((data) => {
                 resp = { data: OGValue, code: 200 };
               });
@@ -1063,7 +1070,7 @@ export async function convertCryptoToToken(req, res) {
       userId,
       parseInt(tokens),
       address,
-      "Token Purchase From Crypto"
+      "Crypto To Token"
     ).then(async (trans) => {
       console.log("transghghg123", trans);
       if (trans.code === 200) {
@@ -1147,26 +1154,59 @@ export async function convertPrice(req, res) {
     // console.log("dbPrice",req.params.convertPrice);
     let ticket = parseInt(req.params.ticketPrice);
     let token = parseInt(req.params.tokenPrice);
-    console.log("ticket", ticket, token);
+
+    if (ticket >= 500) {
+      const list = await db
+        .get_scrooge_ticket_to_token()
+        .findOne({ ticket: ticket.toString() });
+      console.log("list", list);
+      if (!list) {
+        return res.send({
+          code: 500,
+          message: "Enter correct amount",
+          data: "no data",
+        });
+      }
+    }
+    if (ticket < 10) {
+      return res.send({
+        code: 500,
+        message: "Enter correct amount",
+        data: "no data",
+      });
+    }
 
     let userId = req.params.user_id;
+    let fData = await db
+      .get_scrooge_usersDB()
+      .findOne({ _id: ObjectId(userId) });
+    if (!fData) {
+      return res.send({
+        code: 500,
+        message: "User Not Found",
+        data: "no data",
+      });
+    }
+    if (fData?.ticket < ticket) {
+      return res.send({
+        code: 500,
+        message: "You Don't Have Enough Tickets",
+        data: "no data",
+      });
+    }
     await db
       .get_scrooge_usersDB()
       .findOneAndUpdate(
         { _id: ObjectId(userId) },
         { $inc: { ticket: -ticket, wallet: token } }
       );
-    let fData = await db
-      .get_scrooge_usersDB()
-      .findOne({ _id: ObjectId(userId) });
     let getUserData = await db
       .get_scrooge_usersDB()
       .findOne({ _id: ObjectId(userId) });
     //  console.log("getUserData",getUserData);
-
     const transactionPayload = {
       amount: ticket,
-      transactionType: "converted ticket to token",
+      transactionType: "Ticket To Token",
       prevWallet: getUserData?.wallet,
       updatedWallet: getUserData?.wallet + ticket,
       userId: ObjectId(userId),
@@ -1187,7 +1227,7 @@ export async function convertPrice(req, res) {
         console.log("e", e);
       });
     resp = "Succesfully converted";
-    return res.send({ code: 200, message: resp, data: fData });
+    return res.send({ code: 200, message: resp, data: getUserData });
   } catch (error) {
     console.log(error);
     resp = false;
