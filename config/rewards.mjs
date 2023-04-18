@@ -1159,7 +1159,7 @@ export async function convertPrice(req, res) {
       .findOne({ ticket: ticket.toString() });
     console.log("list", list);
 
-    if (!list) {
+    if (!list || !(ticket > 9 && ticket < 500)) {
       return res.send({
         code: 500,
         message: "Enter correct amount",
