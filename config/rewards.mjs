@@ -1165,7 +1165,7 @@ export async function convertPrice(req, res) {
       .get_scrooge_usersDB()
       .findOneAndUpdate(
         { _id: ObjectId(userId) },
-        { $inc: { ticket: -ticket, wallet: token } }
+        { $inc: { ticket: -ticket, wallet: list.token } }
       );
     let fData = await db
       .get_scrooge_usersDB()
