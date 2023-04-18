@@ -41,7 +41,7 @@ export async function addChips(_user_id, _qty, _address, transactionType) {
 
         const transactionPayload = {
           amount: _qty,
-          transactionType: transactionType || "nft purchase",
+          transactionType: transactionType || "Unknown Transaction",
           prevWallet: getUserData?.wallet,
           updatedWallet: getUserData?.wallet + _qty,
           userId: ObjectId(_user_id),
@@ -195,7 +195,8 @@ export async function claimDLTokens(req) {
               const chipsAdded = await addChips(
                 user_id,
                 parseInt(qty),
-                address
+                address,
+                "DL Token Claim"
               ).then(() => {
                 //console.log("after send qty: ", qty);
                 resp = qty.toString();
@@ -284,7 +285,12 @@ export async function claimDailyRewards(req) {
         })
         .then(async (trans) => {
           //console.log("Transaction recorded");
-          const chipsAdded = await addChips(user_id, qty, user_id).then(() => {
+          const chipsAdded = await addChips(
+            user_id,
+            qty,
+            user_id,
+            "Daily Reward Claim"
+          ).then(() => {
             resp = qty.toString();
           });
         });
@@ -365,7 +371,8 @@ export async function claimHolderTokens(req) {
               const chipsAdded = await addChips(
                 user_id,
                 parseInt(OGValue),
-                address
+                address,
+                "Monthly Reward Claim"
               ).then((data) => {
                 resp = { data: OGValue, code: 200 };
               });
@@ -1063,7 +1070,7 @@ export async function convertCryptoToToken(req, res) {
       userId,
       parseInt(tokens),
       address,
-      "Token Purchase From Crypto"
+      "Crypto To Token"
     ).then(async (trans) => {
       console.log("transghghg123", trans);
       if (trans.code === 200) {
@@ -1191,7 +1198,7 @@ export async function convertPrice(req, res) {
 
     const transactionPayload = {
       amount: ticket,
-      transactionType: "converted ticket to token",
+      transactionType: "Ticket To Token",
       prevWallet: getUserData?.wallet,
       updatedWallet: getUserData?.wallet + ticket,
       userId: ObjectId(userId),
