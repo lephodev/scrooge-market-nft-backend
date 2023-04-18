@@ -1147,14 +1147,25 @@ export async function convertPrice(req, res) {
     // console.log("dbPrice",req.params.convertPrice);
     let ticket = parseInt(req.params.ticketPrice);
     let token = parseInt(req.params.tokenPrice);
-    console.log("ticket", ticket, token);
+    const list = await db
+      .get_scrooge_ticket_to_token()
+      .findOne({ ticket: ticket.toString() });
+    console.log("list", list);
+
+    if (!list) {
+      return res.send({
+        code: 500,
+        message: "Enter correct amount",
+        data: "no data",
+      });
+    }
 
     let userId = req.params.user_id;
     await db
       .get_scrooge_usersDB()
       .findOneAndUpdate(
         { _id: ObjectId(userId) },
-        { $inc: { ticket: -ticket, wallet: token } }
+        { $inc: { ticket: -ticket, wallet: list.token } }
       );
     let fData = await db
       .get_scrooge_usersDB()

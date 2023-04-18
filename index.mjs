@@ -1,5 +1,8 @@
 import express, { json } from "express";
 import * as db from "./config/mongodb.mjs";
+import passport from "passport";
+import auth from "./middlewares/auth.mjs";
+import jwtStrategy from "./config/passport.mjs";
 import * as rewards from "./config/rewards.mjs";
 import * as affiliate from "./config/affiliate.mjs";
 import * as useSDK from "./config/sdk.mjs";
@@ -18,6 +21,7 @@ const app = express();
 const PORT = process.env.PORT;
 app.use(cors("*"));
 app.use(json());
+passport.use("jwt", jwtStrategy);
 app.use(async (req, res, next) => {
   if (
     !db.get_scrooge_usersDB() ||
@@ -37,7 +41,8 @@ app.use(async (req, res, next) => {
     !db.get_raffles_drawsDB() ||
     !db.get_raffles_entriesDB() ||
     !db.get_raffles_usersDB() ||
-    !db.get_raffles_usersDB()
+    !db.get_raffles_usersDB() ||
+    !db.get_scrooge_ticket_to_token
   ) {
     await db.connectToDB();
   }
@@ -71,29 +76,33 @@ app.use(async (req, res, next) => {
 
 //################################# Affiliates #################################//
 // Route to get Affiliate user
-app.get("/api/getAffiliateUser/:user_id", affiliate.getAffiliateUser);
+app.get("/api/getAffiliateUser/:user_id", auth(), affiliate.getAffiliateUser);
 
 // Route to create Affiliate user
 app.get(
   "/api/createAffiliateUser/:user_id/:ip_address",
+  auth(),
   affiliate.createAffiliateUser
 );
 
 // Route to get affiliate leaders by number of tokens earned
 app.get(
   "/api/getAffLeadersByTokens/:limit/:days",
+  auth(),
   affiliate.getAffLeadersByTokens
 );
 
 // Route to get affiliate leaders by number of commissions (num of sales) earned
 app.get(
   "/api/getAffLeadersByCount/:limit/:days",
+  auth(),
   affiliate.getAffLeadersByCount
 );
 
 // Route to get affiliate leaders by number of commissions (num of sales) earned
 app.get(
   "/api/getAffLeadersByType/:type/:limit/:days",
+  auth(),
   affiliate.getAffLeadersByType
 );
 
@@ -101,7 +110,7 @@ app.get(
 
 //################################# Email #################################//
 // Route to trigger email
-app.get("/api/sendEmail/:to/:subject/:body", async (req, res) => {
+app.get("/api/sendEmail/:to/:subject/:body", auth(), async (req, res) => {
   const resp = await email.sendemail(req).then((data) => {
     res.send(data);
   });
@@ -110,21 +119,21 @@ app.get("/api/sendEmail/:to/:subject/:body", async (req, res) => {
 //################################# Items #################################//
 // app.get(
 //   "/api/getFreeTokens/:address/:token_id/:user_id/:qty/:aff_id",
-//   async (req, res) => {
+//  auth(), async (req, res) => {
 //     const resp = await useSDK.getFreeTokens(req).then((data) => {
 //       res.send(data);
 //     });
 //   }
 // );
 
-app.post("/api/getFreeTokens", async (req, res) => {
+app.post("/api/getFreeTokens", auth(), async (req, res) => {
   useSDK.getFreeTokens(req, res);
   // const resp = await useSDK.getFreeTokens(req).then((data) => {
   //   res.send(data);
   // });
 });
 
-app.get("/api/getItems/:type", async (req, res) => {
+app.get("/api/getItems/:type", auth(), async (req, res) => {
   const resp = await rewards.getItems(req).then((data) => {
     res.send(data);
   });
@@ -132,7 +141,7 @@ app.get("/api/getItems/:type", async (req, res) => {
 
 //################################# Prizes #################################//
 // Route to get available prizes
-app.get("/api/getPrizes", async (req, res) => {
+app.get("/api/getPrizes", auth(), auth(), async (req, res) => {
   console.log("abcccc");
   const resp = await rewards.getPrizes(req).then((data) => {
     // console.log("prizes resp: ", data);
@@ -141,32 +150,36 @@ app.get("/api/getPrizes", async (req, res) => {
 });
 
 // Route to get user's redeemed prizes
-app.get("/api/getUserRedeemed/:user_id", async (req, res) => {
+app.get("/api/getUserRedeemed/:user_id", auth(), async (req, res) => {
   const resp = await rewards.getUserRedeemed(req).then((data) => {
     res.send(data);
   });
 });
 
 // Route to update markRedeemed flag in prize_redeem_transactions table
-app.get("/api/markMerchCouponRedeemed/:trans_id/:user_id", async (req, res) => {
-  const resp = await rewards.markMerchCouponRedeemed(req).then((data) => {
-    res.send(data);
-  });
-});
+app.get(
+  "/api/markMerchCouponRedeemed/:trans_id/:user_id",
+  auth(),
+  async (req, res) => {
+    const resp = await rewards.markMerchCouponRedeemed(req).then((data) => {
+      res.send(data);
+    });
+  }
+);
 
 // Route to redeem prize
 app.get("/api/redeemPrize/:address/:user_id/:prize_id", rewards.redeemPrize);
 
 //################################# Raffles #################################//
 // Route to get current raffles
-app.get("/api/getCurrentRaffles/:limit/:days", async (req, res) => {
+app.get("/api/getCurrentRaffles/:limit/:days", auth(), async (req, res) => {
   const resp = await raffles.getCurrentRaffles(req).then((data) => {
     res.send(data);
   });
 });
 
 // Route to get finished raffles
-app.get("/api/getFinishedRaffles/:limit/:days", async (req, res) => {
+app.get("/api/getFinishedRaffles/:limit/:days", auth(), async (req, res) => {
   const resp = await raffles.getFinishedRaffles(req).then((data) => {
     res.send(data);
   });
@@ -175,6 +188,7 @@ app.get("/api/getFinishedRaffles/:limit/:days", async (req, res) => {
 // Route to get entries by raffle ID
 app.get(
   "/api/getEntriesByRaffleID/:raffle_id/:limit/:days",
+  auth(),
   async (req, res) => {
     const resp = await raffles.getEntriesByRaffleID(req).then((data) => {
       res.send(data);
@@ -183,42 +197,54 @@ app.get(
 );
 
 // Route to get entries count by raffle ID
-app.get("/api/getEntriesCountByRaffleID/:raffle_id", async (req, res) => {
-  const resp = await raffles.getEntriesCountByRaffleID(req).then((data) => {
-    res.send(data);
-  });
-});
+app.get(
+  "/api/getEntriesCountByRaffleID/:raffle_id",
+  auth(),
+  async (req, res) => {
+    const resp = await raffles.getEntriesCountByRaffleID(req).then((data) => {
+      res.send(data);
+    });
+  }
+);
 
 // Route to get entries by user ID
-app.get("/api/getEntriesByUserID/:user_id/:limit/:days", async (req, res) => {
-  const resp = await raffles.getEntriesByUserID(req).then((data) => {
-    res.send(data);
-  });
-});
+app.get(
+  "/api/getEntriesByUserID/:user_id/:limit/:days",
+  auth(),
+  async (req, res) => {
+    const resp = await raffles.getEntriesByUserID(req).then((data) => {
+      res.send(data);
+    });
+  }
+);
 
 // Route to get draw by raffle ID
-app.get("/api/getDrawByRaffleID/:raffle_id", async (req, res) => {
+app.get("/api/getDrawByRaffleID/:raffle_id", auth(), async (req, res) => {
   const resp = await raffles.getDrawByRaffleID(req).then((data) => {
     res.send(data);
   });
 });
 
 // Route to get prize by prize ID
-app.get("/api/getDrawByRaffleID/:prize_id", async (req, res) => {
+app.get("/api/getDrawByRaffleID/:prize_id", auth(), async (req, res) => {
   const resp = await raffles.getPrizeByPrizeID(req).then((data) => {
     res.send(data);
   });
 });
 
 // Route to enter raffle
-app.get("/api/enterRaffle/:raffle_id/:user_id/:address", async (req, res) => {
-  const resp = await raffles.enterRaffle(req).then((data) => {
-    res.send(data);
-  });
-});
+app.get(
+  "/api/enterRaffle/:raffle_id/:user_id/:address",
+  auth(),
+  async (req, res) => {
+    const resp = await raffles.enterRaffle(req).then((data) => {
+      res.send(data);
+    });
+  }
+);
 
 // Route to get amount of user's raffle tickets
-app.get("/api/getUserRaffleTickets/:user_id", async (req, res) => {
+app.get("/api/getUserRaffleTickets/:user_id", auth(), async (req, res) => {
   const resp = await raffles.getUserRaffleTickets(req).then((data) => {
     res.send(data);
   });
@@ -227,6 +253,7 @@ app.get("/api/getUserRaffleTickets/:user_id", async (req, res) => {
 // Route to intialize raffle purchase event
 app.get(
   "/api/initEntryPurchase/:user_id/:address/:amt/:item_id",
+  auth(),
   async (req, res) => {
     const resp = await raffles.initEntryPurchase(req).then((data) => {
       res.send(data);
@@ -237,6 +264,7 @@ app.get(
 // Route to finalize raffle purchase event
 app.get(
   "/api/finalizeEntryPurchase/:user_id/:address/:amt/:purchase_id/:trans_hash",
+  auth(),
   async (req, res) => {
     const resp = await raffles.finalizeEntryPurchase(req).then((data) => {
       res.send(data);
@@ -248,28 +276,34 @@ app.get(
 // Route to get last claim date
 app.get(
   "/api/getNextClaimDate/:address/:type/:user_id/:token_id",
+  auth(),
   rewards.getNextClaimDate
 );
 
 // Route to claim DL Tokens
-app.get("/api/claimDLTokens/:address/:user_id/:token_id", async (req, res) => {
-  const resp = await rewards.claimDLTokens(req).then((data) => {
-    res.send(data);
-  });
-});
+app.get(
+  "/api/claimDLTokens/:address/:user_id/:token_id",
+  auth(),
+  async (req, res) => {
+    const resp = await rewards.claimDLTokens(req).then((data) => {
+      res.send(data);
+    });
+  }
+);
 
 // Route to claim daily rewards
-app.get("/api/claimDailyRewards/:user_id", async (req, res) => {
+app.get("/api/claimDailyRewards/:user_id", auth(), async (req, res) => {
   const resp = await rewards.claimDailyRewards(req).then((data) => {
     res.send(data);
   });
 });
 
-app.get("/api/getDLNFTs/:address", useSDK.getDLNFTs);
+app.get("/api/getDLNFTs/:address", auth(), useSDK.getDLNFTs);
 
 // Route to claim holder monthly Tokens
 app.get(
   "/api/claimHolderTokens/:address/:OGbalance/:currentPrice/:user_id",
+  auth(),
   async (req, res) => {
     const resp = await rewards.claimHolderTokens(req).then((data) => {
       res.send(data);
@@ -279,34 +313,38 @@ app.get(
 
 //################################# Sharable Data #################################//
 // Route to get Sharable Messages
-app.get("/api/getSharableMessages", sharable.getSharableMessages);
+app.get("/api/getSharableMessages", auth(), sharable.getSharableMessages);
 
 // Route to get shortened link
-app.get("/api/getShortLink/:link", sharable.getShortLink);
+app.get("/api/getShortLink/:link", auth(), sharable.getShortLink);
 
 //Reute to get user reward
-app.get("/api/shareReward/:user_id/:message_id", sharable.shareReward);
-app.get("/api/getSocialShare/:user_id", sharable.getSocialShare);
-
+app.get("/api/shareReward/:user_id/:message_id", auth(), sharable.shareReward);
+app.get("/api/getSocialShare/:user_id", auth(), sharable.getSocialShare);
 
 // Route to get AI message
-app.get("/api/getAIMessage/:prompt/:user_id/:type", async (req, res) => {
-  const resp = await chatgpt.getAIMessage(req).then((data) => {
-    res.send(data);
-  });
-});
+app.get(
+  "/api/getAIMessage/:prompt/:user_id/:type",
+  auth(),
+  async (req, res) => {
+    const resp = await chatgpt.getAIMessage(req).then((data) => {
+      res.send(data);
+    });
+  }
+);
 
 //################################# Stripe #################################//
 app.get(
   "/webhook/stripe",
   express.raw({ type: "application/json" }),
+  auth(),
   (request, response) => {
     console.log("reee", request.query, request.params, request.body);
     const res = processStripeWebhook(request, response);
     // response.send();
   }
 );
-app.post("/api/user/depositMoney", (request, response) => {
+app.post("/api/user/depositMoney", auth(), (request, response) => {
   // console.log("request",request?.body
   // );
   processStripeCheckOut(request, response);
@@ -315,23 +353,24 @@ app.post("/api/user/depositMoney", (request, response) => {
 //################################# User #################################//
 
 //################################# Utilities #################################//
-app.get("/api/decrypt/:text", (req, res) => {
+app.get("/api/decrypt/:text", auth(), (req, res) => {
   const resp = utilities.decrypt(req);
   res.send(resp);
 });
 
-app.get("/api/encrypt/:text", (req, res) => {
+app.get("/api/encrypt/:text", auth(), (req, res) => {
   const resp = utilities.encrypt(req);
   res.send(resp);
 });
 
 //################################# Wallet #################################//
 // Route to get OG Balance
-app.get("/api/getOGBalance/:address", useSDK.getOGBalance);
+app.get("/api/getOGBalance/:address", auth(), useSDK.getOGBalance);
 
 // Route to get user's NFT balance
 app.get(
   "/api/getWalletNFTBalanceByTokenID/:address/:token_id/:user_id/:qty",
+  auth(),
   async (req, res) => {
     const resp = await useSDK.getWalletNFTBalanceByTokenID(req).then((data) => {
       res.send(data);
@@ -340,7 +379,7 @@ app.get(
 );
 
 // Route to get wallet DL data
-app.get("/api/getWalletDLBalance/:address", async (req, res) => {
+app.get("/api/getWalletDLBalance/:address", auth(), async (req, res) => {
   const resp = await useSDK.getWalletDLBalance(req).then((data) => {
     res.send(data);
   });
@@ -348,11 +387,13 @@ app.get("/api/getWalletDLBalance/:address", async (req, res) => {
 
 app.get(
   "/api/convertCryptoToToken/:userId/:address/:tokens",
+  auth(),
   rewards.convertCryptoToToken
 );
 
 app.get(
   "/api/coverttickettotoken/:ticketPrice/:tokenPrice/:user_id",
+  //auth(),
   async (req, res) => {
     const resp = await rewards.convertPrice(req, res);
   }
