@@ -1161,15 +1161,29 @@ export async function convertPrice(req, res) {
     }
 
     let userId = req.params.user_id;
+    let fData = await db
+      .get_scrooge_usersDB()
+      .findOne({ _id: ObjectId(userId) });
+    if (!fData) {
+      return res.send({
+        code: 500,
+        message: "User Not Found",
+        data: "no data",
+      });
+    }
+    if (fData?.ticket < ticket) {
+      return res.send({
+        code: 500,
+        message: "You Don't Have Enough Tickets",
+        data: "no data",
+      });
+    }
     await db
       .get_scrooge_usersDB()
       .findOneAndUpdate(
         { _id: ObjectId(userId) },
-        { $inc: { ticket: -ticket, wallet: list.token } }
+        { $inc: { ticket: -ticket, wallet: token } }
       );
-    let fData = await db
-      .get_scrooge_usersDB()
-      .findOne({ _id: ObjectId(userId) });
     let getUserData = await db
       .get_scrooge_usersDB()
       .findOne({ _id: ObjectId(userId) });
@@ -1198,7 +1212,7 @@ export async function convertPrice(req, res) {
         console.log("e", e);
       });
     resp = "Succesfully converted";
-    return res.send({ code: 200, message: resp, data: fData });
+    return res.send({ code: 200, message: resp, data: getUserData });
   } catch (error) {
     console.log(error);
     resp = false;
