@@ -697,7 +697,7 @@ export async function redeemPrize(req, res) {
         // Verify sdk wallet / contract has enough balance to disburse prize
         console.log("bal123", balance);
         console.log("prize_token_qty", prize_token_qty);
-        prize_token_qty = prize_token_qty - prize_token_qty * 0.02;
+        prize_token_qty = prize_token_qty - prize_token_qty * 0.01;
         if (balance && balance >= prize_token_qty) {
           //sdk wallet has enough balance to allow prize redemption
           //check for redeem_action from prize record
