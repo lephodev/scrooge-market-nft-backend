@@ -136,17 +136,22 @@ export async function claimDLTokens(req) {
   let balance,
     balanceRaw,
     rarity_pct,
+    rarity_pts,
     prevmonth,
     lastClaimDate,
     isClaimable = false;
   if (address && user_id && token_id) {
     const checkOwner = await useSDK.contractDL.call("ownerOf", token_id);
     const getNFT = await useSDK.contractDL.erc721.get(token_id);
-    rarity_pct = getNFT.metadata.attributes[12].value;
+    // rarity_pct = getNFT.metadata.attributes[12].value;
+    rarity_pts = getNFT.metadata.attributes[11].value;
+
     /*balanceRaw = await useSDK.contractDL.call("balanceOf", address);
         balance = parseInt(balanceRaw);*/
     if (getNFT.owner === address) {
-      const qty = (1500 * (rarity_pct / 100)).toFixed(0);
+      // const qty = (1500 * (rarity_pct / 100)).toFixed(0);
+      const qty = (500-rarity_pts).toFixed(0);
+
       const qry = { token_id: token_id };
       const sort = { claimDate: -1 };
       const cursor = db
