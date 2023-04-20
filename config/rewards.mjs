@@ -588,6 +588,7 @@ export async function updateDLClaimFlag(DL_token_obj_id) {
 }
 
 export async function redeemPrize(req, res) {
+  console.log("abbcccc");
   let resp;
   let trans_id;
   const user_id = req.params.user_id;
@@ -660,8 +661,8 @@ export async function redeemPrize(req, res) {
       const queryDL = await db
         .get_marketplace_ducky_lucks_prizesDB()
         .findOne({ claimed: false });
-      console.log("querydl", queryDL);
-      DL_token_id = queryDL.token_id;
+      console.log(" ", queryDL);
+      DL_token_id = queryDL?.token_id;
       DL_token_obj_id = queryDL._id;
     }
 
@@ -957,10 +958,10 @@ export async function redeemPrize(req, res) {
           return res.send({ success: false, message: resp });
         } else {
           const sdk_wallet = await use_sdk.wallet.getAddress();
-          console.log("sdk_wallet", sdk_wallet);
+          console.log("sdk_wallet960", sdk_wallet);
           balanceRaw = await useSDK.contractDL.call("balanceOf", sdk_wallet);
           // balanceRaw = await use_sdk.wallet.balance(sdk_wallet);
-          console.log("balanraw", balanceRaw);
+          console.log("balanraw963", balanceRaw);
           balance = parseInt(balanceRaw);
           console.log("balan-----", balance);
           //console.log("getall", await useSDK.contractDL.erc721.getAll());
@@ -973,7 +974,12 @@ export async function redeemPrize(req, res) {
               // console.log("transfet");
               //initiate transfer from sdk wallet to redeemer wallet
               try {
-                //const transfer = await useSDK.contractDL.call("safeTransferFrom", sdk_wallet, address, DL_token_id);
+                // const transfer = await use_sdk.wallet.transfer(
+                //   address,
+                //   prize_token_qty,
+                //   prize_contract
+                // );
+                const transfer = await useSDK.contractDL.call("safeTransferFrom", sdk_wallet, address, DL_token_id);
                 //update claim flag to true in ducky_lucks_prizes table
                 updateDLClaimFlag(DL_token_obj_id);
                 const query3 = await db
@@ -1014,8 +1020,8 @@ export async function redeemPrize(req, res) {
                 resp = prize_name;
                 return res.status(200).send({ success: true, message: resp });
               } catch (error) {
-                console.log("Error");
-                resp = "Transaction Failed";
+                console.log("Error",error);
+                resp = error?.reason || "Transaction Failed";
                 return res.send({ success: false, message: resp });
               }
             } else if (prize_redeem_action === "burn") {
