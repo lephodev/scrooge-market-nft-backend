@@ -47,9 +47,12 @@ export async function addChips(_user_id, _qty, _address, transactionType, gc) {
           amount: _qty,
           transactionType: transactionType || "Unknown Transaction",
           prevWallet: getUserData?.wallet,
+          prevGoldCoin: getUserData?.goldCoin,
           updatedWallet: getUserData?.wallet + _qty,
           userId: ObjectId(_user_id),
           updatedTicket: getUserData?.ticket + _qty,
+          updatedGoldCoin: getUserData?.goldCoin + _qty,
+
           createdAt: new Date(),
           updatedAt: new Date(),
         };
