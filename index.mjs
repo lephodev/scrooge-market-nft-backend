@@ -386,7 +386,7 @@ app.get("/api/getWalletDLBalance/:address", auth(), async (req, res) => {
 });
 
 app.get(
-  "/api/convertCryptoToToken/:userId/:address/:tokens",
+  "/api/convertCryptoToToken/:userId/:address/:tokens/:transactionHash",
   auth(),
   rewards.convertCryptoToToken
 );

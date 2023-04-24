@@ -33,6 +33,7 @@ let _db_affiliates,
   _db_raffles_users,
   _db_raffles_purchases,
   _db_scrooge_users,
+  _db_scrooge_user_kycs,
   _db_scrooge_transaction,
   _db_sharing_hashtags,
   _db_sharing_messages,
@@ -51,6 +52,7 @@ export const connectToDB = async () => {
     .db(process.env.SCROOGE_DB)
     .collection("ticket_to_token");
   _db_scrooge_users = client.db(process.env.SCROOGE_DB).collection("users");
+  _db_scrooge_user_kycs = client.db(process.env.SCROOGE_DB).collection("userkycs");
   _db_scrooge_data = client.db("dev-markettt").collection("items");
   _db_scrooge_social_share = client
     .db(process.env.SCROOGE_DB)
@@ -118,6 +120,7 @@ export const connectToDB = async () => {
 };
 
 export const get_scrooge_usersDB = () => _db_scrooge_users;
+export const get_scrooge_user_kycs = () => _db_scrooge_user_kycs;
 export const get_scrooge_ticket_to_token = () => _db_ticket_to_token;
 // export const get_scrooge_usersData=()=>_db_scrooge_data
 export const get_scrooge_socialShare = () => _db_scrooge_social_share;
