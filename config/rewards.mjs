@@ -1,11 +1,16 @@
 import * as db from "./mongodb.mjs";
 import * as useSDK from "./sdk.mjs";
+import { ThirdwebSDK } from "@thirdweb-dev/sdk";
+import { ethers } from "ethers";
+
 import * as email from "../email/email.mjs";
 import * as commons from "./commons.mjs";
 import { ObjectId } from "mongodb";
 import itemModel from "../models/itemModel.mjs";
 import mongoose from "mongoose";
 const { Schema } = mongoose;
+
+
 
 export async function addChips(_user_id, _qty, _address, transactionType) {
   try {
@@ -17,12 +22,6 @@ export async function addChips(_user_id, _qty, _address, transactionType) {
       .get_scrooge_usersDB()
       .findOneAndUpdate({ _id: ObjectId(_user_id) }, { $inc: { wallet: _qty } })
       .then(async (user) => {
-        console.log(
-          "userrrrrrrrrrrrrrrrrrr-------------->>>>>",
-          user,
-          "abccccyyy",
-          user?.value?._id
-        );
         const queryCT = await db
           .get_marketplace_chip_transactionsDB()
           .insertOne({
@@ -231,6 +230,11 @@ export async function claimDailyRewards(req) {
   let qty = 25;
   const qry = { user_id: user_id };
   const sort = { claimDate: -1 };
+  let getKycuser = await db
+    .get_scrooge_user_kycs()
+    .findOne({ userId: ObjectId(user_id) });
+    // console.log("getKycuser---->>>>",getKycuser);
+    if(getKycuser?.status==="accept"){
   const cursor = db
     .get_marketplace_daily_reward_token_claimsDB()
     .find(qry)
@@ -278,6 +282,7 @@ export async function claimDailyRewards(req) {
       //console.log("No Claim Date");
       isClaimable = true;
     }
+
     if (isClaimable) {
       //console.log("isClaimable is true");
       const queryCT = await db
@@ -296,14 +301,18 @@ export async function claimDailyRewards(req) {
             user_id,
             "Daily Reward Claim"
           ).then(() => {
-            resp = qty.toString();
+            resp = {success:true,data:qty.toString(),message:"Token claimed"}
           });
         });
     } else {
       //console.log("isClaimable is false");
-      resp = "ZERO! You are not allowed to claim yet.";
+      resp = {success:false,message:"ZERO! You are not allowed to claim yet."};
     }
-  });
+  })
+}
+else {
+  resp = {success:false,message:"Your kyc is not approved."};
+}
   return resp;
 }
 
@@ -618,6 +627,12 @@ export async function redeemPrize(req, res) {
     use_sdk;
 
   try {
+    let getKycuser = await db
+    .get_scrooge_user_kycs()
+    .findOne({ userId: ObjectId(user_id) });
+    // console.log("getKycuser---->>>>",getKycuser);
+    // const {status}=getKycuser
+    if(getKycuser?.status==="accept"){
     const prize = await db
       .get_marketplace_prizesDB()
       .findOne({ _id: ObjectId(prize_id) });
@@ -1064,6 +1079,10 @@ export async function redeemPrize(req, res) {
       resp = "Not Enough Tickets";
       return res.send({ success: false, message: resp });
     }
+  }
+  else {
+    res.send({ success: false, message: "Your kyc is not approved" });
+  }
   } catch (e) {
     console.log("outerCatch", e);
     return res
@@ -1073,25 +1092,38 @@ export async function redeemPrize(req, res) {
 }
 
 export async function convertCryptoToToken(req, res) {
-  const { userId, address, tokens } = req.params;
+  const { userId, address, tokens,transactionHash } = req.params;
+  console.log("transactionHash",transactionHash);
+  
+  // const recipients = await useSDK.sdk_OG.wallet.getAllRecipients();
+  // const sdk = new ThirdwebSDK("https://bsc-dataseed4.binance.org/");
+
+//  console.log("recipients",sdk);
   console.log("req.params", req?.params);
+  // let get= await useSDK.sdk_OG.wallet.getAddress()
   console.log("cryptoToTokenadress", await useSDK.sdk_OG.wallet.getAddress());
   try {
+    
+    let getKycuser = await db
+    .get_scrooge_user_kycs()
+    .findOne({ userId: ObjectId(userId) });
+    //  console.log("getKycuser---->>>>",getKycuser);
+    if(getKycuser?.status==="accept"){
     const response = await addChips(
       userId,
       parseInt(tokens),
       address,
       "Crypto To Token"
     ).then(async (trans) => {
-      console.log("transghghg123", trans);
+      // console.log("transghghg123", trans);
       if (trans.code === 200) {
-        console.log("transghghg", trans);
+        // console.log("transghghg", trans);
         const commission = (0.05 * tokens).toFixed(0);
-        console.log("commission", commission);
+        // console.log("commission", commission);
         let findUserAff = await db
           .get_scrooge_usersDB()
           .findOne({ _id: ObjectId(userId) });
-        console.log("avvavavva", findUserAff);
+        // console.log("avvavavva", findUserAff);
         if (findUserAff?.refrenceId !== "false") {
           let comisData = {
             id: ObjectId(userId),
@@ -1115,7 +1147,7 @@ export async function convertCryptoToToken(req, res) {
           let getUserData = await db
             .get_scrooge_usersDB()
             .findOne({ _id: ObjectId(findUserAff?.refrenceId) });
-          console.log("getUserData---->>>>>>", getUserData);
+          // console.log("getUserData---->>>>>>", getUserData);
 
           const transactionPayload = {
             amount: parseInt(commission),
@@ -1128,12 +1160,12 @@ export async function convertCryptoToToken(req, res) {
             updatedAt: new Date(),
           };
           let trans_id;
-          console.log("transactionPayload===>>>>", transactionPayload);
+          // console.log("transactionPayload===>>>>", transactionPayload);
           await db
             .get_scrooge_transactionDB()
             .insertOne(transactionPayload)
             .then((trans) => {
-              console.log("transtranstrans", trans);
+              // console.log("transtranstrans", trans);
               trans_id = trans.insertedId;
             });
         }
@@ -1151,6 +1183,10 @@ export async function convertCryptoToToken(req, res) {
           .send({ success: false, message: "Error in buying Process" });
       }
     });
+  }
+  else {
+    res.send({ success: false, message: "Your kyc is not approved" });
+  }
   } catch (error) {
     console.log("cryptoToToken", error);
     res
@@ -1162,6 +1198,13 @@ export async function convertCryptoToToken(req, res) {
 export async function convertPrice(req, res) {
   let resp;
   try {
+    let userId = req.params.user_id;
+    let getKycuser = await db
+    .get_scrooge_user_kycs()
+    .findOne({ userId: ObjectId(userId) });
+    // console.log("getKycuser---->>>>",getKycuser);
+    const {status}=getKycuser
+    if(getKycuser?.status==="accept"){
     // console.log("dbPrice",req.params.convertPrice);
     let ticket = parseInt(req.params.ticketPrice);
     let token = parseInt(req.params.tokenPrice);
@@ -1187,7 +1230,6 @@ export async function convertPrice(req, res) {
       });
     }
 
-    let userId = req.params.user_id;
     let fData = await db
       .get_scrooge_usersDB()
       .findOne({ _id: ObjectId(userId) });
@@ -1239,6 +1281,10 @@ export async function convertPrice(req, res) {
       });
     resp = "Succesfully converted";
     return res.send({ code: 200, message: resp, data: getUserData });
+    }else {
+      res.send({ success: false, message: "Your kyc is not approved" });
+
+    }
   } catch (error) {
     console.log(error);
     resp = false;
