@@ -149,6 +149,8 @@ app.get("/api/getPrizes", auth(), auth(), async (req, res) => {
   });
 });
 
+app.get("/api/getGCPackages", auth(), rewards.getCryptoToGCPackages);
+
 // Route to get user's redeemed prizes
 app.get("/api/getUserRedeemed/:user_id", auth(), async (req, res) => {
   const resp = await rewards.getUserRedeemed(req).then((data) => {
@@ -389,6 +391,11 @@ app.get(
   "/api/convertCryptoToToken/:userId/:address/:tokens/:transactionHash",
   auth(),
   rewards.convertCryptoToToken
+);
+app.get(
+  "/api/convertCryptoToGoldCoin/:userId/:address/:reciept/:busd",
+  auth(),
+  rewards.convertCryptoToGoldCoin
 );
 
 app.get(
