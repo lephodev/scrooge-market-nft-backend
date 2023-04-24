@@ -22,6 +22,7 @@ let _db_affiliates,
   _db_marketplace_holder_claim_chips_transactions,
   _db_marketplace_items,
   _db_marketplace_prizes,
+  _db_marketplace_crypto_to_gc,
   _db_marketplace_redeem_prize_transactions,
   _db_marketplace_wallet_addresses,
   _db_common_batch_burn_transactions,
@@ -88,6 +89,9 @@ export const connectToDB = async () => {
   _db_marketplace_prizes = client
     .db(process.env.CASINO_NFT_MARKETPLACE_DB)
     .collection("prizes");
+  _db_marketplace_crypto_to_gc = client
+    .db(process.env.CASINO_NFT_MARKETPLACE_DB)
+    .collection("crypto_to_gc");
   _db_marketplace_redeem_prize_transactions = client
     .db(process.env.CASINO_NFT_MARKETPLACE_DB)
     .collection("redeem_prize_transactions");
@@ -139,6 +143,7 @@ export const get_marketplace_holder_claim_chips_transactionsDB = () =>
   _db_marketplace_holder_claim_chips_transactions;
 export const get_marketplace_itemsDB = () => _db_marketplace_items;
 export const get_marketplace_prizesDB = () => _db_marketplace_prizes;
+export const get_marketplace_gcPackagesDB = () => _db_marketplace_crypto_to_gc;
 export const get_marketplace_redeem_prize_transactionsDB = () =>
   _db_marketplace_redeem_prize_transactions;
 //export const get_marketplace_wallet_addressesDB = () => _db_marketplace_wallet_addresses;

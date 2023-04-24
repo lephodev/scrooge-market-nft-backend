@@ -7,15 +7,22 @@ import itemModel from "../models/itemModel.mjs";
 import mongoose from "mongoose";
 const { Schema } = mongoose;
 
-export async function addChips(_user_id, _qty, _address, transactionType) {
+export async function addChips(_user_id, _qty, _address, transactionType, gc) {
   try {
     console.log("Chpis Added", _user_id, _qty, _address, transactionType);
-
+    let qry = {};
     let trans_id;
     // scrooge db transaciton for this users with field prevwallet, updatedWallet,amount, source - monthly claim
+    // Crypto To Gold Coin
+    console.log("goldcoin", gc);
+    if (transactionType === "Crypto To Gold Coin") {
+      qry = { wallet: _qty, goldCoin: gc };
+    } else {
+      qry = { wallet: _qty };
+    }
     const query = await db
       .get_scrooge_usersDB()
-      .findOneAndUpdate({ _id: ObjectId(_user_id) }, { $inc: { wallet: _qty } })
+      .findOneAndUpdate({ _id: ObjectId(_user_id) }, { $inc: qry })
       .then(async (user) => {
         console.log(
           "userrrrrrrrrrrrrrrrrrr-------------->>>>>",
@@ -150,7 +157,7 @@ export async function claimDLTokens(req) {
         balance = parseInt(balanceRaw);*/
     if (getNFT.owner === address) {
       // const qty = (1500 * (rarity_pct / 100)).toFixed(0);
-      const qty = (500-rarity_pts).toFixed(0);
+      const qty = (500 - rarity_pts).toFixed(0);
 
       const qry = { token_id: token_id };
       const sort = { claimDate: -1 };
@@ -396,6 +403,19 @@ export async function claimHolderTokens(req) {
     }
   }
   return resp;
+}
+
+export async function getCryptoToGCPackages(req, res) {
+  const qry = {};
+  const sort = { price: 1 };
+  let resp;
+  const cursor = db.get_marketplace_gcPackagesDB().find(qry).sort(sort);
+
+  const arr = await cursor.toArray().then((data) => {
+    resp = data;
+    console.log(data);
+  });
+  return res.send(resp);
 }
 
 export async function getPrizes(req) {
@@ -979,7 +999,12 @@ export async function redeemPrize(req, res) {
                 //   prize_token_qty,
                 //   prize_contract
                 // );
-                const transfer = await useSDK.contractDL.call("safeTransferFrom", sdk_wallet, address, DL_token_id);
+                const transfer = await useSDK.contractDL.call(
+                  "safeTransferFrom",
+                  sdk_wallet,
+                  address,
+                  DL_token_id
+                );
                 //update claim flag to true in ducky_lucks_prizes table
                 updateDLClaimFlag(DL_token_obj_id);
                 const query3 = await db
@@ -1020,7 +1045,7 @@ export async function redeemPrize(req, res) {
                 resp = prize_name;
                 return res.status(200).send({ success: true, message: resp });
               } catch (error) {
-                console.log("Error",error);
+                console.log("Error", error);
                 resp = error?.reason || "Transaction Failed";
                 return res.send({ success: false, message: resp });
               }
@@ -1067,6 +1092,53 @@ export async function redeemPrize(req, res) {
   } catch (e) {
     console.log("outerCatch", e);
     return res
+      .status(500)
+      .send({ success: false, message: "Error in Request Process" });
+  }
+}
+
+export async function convertCryptoToGoldCoin(req, res) {
+  const { userId, address, reciept, busd } = req.params;
+  console.log("req.params", req?.params);
+  console.log("reciept", reciept);
+  console.log("cryptoToTokenadress", await useSDK.sdk_OG.wallet.getAddress());
+  if (!reciept) {
+    return res
+      .status(500)
+      .send({ success: false, message: "Error in Request Process" });
+  }
+  try {
+    console.log("-----", db.get_marketplace_gcPackagesDB);
+    const data = await db.get_marketplace_gcPackagesDB().findOne({
+      priceInBUSD: busd + "",
+    });
+    console.log("dfdfdfdfdfdsf", data);
+    const response = await addChips(
+      userId,
+      parseInt(data.freeTokenAmount),
+      address,
+      "Crypto To Gold Coin",
+      parseInt(data.gcAmount)
+    ).then(async (trans) => {
+      console.log("transghghg123", trans);
+
+      let getUserDetail = await db
+        .get_scrooge_usersDB()
+        .findOne({ _id: ObjectId(userId) });
+      res.status(200).send({
+        success: true,
+        data: "Chips Added Successfully",
+        user: getUserDetail,
+      });
+      //   } else {
+      //     res
+      //       .status(500)
+      //       .send({ success: false, message: "Error in buying Process" });
+      //   }
+    });
+  } catch (error) {
+    console.log("cryptoToToken", error);
+    res
       .status(500)
       .send({ success: false, message: "Error in Request Process" });
   }
