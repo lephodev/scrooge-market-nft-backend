@@ -23,6 +23,7 @@ let _db_affiliates,
   _db_marketplace_items,
   _db_marketplace_prizes,
   _db_marketplace_crypto_to_gc,
+  _db_marketplaceticket_to_token,
   _db_marketplace_redeem_prize_transactions,
   _db_marketplace_wallet_addresses,
   _db_common_batch_burn_transactions,
@@ -40,8 +41,7 @@ let _db_affiliates,
   _db_sharing_messages,
   _db_sharing_responses,
   _db_sharing_twitterInfluencers,
-  _db_user_details_casino_profile_points,
-  _db_ticket_to_token;
+  _db_user_details_casino_profile_points
 
 export const connectToDB = async () => {
   const client = await MongoClient.connect(uri, {
@@ -49,8 +49,8 @@ export const connectToDB = async () => {
     useUnifiedTopology: true,
     serverApi: ServerApiVersion.v1,
   });
-  _db_ticket_to_token = client
-    .db(process.env.SCROOGE_DB)
+  _db_marketplaceticket_to_token = client
+    .db(process.env.CASINO_NFT_MARKETPLACE_DB)
     .collection("ticket_to_token");
   _db_scrooge_users = client.db(process.env.SCROOGE_DB).collection("users");
   _db_scrooge_user_kycs = client.db(process.env.SCROOGE_DB).collection("userkycs");
@@ -125,7 +125,7 @@ export const connectToDB = async () => {
 
 export const get_scrooge_usersDB = () => _db_scrooge_users;
 export const get_scrooge_user_kycs = () => _db_scrooge_user_kycs;
-export const get_scrooge_ticket_to_token = () => _db_ticket_to_token;
+export const get_scrooge_ticket_to_token = () => _db_marketplaceticket_to_token;
 // export const get_scrooge_usersData=()=>_db_scrooge_data
 export const get_scrooge_socialShare = () => _db_scrooge_social_share;
 export const get_scrooge_transactionDB = () => _db_scrooge_transaction;
