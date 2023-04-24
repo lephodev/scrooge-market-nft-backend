@@ -218,7 +218,6 @@ export async function getFreeTokens(req, res) {
   console.log("Calleddddd getFreeTokens", req.body);
   try {
     let resp;
-
     const { address, token_id, userid, qty, aff_id } = req?.body || {};
     console.log(
       "address==>>",
@@ -232,6 +231,11 @@ export async function getFreeTokens(req, res) {
       "aff_id===>>",
       aff_id
     );
+    let getKycuser = await db
+    .get_scrooge_user_kycs()
+    .findOne({ userId: ObjectId(userid) });
+    // console.log("getKycuser---->>>>",getKycuser);
+    if(getKycuser?.status==="accept"){
     if (address && token_id && userid) {
       const query = await db
         .get_marketplace_itemsDB()
@@ -317,6 +321,11 @@ export async function getFreeTokens(req, res) {
 
     GetUser.id = GetUser?._id;
     return res.status(200).send({ success: true, data: resp, user: GetUser });
+  }
+  else {
+    res.send({ success: false, message: "Your kyc is not approved" });
+
+  }
   } catch (error) {
     console.log("error", error);
   }
