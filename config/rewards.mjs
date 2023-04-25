@@ -1376,21 +1376,22 @@ export async function convertPrice(req, res) {
           data: "no data",
         });
       }
+      let getUserData = await db
+        .get_scrooge_usersDB()
+        .findOne({ _id: ObjectId(userId) });
       await db
         .get_scrooge_usersDB()
         .findOneAndUpdate(
           { _id: ObjectId(userId) },
           { $inc: { ticket: -ticket, wallet: token } }
         );
-      let getUserData = await db
-        .get_scrooge_usersDB()
-        .findOne({ _id: ObjectId(userId) });
+
       //  console.log("getUserData",getUserData);
       const transactionPayload = {
         amount: ticket,
         transactionType: "Ticket To Token",
         prevWallet: getUserData?.wallet,
-        updatedWallet: getUserData?.wallet + ticket,
+        updatedWallet: getUserData?.wallet + token,
         userId: ObjectId(userId),
         updatedTicket: getUserData?.ticket - ticket,
         updatedGoldCoin: getUserData?.goldCoin,
