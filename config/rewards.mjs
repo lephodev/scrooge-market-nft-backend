@@ -44,12 +44,15 @@ export async function addChips(_user_id, _qty, _address, transactionType, gc) {
         console.log("getUserDatauuuuu", getUserData);
 
         const transactionPayload = {
-          amount: _qty,
+          amount: transactionType === "Crypto To Gold Coin" ? gc : _qty,
           transactionType: transactionType || "Unknown Transaction",
           prevWallet: getUserData?.wallet,
           updatedWallet: getUserData?.wallet + _qty,
           userId: ObjectId(_user_id),
           updatedTicket: getUserData?.ticket + _qty,
+          updatedGoldCoin: gc
+            ? getUserData?.goldCoin
+            : getUserData?.goldCoin + gc,
           createdAt: new Date(),
           updatedAt: new Date(),
         };
@@ -423,6 +426,18 @@ export async function getCryptoToGCPackages(req, res) {
   const sort = { price: 1 };
   let resp;
   const cursor = db.get_marketplace_gcPackagesDB().find(qry).sort(sort);
+
+  const arr = await cursor.toArray().then((data) => {
+    resp = data;
+    console.log(data);
+  });
+  return res.send(resp);
+}
+export async function getTicketToTokenPrizes(req, res) {
+  const qry = {};
+  const sort = { price: 1 };
+  let resp;
+  const cursor = db.get_scrooge_ticket_to_token().find(qry).sort(sort);
 
   const arr = await cursor.toArray().then((data) => {
     resp = data;

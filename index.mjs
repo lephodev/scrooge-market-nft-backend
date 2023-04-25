@@ -150,6 +150,7 @@ app.get("/api/getPrizes", auth(), auth(), async (req, res) => {
 });
 
 app.get("/api/getGCPackages", auth(), rewards.getCryptoToGCPackages);
+app.get("/api/getTicketToToken", auth(), rewards.getTicketToTokenPrizes);
 
 // Route to get user's redeemed prizes
 app.get("/api/getUserRedeemed/:user_id", auth(), async (req, res) => {
