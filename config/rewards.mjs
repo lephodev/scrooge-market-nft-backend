@@ -48,11 +48,11 @@ export async function addChips(_user_id, _qty, _address, transactionType, gc) {
           transactionType: transactionType || "Unknown Transaction",
           prevWallet: getUserData?.wallet,
           updatedWallet: getUserData?.wallet + _qty,
+          previousTickets: getUserData?.ticket,
           userId: ObjectId(_user_id),
           updatedTicket: getUserData?.ticket + _qty,
-          updatedGoldCoin: gc
-            ? getUserData?.goldCoin
-            : getUserData?.goldCoin + gc,
+          prevGoldCoin: getUserData?.goldCoin,
+          updatedGoldCoin: getUserData?.goldCoin + _qty,
           createdAt: new Date(),
           updatedAt: new Date(),
         };
@@ -446,6 +446,19 @@ export async function getTicketToTokenPrizes(req, res) {
   return res.send(resp);
 }
 
+export async function getTicketToToken(req, res) {
+  const qry = {};
+  const sort = { price: 1 };
+  let resp;
+  const cursor = db.get_scrooge_ticket_to_token().find(qry).sort(sort);
+
+  const arr = await cursor.toArray().then((data) => {
+    resp = data;
+    console.log(data);
+  });
+  return res.send(resp);
+}
+
 export async function getPrizes(req) {
   const qry = {};
   const sort = { price: 1 };
@@ -793,6 +806,9 @@ export async function redeemPrize(req, res) {
                   updatedWallet: getUserData?.wallet + prize_price,
                   userId: ObjectId(user_id),
                   updatedTicket: getUserData?.ticket - prize_price,
+                  previousTickets: getUserData?.ticket,
+                  updatedGoldCoin: getUserData?.goldCoin,
+                  prevGoldCoin: getUserData?.goldCoin,
                   createdAt: new Date(),
                   updatedAt: new Date(),
                 };
@@ -900,6 +916,9 @@ export async function redeemPrize(req, res) {
                   updatedWallet: getUserData?.wallet + prize_price,
                   userId: ObjectId(user_id),
                   updatedTicket: getUserData?.ticket - prize_price,
+                  updatedGoldCoin: getUserData?.goldCoin,
+                  prevGoldCoin: getUserData?.goldCoin,
+                  previousTickets: getUserData?.ticket,
                   createdAt: new Date(),
                   updatedAt: new Date(),
                 };
@@ -975,6 +994,10 @@ export async function redeemPrize(req, res) {
             updatedWallet: getUserData?.wallet + prize_price,
             userId: ObjectId(user_id),
             updatedTicket: getUserData?.ticket + prize_price,
+            updatedGoldCoin: getUserData?.goldCoin,
+            prevGoldCoin: getUserData?.goldCoin,
+            previousTickets: getUserData?.ticket,
+
             createdAt: new Date(),
             updatedAt: new Date(),
           };
@@ -1059,6 +1082,9 @@ export async function redeemPrize(req, res) {
                     updatedWallet: getUserData?.wallet - prize_price,
                     userId: ObjectId(user_id),
                     updatedTicket: getUserData?.ticket - prize_price,
+                    updatedGoldCoin: getUserData?.goldCoin,
+                    prevGoldCoin: getUserData?.goldCoin,
+                    previousTickets: getUserData?.ticket,
                     createdAt: new Date(),
                     updatedAt: new Date(),
                   };
@@ -1245,6 +1271,9 @@ export async function convertCryptoToToken(req, res) {
               updatedWallet: getUserData?.wallet + commission,
               userId: ObjectId(findUserAff?.refrenceId),
               updatedTicket: commission,
+              updatedGoldCoin: getUserData?.goldCoin,
+              prevGoldCoin: getUserData?.goldCoin,
+              previousTickets: getUserData?.ticket,
               createdAt: new Date(),
               updatedAt: new Date(),
             };
@@ -1352,6 +1381,9 @@ export async function convertPrice(req, res) {
         updatedWallet: getUserData?.wallet + ticket,
         userId: ObjectId(userId),
         updatedTicket: getUserData?.ticket - ticket,
+        updatedGoldCoin: getUserData?.goldCoin,
+        prevGoldCoin: getUserData?.goldCoin,
+        previousTickets: getUserData?.ticket,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
