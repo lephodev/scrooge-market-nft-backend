@@ -1338,20 +1338,11 @@ export async function convertPrice(req, res) {
       let ticket = parseInt(req.params.ticketPrice);
       let token = parseInt(req.params.tokenPrice);
 
-      if (ticket >= 500) {
-        const list = await db
-          .get_scrooge_ticket_to_token()
-          .findOne({ ticket: ticket.toString() });
-        console.log("list", list);
-        if (!list) {
-          return res.send({
-            code: 500,
-            message: "Enter correct amount",
-            data: "no data",
-          });
-        }
-      }
-      if (ticket < 10) {
+      const list = await db
+        .get_scrooge_ticket_to_token()
+        .findOne({ ticket: ticket.toString() });
+      console.log("list", list);
+      if (!list) {
         return res.send({
           code: 500,
           message: "Enter correct amount",
@@ -1379,17 +1370,15 @@ export async function convertPrice(req, res) {
       let getUserData = await db
         .get_scrooge_usersDB()
         .findOne({ _id: ObjectId(userId) });
-      await db
-        .get_scrooge_usersDB()
-        .findOneAndUpdate(
-          { _id: ObjectId(userId) },
-          {
-            $inc: {
-              ticket: -parseInt(list.ticket),
-              wallet: parseInt(list.token),
-            },
-          }
-        );
+      await db.get_scrooge_usersDB().findOneAndUpdate(
+        { _id: ObjectId(userId) },
+        {
+          $inc: {
+            ticket: -parseInt(list.ticket),
+            wallet: parseInt(list.token),
+          },
+        }
+      );
 
       //  console.log("getUserData",getUserData);
       const transactionPayload = {
