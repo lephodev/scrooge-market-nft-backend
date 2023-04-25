@@ -44,15 +44,18 @@ export async function addChips(_user_id, _qty, _address, transactionType, gc) {
         console.log("getUserDatauuuuu", getUserData);
 
         const transactionPayload = {
-          amount: _qty,
+          amount: transactionType === "Crypto To Gold Coin" ? gc : _qty,
           transactionType: transactionType || "Unknown Transaction",
           prevWallet: getUserData?.wallet,
-          updatedWallet: getUserData?.wallet + _qty,
-          previousTickets:getUserData?.ticket,
+          updatedWallet:
+            transactionType === "Crypto To Gold Coin"
+              ? getUserData?.wallet
+              : getUserData?.wallet + _qty,
+          previousTickets: getUserData?.ticket,
           userId: ObjectId(_user_id),
           updatedTicket: getUserData?.ticket + _qty,
           prevGoldCoin: getUserData?.goldCoin,
-          updatedGoldCoin: getUserData?.goldCoin + _qty,
+          updatedGoldCoin: getUserData?.goldCoin + gc,
           createdAt: new Date(),
           updatedAt: new Date(),
         };
@@ -63,6 +66,27 @@ export async function addChips(_user_id, _qty, _address, transactionType, gc) {
           .then((trans) => {
             trans_id = trans.insertedId;
           });
+        if (transactionType === "Crypto To Gold Coin") {
+          const transPayload = {
+            amount: _qty,
+            transactionType: "Free Tokens",
+            prevWallet: getUserData?.wallet,
+            updatedWallet: getUserData?.wallet + _qty,
+            previousTickets: getUserData?.ticket,
+            userId: ObjectId(_user_id),
+            updatedTicket: getUserData?.ticket + _qty,
+            prevGoldCoin: getUserData?.goldCoin + gc,
+            updatedGoldCoin: getUserData?.goldCoin + gc,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          };
+          await db
+            .get_scrooge_transactionDB()
+            .insertOne(transPayload)
+            .then((trans) => {
+              trans_id = trans.insertedId;
+            });
+        }
       });
     return { code: 200, message: " token buy success" };
   } catch (error) {
@@ -434,7 +458,6 @@ export async function getCryptoToGCPackages(req, res) {
   return res.send(resp);
 }
 
-
 export async function getTicketToToken(req, res) {
   const qry = {};
   const sort = { price: 1 };
@@ -795,7 +818,7 @@ export async function redeemPrize(req, res) {
                   updatedWallet: getUserData?.wallet + prize_price,
                   userId: ObjectId(user_id),
                   updatedTicket: getUserData?.ticket - prize_price,
-                  previousTickets:getUserData?.ticket,
+                  previousTickets: getUserData?.ticket,
                   updatedGoldCoin: getUserData?.goldCoin,
                   prevGoldCoin: getUserData?.goldCoin,
                   createdAt: new Date(),
@@ -907,7 +930,7 @@ export async function redeemPrize(req, res) {
                   updatedTicket: getUserData?.ticket - prize_price,
                   updatedGoldCoin: getUserData?.goldCoin,
                   prevGoldCoin: getUserData?.goldCoin,
-                  previousTickets:getUserData?.ticket,
+                  previousTickets: getUserData?.ticket,
                   createdAt: new Date(),
                   updatedAt: new Date(),
                 };
@@ -984,8 +1007,8 @@ export async function redeemPrize(req, res) {
             userId: ObjectId(user_id),
             updatedTicket: getUserData?.ticket + prize_price,
             updatedGoldCoin: getUserData?.goldCoin,
-             prevGoldCoin: getUserData?.goldCoin,
-             previousTickets:getUserData?.ticket,
+            prevGoldCoin: getUserData?.goldCoin,
+            previousTickets: getUserData?.ticket,
 
             createdAt: new Date(),
             updatedAt: new Date(),
@@ -1072,8 +1095,8 @@ export async function redeemPrize(req, res) {
                     userId: ObjectId(user_id),
                     updatedTicket: getUserData?.ticket - prize_price,
                     updatedGoldCoin: getUserData?.goldCoin,
-                   prevGoldCoin: getUserData?.goldCoin,
-                   previousTickets:getUserData?.ticket,
+                    prevGoldCoin: getUserData?.goldCoin,
+                    previousTickets: getUserData?.ticket,
                     createdAt: new Date(),
                     updatedAt: new Date(),
                   };
@@ -1262,7 +1285,7 @@ export async function convertCryptoToToken(req, res) {
               updatedTicket: commission,
               updatedGoldCoin: getUserData?.goldCoin,
               prevGoldCoin: getUserData?.goldCoin,
-              previousTickets:getUserData?.ticket,
+              previousTickets: getUserData?.ticket,
               createdAt: new Date(),
               updatedAt: new Date(),
             };
@@ -1372,7 +1395,7 @@ export async function convertPrice(req, res) {
         updatedTicket: getUserData?.ticket - ticket,
         updatedGoldCoin: getUserData?.goldCoin,
         prevGoldCoin: getUserData?.goldCoin,
-        previousTickets:getUserData?.ticket,
+        previousTickets: getUserData?.ticket,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
