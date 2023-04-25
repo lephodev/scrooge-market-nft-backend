@@ -47,12 +47,15 @@ export async function addChips(_user_id, _qty, _address, transactionType, gc) {
           amount: transactionType === "Crypto To Gold Coin" ? gc : _qty,
           transactionType: transactionType || "Unknown Transaction",
           prevWallet: getUserData?.wallet,
-          updatedWallet: getUserData?.wallet + _qty,
+          updatedWallet:
+            transactionType === "Crypto To Gold Coin"
+              ? getUserData?.wallet
+              : getUserData?.wallet + _qty,
           previousTickets: getUserData?.ticket,
           userId: ObjectId(_user_id),
           updatedTicket: getUserData?.ticket + _qty,
           prevGoldCoin: getUserData?.goldCoin,
-          updatedGoldCoin: getUserData?.goldCoin + _qty,
+          updatedGoldCoin: getUserData?.goldCoin + gc,
           createdAt: new Date(),
           updatedAt: new Date(),
         };
@@ -63,6 +66,27 @@ export async function addChips(_user_id, _qty, _address, transactionType, gc) {
           .then((trans) => {
             trans_id = trans.insertedId;
           });
+        if (transactionType === "Crypto To Gold Coin") {
+          const transPayload = {
+            amount: _qty,
+            transactionType: "Free Tokens",
+            prevWallet: getUserData?.wallet,
+            updatedWallet: getUserData?.wallet + _qty,
+            previousTickets: getUserData?.ticket,
+            userId: ObjectId(_user_id),
+            updatedTicket: getUserData?.ticket + _qty,
+            prevGoldCoin: getUserData?.goldCoin + gc,
+            updatedGoldCoin: getUserData?.goldCoin + gc,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          };
+          await db
+            .get_scrooge_transactionDB()
+            .insertOne(transPayload)
+            .then((trans) => {
+              trans_id = trans.insertedId;
+            });
+        }
       });
     return { code: 200, message: " token buy success" };
   } catch (error) {
