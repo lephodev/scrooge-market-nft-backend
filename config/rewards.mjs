@@ -1383,7 +1383,12 @@ export async function convertPrice(req, res) {
         .get_scrooge_usersDB()
         .findOneAndUpdate(
           { _id: ObjectId(userId) },
-          { $inc: { ticket: -ticket, wallet: token } }
+          {
+            $inc: {
+              ticket: -parseInt(list.ticket),
+              wallet: parseInt(list.token),
+            },
+          }
         );
 
       //  console.log("getUserData",getUserData);
@@ -1391,9 +1396,9 @@ export async function convertPrice(req, res) {
         amount: ticket,
         transactionType: "Ticket To Token",
         prevWallet: getUserData?.wallet,
-        updatedWallet: getUserData?.wallet + token,
+        updatedWallet: getUserData?.wallet + parseInt(list.token),
         userId: ObjectId(userId),
-        updatedTicket: getUserData?.ticket - ticket,
+        updatedTicket: getUserData?.ticket - parseInt(list.ticket),
         updatedGoldCoin: getUserData?.goldCoin,
         prevGoldCoin: getUserData?.goldCoin,
         previousTickets: getUserData?.ticket,
