@@ -23,7 +23,6 @@ let _db_affiliates,
   _db_marketplace_items,
   _db_marketplace_prizes,
   _db_marketplace_crypto_to_gc,
-  _db_marketplaceticket_to_token,
   _db_marketplace_redeem_prize_transactions,
   _db_marketplace_wallet_addresses,
   _db_common_batch_burn_transactions,
@@ -132,7 +131,7 @@ export const connectToDB = async () => {
 
 export const get_scrooge_usersDB = () => _db_scrooge_users;
 export const get_scrooge_user_kycs = () => _db_scrooge_user_kycs;
-export const get_scrooge_ticket_to_token = () => _db_marketplaceticket_to_token;
+export const get_scrooge_ticket_to_token = () => _db_ticket_to_token;
 // export const get_scrooge_usersData=()=>_db_scrooge_data
 export const get_scrooge_socialShare = () => _db_scrooge_social_share;
 export const get_scrooge_transactionDB = () => _db_scrooge_transaction;

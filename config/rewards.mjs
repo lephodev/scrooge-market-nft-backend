@@ -457,18 +457,6 @@ export async function getCryptoToGCPackages(req, res) {
   });
   return res.send(resp);
 }
-export async function getTicketToTokenPrizes(req, res) {
-  const qry = {};
-  const sort = { price: 1 };
-  let resp;
-  const cursor = db.get_scrooge_ticket_to_token().find(qry).sort(sort);
-
-  const arr = await cursor.toArray().then((data) => {
-    resp = data;
-    console.log(data);
-  });
-  return res.send(resp);
-}
 
 export async function getTicketToToken(req, res) {
   const qry = {};
