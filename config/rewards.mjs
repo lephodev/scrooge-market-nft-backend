@@ -1391,7 +1391,7 @@ export async function convertPrice(req, res) {
         amount: ticket,
         transactionType: "Ticket To Token",
         prevWallet: getUserData?.wallet,
-        updatedWallet: getUserData?.wallet + ticket,
+        updatedWallet: getUserData?.wallet + token,
         userId: ObjectId(userId),
         updatedTicket: getUserData?.ticket - ticket,
         updatedGoldCoin: getUserData?.goldCoin,
