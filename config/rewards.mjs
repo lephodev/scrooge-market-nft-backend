@@ -10,7 +10,7 @@ import itemModel from "../models/itemModel.mjs";
 import mongoose from "mongoose";
 const { Schema } = mongoose;
 
-export async function addChips(_user_id, _qty, _address, transactionType, gc) {
+export async function addChips(_user_id, _qty, _address, transactionType, gc,recipt) {
   try {
     console.log("Chpis Added", _user_id, _qty, _address, transactionType);
     let qry = {};
@@ -55,6 +55,7 @@ export async function addChips(_user_id, _qty, _address, transactionType, gc) {
           updatedGoldCoin: getUserData?.goldCoin + _qty,
           createdAt: new Date(),
           updatedAt: new Date(),
+          transactionDetails:recipt
         };
         console.log("transactionPayloadPPPPP", transactionPayload);
         await db
@@ -449,6 +450,8 @@ export async function getTicketToToken(req, res) {
 }
 
 export async function getPrizes(req) {
+  let recipt=await useSDK.sdk_OG.getProvider().getTransactionReceipt("0x85671975f05661af56bfbb72ff33b1f000425c9312e4a68b5decae8e782c6819")
+console.log("recipt",{recipt});
   const qry = {};
   const sort = { price: 1 };
   let resp;
@@ -1150,27 +1153,29 @@ export async function redeemPrize(req, res) {
 }
 
 export async function convertCryptoToGoldCoin(req, res) {
-  const { userId, address, reciept, busd } = req.params;
+  const { userId, address, transactionHash, pid } = req.params;
   console.log("req.params", req?.params);
-  console.log("reciept", reciept);
-  console.log("cryptoToTokenadress", await useSDK.sdk_OG.wallet.getAddress());
-  if (!reciept) {
-    return res
-      .status(500)
-      .send({ success: false, message: "Error in Request Process" });
-  }
   try {
-    console.log("-----", db.get_marketplace_gcPackagesDB);
+    let recipt=await useSDK.sdk_OG.getProvider().getTransactionReceipt(transactionHash)
+    console.log({recipt});
+    if(recipt){
+  let getBlock=await db.get_scrooge_transactionDB().findOne({'transactionDetails.blockNumber':recipt?.blockNumber})
+    if(getBlock?.transactionDetails?.blockNumber===recipt?.blockNumber){
+      return  res.status(200).send({
+        success: false,
+        data: "Transaction is already exist",
+      });
+    }
     const data = await db.get_marketplace_gcPackagesDB().findOne({
-      priceInBUSD: busd + "",
+      _id:ObjectId(pid)
     });
-    console.log("dfdfdfdfdfdsf", data);
     const response = await addChips(
       userId,
       parseInt(data.freeTokenAmount),
       address,
       "Crypto To Gold Coin",
-      parseInt(data.gcAmount)
+      parseInt(data.gcAmount),
+      recipt
     ).then(async (trans) => {
       console.log("transghghg123", trans);
 
@@ -1182,12 +1187,11 @@ export async function convertCryptoToGoldCoin(req, res) {
         data: "Chips Added Successfully",
         user: getUserDetail,
       });
-      //   } else {
-      //     res
-      //       .status(500)
-      //       .send({ success: false, message: "Error in buying Process" });
-      //   }
     });
+  }
+  else {
+    res.status(500).send({ success: false, message: "Error in Request Process" });
+        }
   } catch (error) {
     console.log("cryptoToToken", error);
     res
@@ -1199,15 +1203,21 @@ export async function convertCryptoToGoldCoin(req, res) {
 export async function convertCryptoToToken(req, res) {
   const { userId, address, tokens, transactionHash } = req.params;
   console.log("transactionHash", transactionHash);
-
-  // const recipients = await useSDK.sdk_OG.wallet.getAllRecipients();
-  // const sdk = new ThirdwebSDK("https://bsc-dataseed4.binance.org/");
-
-  //  console.log("recipients",sdk);
+  // 0x85671975f05661af56bfbb72ff33b1f000425c9312e4a68b5decae8e782c6819
   console.log("req.params", req?.params);
-  // let get= await useSDK.sdk_OG.wallet.getAddress()
   console.log("cryptoToTokenadress", await useSDK.sdk_OG.wallet.getAddress());
   try {
+    let recipt=await useSDK.sdk_OG.getProvider().getTransactionReceipt(transactionHash)
+    console.log({recipt});
+    if(recipt){
+  let getBlock=await db.get_scrooge_transactionDB().findOne({'transactionDetails.blockNumber':recipt?.blockNumber})
+  console.log("getBlock---",getBlock?.transactionDetails);
+    if(getBlock?.transactionDetails?.blockNumber===recipt?.blockNumber){
+      return  res.status(200).send({
+        success: false,
+        data: "Transaction is already exist",
+      });
+    }
     let getKycuser = await db
       .get_scrooge_user_kycs()
       .findOne({ userId: ObjectId(userId) });
@@ -1265,6 +1275,7 @@ export async function convertCryptoToToken(req, res) {
               previousTickets:getUserData?.ticket,
               createdAt: new Date(),
               updatedAt: new Date(),
+              transactionDetails:recipt
             };
             let trans_id;
             // console.log("transactionPayload===>>>>", transactionPayload);
@@ -1293,6 +1304,12 @@ export async function convertCryptoToToken(req, res) {
     } else {
       res.send({ success: false, message: "Your kyc is not approved" });
     }
+  }
+  else {
+    res
+    .status(500)
+    .send({ success: false, message: "Error in Request Process" });
+  }
   } catch (error) {
     console.log("cryptoToToken", error);
     res
