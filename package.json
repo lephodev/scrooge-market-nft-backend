@@ -32,6 +32,7 @@
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
     "stripe": "^11.6.0",
+    "wagmi-core": "^0.1.22",
     "web3": "^1.8.2"
   },
   "devDependencies": {
