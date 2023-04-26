@@ -17,12 +17,6 @@ export async function addChips(_user_id, _qty, _address, transactionType, gc,rec
     let trans_id;
     // scrooge db transaciton for this users with field prevwallet, updatedWallet,amount, source - monthly claim
     // Crypto To Gold Coin
-    console.log("goldcoin", gc);
-    if (transactionType === "Crypto To Gold Coin") {
-      qry = { wallet: _qty, goldCoin: gc };
-    } else {
-      qry = { wallet: _qty };
-    }
     const query = await db
       .get_scrooge_usersDB()
       .findOneAndUpdate({ _id: ObjectId(_user_id) }, { $inc: qry })
@@ -44,21 +38,19 @@ export async function addChips(_user_id, _qty, _address, transactionType, gc,rec
         console.log("getUserDatauuuuu", getUserData);
 
         const transactionPayload = {
-          amount: transactionType === "Crypto To Gold Coin" ? gc : _qty,
-          transactionType: transactionType || "Unknown Transaction",
+          amount: gc ,
+          transactionType: "Crypto To Gold Coin",
           prevWallet: getUserData?.wallet,
-          updatedWallet:
-            transactionType === "Crypto To Gold Coin"
-              ? getUserData?.wallet
-              : getUserData?.wallet + _qty,
-          previousTickets: getUserData?.ticket,
+          updatedWallet:getUserData?.wallet + _qty,
           userId: ObjectId(_user_id),
           updatedTicket: getUserData?.ticket + _qty,
           prevGoldCoin: getUserData?.goldCoin,
           updatedGoldCoin: getUserData?.goldCoin + gc,
           createdAt: new Date(),
           updatedAt: new Date(),
-          transactionDetails:recipt
+          transactionDetails:recipt,
+          prevTicket: getUserData?.ticket,
+
         };
         console.log("transactionPayloadPPPPP", transactionPayload);
         await db
@@ -73,13 +65,14 @@ export async function addChips(_user_id, _qty, _address, transactionType, gc,rec
             transactionType: "Free Tokens",
             prevWallet: getUserData?.wallet,
             updatedWallet: getUserData?.wallet + _qty,
-            previousTickets: getUserData?.ticket,
             userId: ObjectId(_user_id),
             updatedTicket: getUserData?.ticket + _qty,
             prevGoldCoin: getUserData?.goldCoin + gc,
             updatedGoldCoin: getUserData?.goldCoin + gc,
             createdAt: new Date(),
             updatedAt: new Date(),
+            prevTicket: getUserData?.ticket,
+
           };
           await db
             .get_scrooge_transactionDB()
@@ -821,9 +814,9 @@ export async function redeemPrize(req, res) {
                   updatedWallet: getUserData?.wallet + prize_price,
                   userId: ObjectId(user_id),
                   updatedTicket: getUserData?.ticket - prize_price,
-                  previousTickets: getUserData?.ticket,
                   updatedGoldCoin: getUserData?.goldCoin,
                   prevGoldCoin: getUserData?.goldCoin,
+                  prevTicket: getUserData?.ticket,
                   createdAt: new Date(),
                   updatedAt: new Date(),
                 };
@@ -933,7 +926,7 @@ export async function redeemPrize(req, res) {
                   updatedTicket: getUserData?.ticket - prize_price,
                   updatedGoldCoin: getUserData?.goldCoin,
                   prevGoldCoin: getUserData?.goldCoin,
-                  previousTickets: getUserData?.ticket,
+                  prevTicket: getUserData?.ticket,
                   createdAt: new Date(),
                   updatedAt: new Date(),
                 };
@@ -1011,8 +1004,7 @@ export async function redeemPrize(req, res) {
             updatedTicket: getUserData?.ticket + prize_price,
             updatedGoldCoin: getUserData?.goldCoin,
             prevGoldCoin: getUserData?.goldCoin,
-            previousTickets: getUserData?.ticket,
-
+            prevTicket: getUserData?.ticket,
             createdAt: new Date(),
             updatedAt: new Date(),
           };
@@ -1099,9 +1091,10 @@ export async function redeemPrize(req, res) {
                     updatedTicket: getUserData?.ticket - prize_price,
                     updatedGoldCoin: getUserData?.goldCoin,
                     prevGoldCoin: getUserData?.goldCoin,
-                    previousTickets: getUserData?.ticket,
                     createdAt: new Date(),
                     updatedAt: new Date(),
+                    prevTicket: getUserData?.ticket,
+
                   };
                   let trans_id;
                   console.log("transactionPayload", transactionPayload);
@@ -1295,10 +1288,11 @@ export async function convertCryptoToToken(req, res) {
               updatedTicket: commission,
               updatedGoldCoin: getUserData?.goldCoin,
               prevGoldCoin: getUserData?.goldCoin,
-              previousTickets: getUserData?.ticket,
               createdAt: new Date(),
               updatedAt: new Date(),
-              transactionDetails:recipt
+              transactionDetails:recipt,
+              prevTicket: getUserData?.ticket,
+
             };
             let trans_id;
             // console.log("transactionPayload===>>>>", transactionPayload);
@@ -1349,7 +1343,7 @@ export async function convertPrice(req, res) {
       .get_scrooge_user_kycs()
       .findOne({ userId: ObjectId(userId) });
     // console.log("getKycuser---->>>>",getKycuser);
-    const { status } = getKycuser;
+    // const { status } = getKycuser;
     if (getKycuser?.status === "accept") {
       // console.log("dbPrice",req.params.convertPrice);
       let ticket = parseInt(req.params.ticketPrice);
@@ -1407,7 +1401,7 @@ export async function convertPrice(req, res) {
         updatedTicket: getUserData?.ticket - parseInt(list.ticket),
         updatedGoldCoin: getUserData?.goldCoin,
         prevGoldCoin: getUserData?.goldCoin,
-        previousTickets: getUserData?.ticket,
+        prevTicket: getUserData?.ticket,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
