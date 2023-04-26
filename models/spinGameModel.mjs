@@ -14,6 +14,18 @@ const spinGameSchema = new Schema(
       type: Number,
       default: 0,
     },
+    resultIndex:{
+      type:Number,
+    },
+    rouletteItems:{
+      type:Array
+    },
+    containerLength:{
+      type:Number
+    },
+    winItem:{
+      type:Object
+    }
   },
   { timestamps: true }
 );

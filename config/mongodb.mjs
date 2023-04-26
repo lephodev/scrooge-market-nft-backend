@@ -42,7 +42,7 @@ let _db_affiliates,
   _db_sharing_twitterInfluencers,
   _db_user_details_casino_profile_points,
   _db_ticket_to_token,
-  _db_scrooge_spinGame;
+  _db_scrooge_spinGame,
   _db_crypto_to_token;
 
 export const connectToDB = async () => {
