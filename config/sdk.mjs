@@ -1,8 +1,8 @@
 import { ThirdwebSDK } from "@thirdweb-dev/sdk";
 import affAddOrder from "./affiliate.mjs";
 import { addChips } from "./rewards.mjs";
-import OG_ABI from "./OG_ABI.json" assert { type: "json" };
-import JR_ABI from "./JR_ABI.json" assert { type: "json" };
+import OG_ABI from "./OG_ABI.json";
+import JR_ABI from "./JR_ABI.json";
 import { ObjectId } from "mongodb";
 import * as db from "./mongodb.mjs";
 import { allChains } from "wagmi-core";

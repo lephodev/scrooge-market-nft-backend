@@ -4,8 +4,8 @@ import * as db from '../config/mongodb.mjs';
 import * as useSDK from '../config/sdk.mjs';
 import moment from 'moment/moment.js';
 import Web3 from 'web3';
-import OG_ABI from '../config/OG_ABI.json' assert {type: 'json'};
-import JR_ABI from '../config/JR_ABI.json' assert {type: 'json'};
+import OG_ABI from '../config/OG_ABI.json';
+import JR_ABI from '../config/JR_ABI.json';
 
 /// get all current raffles
 export async function getCurrentRaffles(req) {

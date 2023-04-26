@@ -41,7 +41,8 @@ let _db_affiliates,
   _db_sharing_responses,
   _db_sharing_twitterInfluencers,
   _db_user_details_casino_profile_points,
-  _db_ticket_to_token;
+  _db_ticket_to_token,
+  _db_scrooge_spinGame;
 
 export const connectToDB = async () => {
   const client = await MongoClient.connect(uri, {
@@ -53,6 +54,7 @@ export const connectToDB = async () => {
     .db(process.env.SCROOGE_DB)
     .collection("ticket_to_token");
   _db_scrooge_users = client.db(process.env.SCROOGE_DB).collection("users");
+  _db_scrooge_spinGame = client.db(process.env.SCROOGE_DB).collection("spinGame");
   _db_scrooge_user_kycs = client.db(process.env.SCROOGE_DB).collection("userkycs");
   _db_scrooge_data = client.db("dev-markettt").collection("items");
   _db_scrooge_social_share = client
@@ -124,6 +126,7 @@ export const connectToDB = async () => {
 };
 
 export const get_scrooge_usersDB = () => _db_scrooge_users;
+export const get_scrooge_spinGameDB = () => _db_scrooge_spinGame;
 export const get_scrooge_user_kycs = () => _db_scrooge_user_kycs;
 export const get_scrooge_ticket_to_token = () => _db_ticket_to_token;
 // export const get_scrooge_usersData=()=>_db_scrooge_data
