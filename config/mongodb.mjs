@@ -43,6 +43,7 @@ let _db_affiliates,
   _db_user_details_casino_profile_points,
   _db_ticket_to_token,
   _db_scrooge_spinGame;
+  _db_crypto_to_token;
 
 export const connectToDB = async () => {
   const client = await MongoClient.connect(uri, {
@@ -50,9 +51,6 @@ export const connectToDB = async () => {
     useUnifiedTopology: true,
     serverApi: ServerApiVersion.v1,
   });
-  _db_ticket_to_token = client
-    .db(process.env.SCROOGE_DB)
-    .collection("ticket_to_token");
   _db_scrooge_users = client.db(process.env.SCROOGE_DB).collection("users");
   _db_scrooge_spinGame = client.db(process.env.SCROOGE_DB).collection("spinGame");
   _db_scrooge_user_kycs = client.db(process.env.SCROOGE_DB).collection("userkycs");
@@ -75,6 +73,12 @@ export const connectToDB = async () => {
   _db_marketplace_coupons_merch = client
     .db(process.env.CASINO_NFT_MARKETPLACE_DB)
     .collection("coupons_merch");
+  _db_ticket_to_token = client
+    .db(process.env.CASINO_NFT_MARKETPLACE_DB)
+    .collection("ticket_to_token");
+  _db_crypto_to_token = client
+    .db(process.env.CASINO_NFT_MARKETPLACE_DB)
+    .collection("crypto_to_token");
   _db_marketplace_daily_reward_token_claims = client
     .db(process.env.CASINO_NFT_MARKETPLACE_DB)
     .collection("daily_reward_token_claims");
@@ -150,6 +154,7 @@ export const get_marketplace_holder_claim_chips_transactionsDB = () =>
 export const get_marketplace_itemsDB = () => _db_marketplace_items;
 export const get_marketplace_prizesDB = () => _db_marketplace_prizes;
 export const get_marketplace_gcPackagesDB = () => _db_marketplace_crypto_to_gc;
+export const get_marketplace_crypto_to_token = () => _db_crypto_to_token;
 export const get_marketplace_redeem_prize_transactionsDB = () =>
   _db_marketplace_redeem_prize_transactions;
 //export const get_marketplace_wallet_addressesDB = () => _db_marketplace_wallet_addresses;

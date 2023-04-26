@@ -133,6 +133,9 @@ export async function transferNFT(_user_id, _token_id, _address, order_total) {
             updatedWallet: getUserData?.wallet + commission,
             userId: ObjectId(findUserAff?.refrenceId),
             updatedTicket: commission,
+            updatedGoldCoin: getUserData?.goldCoin,
+            prevGoldCoin: getUserData?.goldCoin,
+            prevTicket: getUserData?.ticket,
             createdAt: new Date(),
             updatedAt: new Date(),
           };
@@ -286,6 +289,9 @@ export async function getFreeTokens(req, res) {
                 updatedWallet: getUserData?.wallet + commission,
                 userId: ObjectId(findUserAff?.refrenceId),
                 updatedTicket: commission,
+                updatedGoldCoin: getUserData?.goldCoin,
+                prevGoldCoin: getUserData?.goldCoin,
+                prevTicket:getUserData?.ticket,
                 createdAt: new Date(),
                 updatedAt: new Date(),
               };

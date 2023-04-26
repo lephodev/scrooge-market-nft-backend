@@ -153,6 +153,7 @@ app.get("/api/getPrizes", auth(), auth(), async (req, res) => {
 });
 
 app.get("/api/getGCPackages", auth(), rewards.getCryptoToGCPackages);
+app.get("/api/getTicketToToken", auth(), rewards.getTicketToToken);
 
 // Route to get user's redeemed prizes
 app.get("/api/getUserRedeemed/:user_id", auth(), async (req, res) => {
@@ -173,7 +174,7 @@ app.get(
 );
 
 // Route to redeem prize
-app.get("/api/redeemPrize/:address/:user_id/:prize_id", rewards.redeemPrize);
+app.get("/api/redeemPrize/:address/:user_id/:prize_id", auth(), rewards.redeemPrize);
 
 //################################# Raffles #################################//
 // Route to get current raffles
@@ -396,14 +397,14 @@ app.get(
   rewards.convertCryptoToToken
 );
 app.get(
-  "/api/convertCryptoToGoldCoin/:userId/:address/:reciept/:busd",
+  "/api/convertCryptoToGoldCoin/:userId/:address/:transactionHash/:pid",
   auth(),
   rewards.convertCryptoToGoldCoin
 );
 
 app.get(
   "/api/coverttickettotoken/:ticketPrice/:tokenPrice/:user_id",
-  //auth(),
+  auth(),
   async (req, res) => {
     const resp = await rewards.convertPrice(req, res);
   }
