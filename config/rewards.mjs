@@ -753,7 +753,6 @@ export async function redeemPrize(req, res) {
         .get_scrooge_usersDB()
         .findOne({ _id: ObjectId(user_id) });
 
-      console.log(user);
 
       //  console.log('user', user);
       user_ticket = user.ticket; //user's available ticket balance

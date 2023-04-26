@@ -171,7 +171,7 @@ app.get(
 );
 
 // Route to redeem prize
-app.get("/api/redeemPrize/:address/:user_id/:prize_id", rewards.redeemPrize);
+app.get("/api/redeemPrize/:address/:user_id/:prize_id", auth(), rewards.redeemPrize);
 
 //################################# Raffles #################################//
 // Route to get current raffles
