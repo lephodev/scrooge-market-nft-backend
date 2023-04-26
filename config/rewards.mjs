@@ -1338,17 +1338,10 @@ export async function convertPrice(req, res) {
   let resp;
   try {
     let userId = req.params.user_id;
-    let getKycuser = await db
-      .get_scrooge_user_kycs()
-      .findOne({ userId: ObjectId(userId) });
-    // console.log("getKycuser---->>>>",getKycuser);
-    // const { status } = getKycuser;
-    if (getKycuser?.status === "accept") {
-      // console.log("dbPrice",req.params.convertPrice);
       let ticket = parseInt(req.params.ticketPrice);
       let token = parseInt(req.params.tokenPrice);
 console.log("req.params",req.params);
-     
+     if(ticket>0){
 
       let fData = await db
         .get_scrooge_usersDB()
@@ -1408,9 +1401,9 @@ console.log("req.params",req.params);
         });
       resp = "Succesfully converted";
       return res.send({ code: 200, success:true, message: resp, data: getUserData });
-    } else {
-      res.send({ success: false, message: "Your kyc is not approved" });
-    }
+      }
+      else {
+        res.send({ success: false, message: "Please enter valid ticket" })      }
   } catch (error) {
     console.log(error);
     resp = false;
