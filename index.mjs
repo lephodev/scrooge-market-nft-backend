@@ -129,12 +129,12 @@ app.get("/api/sendEmail/:to/:subject/:body", auth(), async (req, res) => {
 //   }
 // );
 
-app.post("/api/getFreeTokens", auth(), async (req, res) => {
-  useSDK.getFreeTokens(req, res);
+// app.post("/api/getFreeTokens", auth(), async (req, res) => {
+//   useSDK.getFreeTokens(req, res);
   // const resp = await useSDK.getFreeTokens(req).then((data) => {
   //   res.send(data);
   // });
-});
+// });
 
 app.get("/api/getItems/:type", auth(), async (req, res) => {
   const resp = await rewards.getItems(req).then((data) => {
@@ -239,15 +239,15 @@ app.get("/api/getDrawByRaffleID/:prize_id", auth(), async (req, res) => {
 });
 
 // Route to enter raffle
-app.get(
-  "/api/enterRaffle/:raffle_id/:user_id/:address",
-  auth(),
-  async (req, res) => {
-    const resp = await raffles.enterRaffle(req).then((data) => {
-      res.send(data);
-    });
-  }
-);
+// app.get(
+//   "/api/enterRaffle/:raffle_id/:user_id/:address",
+//   auth(),
+//   async (req, res) => {
+//     const resp = await raffles.enterRaffle(req).then((data) => {
+//       res.send(data);
+//     });
+//   }
+// );
 
 // Route to get amount of user's raffle tickets
 app.get("/api/getUserRaffleTickets/:user_id", auth(), async (req, res) => {
@@ -268,15 +268,15 @@ app.get(
 );
 
 // Route to finalize raffle purchase event
-app.get(
-  "/api/finalizeEntryPurchase/:user_id/:address/:amt/:purchase_id/:trans_hash",
-  auth(),
-  async (req, res) => {
-    const resp = await raffles.finalizeEntryPurchase(req).then((data) => {
-      res.send(data);
-    });
-  }
-);
+// app.get(
+//   "/api/finalizeEntryPurchase/:user_id/:address/:amt/:purchase_id/:trans_hash",
+//   auth(),
+//   async (req, res) => {
+//     const resp = await raffles.finalizeEntryPurchase(req).then((data) => {
+//       res.send(data);
+//     });
+//   }
+// );
 
 //################################# Rewards #################################//
 // Route to get last claim date
