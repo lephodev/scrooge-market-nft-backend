@@ -12,14 +12,14 @@ const { Schema } = mongoose;
 
 export async function addChips(_user_id, _qty, _address, transactionType, gc,recipt) {
   try {
-    console.log("Chpis Added", _user_id, _qty, _address, transactionType);
-    let qry = {};
+    console.log();
+    console.log("Chpis Added", _user_id, _qty, _address, transactionType,gc);
     let trans_id;
-    // scrooge db transaciton for this users with field prevwallet, updatedWallet,amount, source - monthly claim
-    // Crypto To Gold Coin
     const query = await db
       .get_scrooge_usersDB()
-      .findOneAndUpdate({ _id: ObjectId(_user_id) }, { $inc: qry })
+      .findOneAndUpdate({ _id: ObjectId(_user_id) }, {
+        $inc: { goldCoin: parseInt(gc),token:parseInt(_qty) }
+      })
       .then(async (user) => {
         const queryCT = await db
           .get_marketplace_chip_transactionsDB()
@@ -44,7 +44,7 @@ export async function addChips(_user_id, _qty, _address, transactionType, gc,rec
           updatedWallet:getUserData?.wallet + _qty,
           userId: ObjectId(_user_id),
           updatedTicket: getUserData?.ticket + _qty,
-          prevGoldCoin: getUserData?.goldCoin,
+          prevGoldCoin: getUserData?.goldCoin+gc,
           updatedGoldCoin: getUserData?.goldCoin + gc,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -59,7 +59,7 @@ export async function addChips(_user_id, _qty, _address, transactionType, gc,rec
           .then((trans) => {
             trans_id = trans.insertedId;
           });
-        if (transactionType === "Crypto To Gold Coin") {
+       
           const transPayload = {
             amount: _qty,
             transactionType: "Free Tokens",
@@ -80,7 +80,7 @@ export async function addChips(_user_id, _qty, _address, transactionType, gc,rec
             .then((trans) => {
               trans_id = trans.insertedId;
             });
-        }
+        
       });
     return { code: 200, message: " token buy success" };
   } catch (error) {
@@ -1418,7 +1418,7 @@ export async function convertPrice(req, res) {
           console.log("e", e);
         });
       resp = "Succesfully converted";
-      return res.send({ code: 200, message: resp, data: getUserData });
+      return res.send({ code: 200, success:true, message: resp, data: getUserData });
     } else {
       res.send({ success: false, message: "Your kyc is not approved" });
     }
