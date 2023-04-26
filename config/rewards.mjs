@@ -40,8 +40,8 @@ export async function addChips(_user_id, _qty, _address, transactionType, gc,rec
         const transactionPayload = {
           amount: gc ,
           transactionType: "Crypto To Gold Coin",
-          prevWallet: getUserData?.wallet,
-          updatedWallet:getUserData?.wallet + _qty,
+          prevWallet: getUserData?.wallet+_qty,
+          updatedWallet:getUserData?.wallet+_qty,
           userId: ObjectId(_user_id),
           updatedTicket: getUserData?.ticket + _qty,
           prevGoldCoin: getUserData?.goldCoin+gc,
@@ -63,7 +63,7 @@ export async function addChips(_user_id, _qty, _address, transactionType, gc,rec
           const transPayload = {
             amount: _qty,
             transactionType: "Free Tokens",
-            prevWallet: getUserData?.wallet,
+            prevWallet: getUserData?.wallet + _qty,
             updatedWallet: getUserData?.wallet + _qty,
             userId: ObjectId(_user_id),
             updatedTicket: getUserData?.ticket + _qty,
@@ -1348,18 +1348,8 @@ export async function convertPrice(req, res) {
       // console.log("dbPrice",req.params.convertPrice);
       let ticket = parseInt(req.params.ticketPrice);
       let token = parseInt(req.params.tokenPrice);
-
-      const list = await db
-        .get_scrooge_ticket_to_token()
-        .findOne({ ticket: ticket.toString() });
-      console.log("list", list);
-      if (!list) {
-        return res.send({
-          code: 500,
-          message: "Enter correct amount",
-          data: "no data",
-        });
-      }
+console.log("req.params",req.params);
+     
 
       let fData = await db
         .get_scrooge_usersDB()
@@ -1385,8 +1375,8 @@ export async function convertPrice(req, res) {
         { _id: ObjectId(userId) },
         {
           $inc: {
-            ticket: -parseInt(list.ticket),
-            wallet: parseInt(list.token),
+            ticket: -parseInt(ticket),
+            wallet: parseInt(token),
           },
         }
       );
@@ -1396,9 +1386,9 @@ export async function convertPrice(req, res) {
         amount: ticket,
         transactionType: "Ticket To Token",
         prevWallet: getUserData?.wallet,
-        updatedWallet: getUserData?.wallet + parseInt(list.token),
+        updatedWallet: getUserData?.wallet + parseInt(token),
         userId: ObjectId(userId),
-        updatedTicket: getUserData?.ticket - parseInt(list.ticket),
+        updatedTicket: getUserData?.ticket - parseInt(ticket),
         updatedGoldCoin: getUserData?.goldCoin,
         prevGoldCoin: getUserData?.goldCoin,
         prevTicket: getUserData?.ticket,
