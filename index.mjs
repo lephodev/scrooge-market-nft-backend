@@ -236,15 +236,15 @@ app.get("/api/getDrawByRaffleID/:prize_id", auth(), async (req, res) => {
 });
 
 // Route to enter raffle
-app.get(
-  "/api/enterRaffle/:raffle_id/:user_id/:address",
-  auth(),
-  async (req, res) => {
-    const resp = await raffles.enterRaffle(req).then((data) => {
-      res.send(data);
-    });
-  }
-);
+// app.get(
+//   "/api/enterRaffle/:raffle_id/:user_id/:address",
+//   auth(),
+//   async (req, res) => {
+//     const resp = await raffles.enterRaffle(req).then((data) => {
+//       res.send(data);
+//     });
+//   }
+// );
 
 // Route to get amount of user's raffle tickets
 app.get("/api/getUserRaffleTickets/:user_id", auth(), async (req, res) => {

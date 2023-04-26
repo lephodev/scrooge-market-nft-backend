@@ -141,10 +141,10 @@ app.get("/api/getDrawByRaffleID/:prize_id", async (req,res)=>{
 });
 
 // Route to enter raffle
-app.get("/api/enterRaffle/:raffle_id/:user_id/:address", async (req,res)=>{
-    const resp = await raffles.enterRaffle(req);
-    res.send(resp);
-});
+// app.get("/api/enterRaffle/:raffle_id/:user_id/:address", async (req,res)=>{
+//     const resp = await raffles.enterRaffle(req);
+//     res.send(resp);
+// });
 
 
 
