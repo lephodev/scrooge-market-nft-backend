@@ -18,7 +18,7 @@ export async function addChips(_user_id, _qty, _address, transactionType, gc,rec
     const query = await db
       .get_scrooge_usersDB()
       .findOneAndUpdate({ _id: ObjectId(_user_id) }, {
-        $inc: { goldCoin: parseInt(gc),token:parseInt(_qty) }
+        $inc: { goldCoin: parseInt(gc),wallet:parseInt(_qty) }
       })
       .then(async (user) => {
         const queryCT = await db
@@ -40,10 +40,10 @@ export async function addChips(_user_id, _qty, _address, transactionType, gc,rec
         const transactionPayload = {
           amount: gc ,
           transactionType: "Crypto To Gold Coin",
-          prevWallet: getUserData?.wallet+_qty,
-          updatedWallet:getUserData?.wallet+_qty,
+          prevWallet: getUserData?.wallet,
+          updatedWallet:getUserData?.wallet,
           userId: ObjectId(_user_id),
-          updatedTicket: getUserData?.ticket + _qty,
+          updatedTicket: getUserData?.ticket,
           prevGoldCoin: getUserData?.goldCoin+gc,
           updatedGoldCoin: getUserData?.goldCoin + gc,
           createdAt: new Date(),
@@ -66,7 +66,7 @@ export async function addChips(_user_id, _qty, _address, transactionType, gc,rec
             prevWallet: getUserData?.wallet + _qty,
             updatedWallet: getUserData?.wallet + _qty,
             userId: ObjectId(_user_id),
-            updatedTicket: getUserData?.ticket + _qty,
+            updatedTicket: getUserData?.ticket,
             prevGoldCoin: getUserData?.goldCoin + gc,
             updatedGoldCoin: getUserData?.goldCoin + gc,
             createdAt: new Date(),
