@@ -126,12 +126,12 @@ app.get("/api/sendEmail/:to/:subject/:body", auth(), async (req, res) => {
 //   }
 // );
 
-app.post("/api/getFreeTokens", auth(), async (req, res) => {
-  useSDK.getFreeTokens(req, res);
+// app.post("/api/getFreeTokens", auth(), async (req, res) => {
+//   useSDK.getFreeTokens(req, res);
   // const resp = await useSDK.getFreeTokens(req).then((data) => {
   //   res.send(data);
   // });
-});
+// });
 
 app.get("/api/getItems/:type", auth(), async (req, res) => {
   const resp = await rewards.getItems(req).then((data) => {
