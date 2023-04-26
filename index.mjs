@@ -265,15 +265,15 @@ app.get(
 );
 
 // Route to finalize raffle purchase event
-app.get(
-  "/api/finalizeEntryPurchase/:user_id/:address/:amt/:purchase_id/:trans_hash",
-  auth(),
-  async (req, res) => {
-    const resp = await raffles.finalizeEntryPurchase(req).then((data) => {
-      res.send(data);
-    });
-  }
-);
+// app.get(
+//   "/api/finalizeEntryPurchase/:user_id/:address/:amt/:purchase_id/:trans_hash",
+//   auth(),
+//   async (req, res) => {
+//     const resp = await raffles.finalizeEntryPurchase(req).then((data) => {
+//       res.send(data);
+//     });
+//   }
+// );
 
 //################################# Rewards #################################//
 // Route to get last claim date
