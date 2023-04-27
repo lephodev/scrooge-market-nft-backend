@@ -92,67 +92,71 @@ export const shareReward = async (req, res) => {
       .toArray();
     console.log("lastTransactions", lastTransactions);
 
-    if (lastTransactions[0]?.totalShare > 19) {
-      getuser.id=getuser._id
-      return res
-        .status(200)
-        .send({
-          success: true,
-          code: 403,
-          message: `Sorry you have reached your redeem limit for today`,
-          user:getuser
-        });
-    } else {
-      console.log("currentPost", currentPost.length);
-      const Payload = {
-        user: ObjectId(user_id),
-        post: ObjectId(message_id),
-        reward: 10,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      const query = await db
-        .get_scrooge_socialShare()
-        .insertOne(Payload)
-        .then(async (trans) => {
-          const query = await db
-            .get_scrooge_usersDB()
-            .findOneAndUpdate(
-              { _id: ObjectId(user_id) },
-              { $inc: { wallet: 10 } },
+    // if (lastTransactions[0]?.totalShare > 19) {
+    //   getuser.id=getuser._id
+    //   return res
+    //     .status(200)
+    //     .send({
+    //       success: true,
+    //       code: 403,
+    //       message: `Sorry you have reached your redeem limit for today`,
+    //       user:getuser
+    //     });
+    // } else {
+    //   console.log("currentPost", currentPost.length);
+    //   const Payload = {
+    //     user: ObjectId(user_id),
+    //     post: ObjectId(message_id),
+    //     reward: 10,
+    //     createdAt: new Date(),
+    //     updatedAt: new Date(),
+    //   };
+    //   const query = await db
+    //     .get_scrooge_socialShare()
+    //     .insertOne(Payload)
+    //     .then(async (trans) => {
+    //       const query = await db
+    //         .get_scrooge_usersDB()
+    //         .findOneAndUpdate(
+    //           { _id: ObjectId(user_id) },
+    //           { $inc: { wallet: 10 } },
 
 
-            );
-            let getuserData=  await db
-            .get_scrooge_usersDB()
-            .findOne(
-              { _id: ObjectId(user_id) });
-            const transactionPayload = {
-              amount: 10,
-              transactionType: "share reward",
-              prevWallet: getuserData?.wallet,
-              updatedWallet: getuserData?.wallet + 10,
-              userId: ObjectId(user_id),
-              updatedTicket: 10,
-              createdAt:new Date(),
-              updatedAt:new Date()
-            };
-            let trans_id;
-            console.log("transactionPayload", transactionPayload);
-            await db
-              .get_scrooge_transactionDB()
-              .insertOne(transactionPayload)
-              .then((trans) => {
-                console.log("transtranstrans", trans);
-                trans_id = trans.insertedId;
-              })
+    //         );
+           
+    //         const transactionPayload = {
+    //           amount: 10,
+    //           transactionType: "share reward",
+    //           prevWallet: getuserData?.wallet,
+    //           updatedWallet: getuserData?.wallet + 10,
+    //           userId: ObjectId(user_id),
+    //           updatedTicket: 10,
+    //           createdAt:new Date(),
+    //           updatedAt:new Date()
+    //         };
+    //         let trans_id;
+    //         console.log("transactionPayload", transactionPayload);
+    //         await db
+    //           .get_scrooge_transactionDB()
+    //           .insertOne(transactionPayload)
+    //           .then((trans) => {
+    //             console.log("transtranstrans", trans);
+    //             trans_id = trans.insertedId;
+    //           })
               
   
            
-           getuserData.id=getuserData._id
-          return res.status(200).send({ success: true, code: 200,user:getuserData });
-        });
-    }
+    //        getuserData.id=getuserData._id
+    //       return res.status(200).send({ success: true, code: 200,user:getuserData });
+    //     });
+    // }
+
+    let getuserData=  await db
+    .get_scrooge_usersDB()
+    .findOne(
+      { _id: ObjectId(user_id) });
+    return res.status(200).send({ success: true, code: 200,user:getuserData });
+
   } catch (error) {
     console.log("error", error);
   }
