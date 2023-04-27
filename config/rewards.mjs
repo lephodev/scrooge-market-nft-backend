@@ -256,11 +256,7 @@ export async function claimDailyRewards(req) {
   let qty = 25;
   const qry = { user_id: user_id };
   const sort = { claimDate: -1 };
-  let getKycuser = await db
-    .get_scrooge_user_kycs()
-    .findOne({ userId: ObjectId(user_id) });
-  // console.log("getKycuser---->>>>",getKycuser);
-  if (getKycuser?.status === "accept") {
+  
     const cursor = db
       .get_marketplace_daily_reward_token_claimsDB()
       .find(qry)
@@ -342,9 +338,7 @@ export async function claimDailyRewards(req) {
         };
       }
     });
-  } else {
-    resp = { success: false, message: "Your kyc is not approved." };
-  }
+ 
   return resp;
 }
 
