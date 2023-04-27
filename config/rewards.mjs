@@ -45,7 +45,7 @@ export async function addChips(_user_id, _qty, _address, transactionType, gc,rec
           userId: ObjectId(_user_id),
           updatedTicket: getUserData?.ticket,
           prevGoldCoin: getUserData?.goldCoin+gc,
-          updatedGoldCoin: getUserData?.goldCoin + gc,
+          updatedGoldCoin: getUserData?.goldCoin,
           createdAt: new Date(),
           updatedAt: new Date(),
           transactionDetails:recipt,
@@ -60,26 +60,26 @@ export async function addChips(_user_id, _qty, _address, transactionType, gc,rec
             trans_id = trans.insertedId;
           });
        
-          const transPayload = {
-            amount: _qty,
-            transactionType: "Free Tokens",
-            prevWallet: getUserData?.wallet + _qty,
-            updatedWallet: getUserData?.wallet + _qty,
-            userId: ObjectId(_user_id),
-            updatedTicket: getUserData?.ticket,
-            prevGoldCoin: getUserData?.goldCoin + gc,
-            updatedGoldCoin: getUserData?.goldCoin + gc,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            prevTicket: getUserData?.ticket,
+          // const transPayload = {
+          //   amount: _qty,
+          //   transactionType: "Free Tokens",
+          //   prevWallet: getUserData?.wallet + _qty,
+          //   updatedWallet: getUserData?.wallet + _qty,
+          //   userId: ObjectId(_user_id),
+          //   updatedTicket: getUserData?.ticket,
+          //   prevGoldCoin: getUserData?.goldCoin,
+          //   updatedGoldCoin: getUserData?.goldCoin,
+          //   createdAt: new Date(),
+          //   updatedAt: new Date(),
+          //   prevTicket: getUserData?.ticket,
 
-          };
-          await db
-            .get_scrooge_transactionDB()
-            .insertOne(transPayload)
-            .then((trans) => {
-              trans_id = trans.insertedId;
-            });
+          // };
+          // await db
+          //   .get_scrooge_transactionDB()
+          //   .insertOne(transPayload)
+          //   .then((trans) => {
+          //     trans_id = trans.insertedId;
+          //   });
         
       });
     return { code: 200, message: " token buy success" };
