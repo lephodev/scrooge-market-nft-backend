@@ -45,7 +45,7 @@ export async function addChips(_user_id, _qty, _address, transactionType, gc,rec
           userId: ObjectId(_user_id),
           updatedTicket: getUserData?.ticket,
           prevGoldCoin: getUserData?.goldCoin+gc,
-          updatedGoldCoin: getUserData?.goldCoin + gc,
+          updatedGoldCoin: getUserData?.goldCoin,
           createdAt: new Date(),
           updatedAt: new Date(),
           transactionDetails:recipt,
@@ -60,26 +60,26 @@ export async function addChips(_user_id, _qty, _address, transactionType, gc,rec
             trans_id = trans.insertedId;
           });
        
-          const transPayload = {
-            amount: _qty,
-            transactionType: "Free Tokens",
-            prevWallet: getUserData?.wallet + _qty,
-            updatedWallet: getUserData?.wallet + _qty,
-            userId: ObjectId(_user_id),
-            updatedTicket: getUserData?.ticket,
-            prevGoldCoin: getUserData?.goldCoin + gc,
-            updatedGoldCoin: getUserData?.goldCoin + gc,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            prevTicket: getUserData?.ticket,
+          // const transPayload = {
+          //   amount: _qty,
+          //   transactionType: "Free Tokens",
+          //   prevWallet: getUserData?.wallet + _qty,
+          //   updatedWallet: getUserData?.wallet + _qty,
+          //   userId: ObjectId(_user_id),
+          //   updatedTicket: getUserData?.ticket,
+          //   prevGoldCoin: getUserData?.goldCoin,
+          //   updatedGoldCoin: getUserData?.goldCoin,
+          //   createdAt: new Date(),
+          //   updatedAt: new Date(),
+          //   prevTicket: getUserData?.ticket,
 
-          };
-          await db
-            .get_scrooge_transactionDB()
-            .insertOne(transPayload)
-            .then((trans) => {
-              trans_id = trans.insertedId;
-            });
+          // };
+          // await db
+          //   .get_scrooge_transactionDB()
+          //   .insertOne(transPayload)
+          //   .then((trans) => {
+          //     trans_id = trans.insertedId;
+          //   });
         
       });
     return { code: 200, message: " token buy success" };
@@ -256,11 +256,7 @@ export async function claimDailyRewards(req) {
   let qty = 25;
   const qry = { user_id: user_id };
   const sort = { claimDate: -1 };
-  let getKycuser = await db
-    .get_scrooge_user_kycs()
-    .findOne({ userId: ObjectId(user_id) });
-  // console.log("getKycuser---->>>>",getKycuser);
-  if (getKycuser?.status === "accept") {
+  
     const cursor = db
       .get_marketplace_daily_reward_token_claimsDB()
       .find(qry)
@@ -342,9 +338,7 @@ export async function claimDailyRewards(req) {
         };
       }
     });
-  } else {
-    resp = { success: false, message: "Your kyc is not approved." };
-  }
+ 
   return resp;
 }
 
@@ -1337,12 +1331,11 @@ export async function convertCryptoToToken(req, res) {
 export async function convertPrice(req, res) {
   let resp;
   try {
-    let userId = req.params.user_id;
+    console.log("req",req.user);
+    let userId = req?.user?._id
       let ticket = parseInt(req.params.ticketPrice);
-      let token = parseInt(req.params.tokenPrice);
-console.log("req.params",req.params);
+     console.log("req.params",req.params);
      if(ticket>0){
-
       let fData = await db
         .get_scrooge_usersDB()
         .findOne({ _id: ObjectId(userId) });
@@ -1368,17 +1361,15 @@ console.log("req.params",req.params);
         {
           $inc: {
             ticket: -parseInt(ticket),
-            wallet: parseInt(token),
+            wallet: parseInt(ticket),
           },
         }
       );
-
-      //  console.log("getUserData",getUserData);
       const transactionPayload = {
         amount: ticket,
         transactionType: "Ticket To Token",
         prevWallet: getUserData?.wallet,
-        updatedWallet: getUserData?.wallet + parseInt(token),
+        updatedWallet: getUserData?.wallet + parseInt(ticket),
         userId: ObjectId(userId),
         updatedTicket: getUserData?.ticket - parseInt(ticket),
         updatedGoldCoin: getUserData?.goldCoin,
@@ -1387,7 +1378,6 @@ console.log("req.params",req.params);
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-      let trans_id;
       console.log("transactionPayload", transactionPayload);
       await db
         .get_scrooge_transactionDB()
