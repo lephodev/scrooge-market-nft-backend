@@ -1162,11 +1162,18 @@ export async function redeemPrize(req, res) {
 }
 
 export async function convertCryptoToGoldCoin(req, res) {
-  const { userId, address, transactionHash, pid } = req.params;
+  const { address, transactionHash } = req.params;
   console.log("req.params", req?.params);
+  let userId = req?.user?._id
   try {
-    let recipt=await useSDK.sdk_OG.getProvider().getTransactionReceipt(transactionHash)
-    console.log({recipt});
+    let recipt=await useSDK.sdk_OG.getProvider().getTransaction(transactionHash)
+    const dataHex = JSON.parse(ethers.utils.toUtf8String(recipt.data))
+    // const dataHex1 = JSON.parse(ethers.utils.toUtf8String(recipt.data.r))
+    // console.log("dataHex1",dataHex1);
+
+    console.log({recipt, dataHex});
+    let dateTime=dataHex?.time
+    console.log("dateTime",dateTime);
     if(recipt){
   let getBlock=await db.get_scrooge_transactionDB().findOne({'transactionDetails.blockNumber':recipt?.blockNumber})
     if(getBlock?.transactionDetails?.blockNumber===recipt?.blockNumber){
@@ -1176,7 +1183,7 @@ export async function convertCryptoToGoldCoin(req, res) {
       });
     }
     const data = await db.get_marketplace_gcPackagesDB().findOne({
-      _id:ObjectId(pid)
+      _id:ObjectId(dataHex?.pid)
     });
     const response = await addChips(
       userId,
