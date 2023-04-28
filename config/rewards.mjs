@@ -1162,11 +1162,18 @@ export async function redeemPrize(req, res) {
 }
 
 export async function convertCryptoToGoldCoin(req, res) {
-  const { userId, address, transactionHash, pid } = req.params;
+  const { address, transactionHash } = req.params;
   console.log("req.params", req?.params);
+  let userId = req?.user?._id
   try {
-    let recipt=await useSDK.sdk_OG.getProvider().getTransactionReceipt(transactionHash)
-    console.log({recipt});
+    let recipt=await useSDK.sdk_OG.getProvider().getTransaction(transactionHash)
+    const dataHex = JSON.parse(ethers.utils.toUtf8String(recipt.data))
+    // const dataHex1 = JSON.parse(ethers.utils.toUtf8String(recipt.data.r))
+    // console.log("dataHex1",dataHex1);
+
+    console.log({recipt, dataHex});
+    let dateTime=dataHex?.time
+    console.log("dateTime",dateTime);
     if(recipt){
   let getBlock=await db.get_scrooge_transactionDB().findOne({'transactionDetails.blockNumber':recipt?.blockNumber})
     if(getBlock?.transactionDetails?.blockNumber===recipt?.blockNumber){
@@ -1176,7 +1183,7 @@ export async function convertCryptoToGoldCoin(req, res) {
       });
     }
     const data = await db.get_marketplace_gcPackagesDB().findOne({
-      _id:ObjectId(pid)
+      _id:ObjectId(dataHex?.pid)
     });
     const response = await addChips(
       userId,
@@ -1331,12 +1338,11 @@ export async function convertCryptoToToken(req, res) {
 export async function convertPrice(req, res) {
   let resp;
   try {
-    let userId = req.params.user_id;
+    console.log("req",req.user);
+    let userId = req?.user?._id
       let ticket = parseInt(req.params.ticketPrice);
-      let token = parseInt(req.params.tokenPrice);
-console.log("req.params",req.params);
+     console.log("req.params",req.params);
      if(ticket>0){
-
       let fData = await db
         .get_scrooge_usersDB()
         .findOne({ _id: ObjectId(userId) });
@@ -1362,17 +1368,15 @@ console.log("req.params",req.params);
         {
           $inc: {
             ticket: -parseInt(ticket),
-            wallet: parseInt(token),
+            wallet: parseInt(ticket),
           },
         }
       );
-
-      //  console.log("getUserData",getUserData);
       const transactionPayload = {
         amount: ticket,
         transactionType: "Ticket To Token",
         prevWallet: getUserData?.wallet,
-        updatedWallet: getUserData?.wallet + parseInt(token),
+        updatedWallet: getUserData?.wallet + parseInt(ticket),
         userId: ObjectId(userId),
         updatedTicket: getUserData?.ticket - parseInt(ticket),
         updatedGoldCoin: getUserData?.goldCoin,
@@ -1381,7 +1385,6 @@ console.log("req.params",req.params);
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-      let trans_id;
       console.log("transactionPayload", transactionPayload);
       await db
         .get_scrooge_transactionDB()

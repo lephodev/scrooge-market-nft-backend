@@ -7,6 +7,7 @@ import * as rewards from "./config/rewards.mjs";
 import * as affiliate from "./config/affiliate.mjs";
 import * as useSDK from "./config/sdk.mjs";
 import * as raffles from "./raffles/raffles.mjs";
+import * as rouletteSpin from "./rouletteSpin/rouletteSpin.mjs";
 import * as sharable from "./config/sharable_data.mjs";
 import * as email from "./email/email.mjs";
 import * as chatgpt from "./config/chatgpt.mjs";
@@ -17,6 +18,8 @@ import {
   processStripeWebhook,
 } from "./config/stripe.mjs";
 import cors from "cors";
+import { checkUserCanSpin } from "./rouletteSpin/rouletteUtils.mjs";
+
 const app = express();
 const PORT = process.env.PORT;
 app.use(cors("*"));
@@ -394,18 +397,31 @@ app.get(
   rewards.convertCryptoToToken
 );
 app.get(
-  "/api/convertCryptoToGoldCoin/:userId/:address/:transactionHash/:pid",
+  "/api/convertCryptoToGoldCoin/:address/:transactionHash",
   auth(),
   rewards.convertCryptoToGoldCoin
 );
 
 app.get(
-  "/api/coverttickettotoken/:ticketPrice/:tokenPrice/:user_id",
+  "/api/coverttickettotoken/:ticketPrice",
   auth(),
   async (req, res) => {
     const resp = await rewards.convertPrice(req, res);
   }
 );
+
+app.get("/api/gameResult", auth(), async (req, res) => {
+  try {
+    const { user } = req;
+    if (!checkUserCanSpin(user?.lastSpinTime))
+      return res.status(400).send({ msg: "Not eleigible for Spin" });
+    const resp1 = await rouletteSpin.gameResult(req, user._id);
+    res.status(200).send({ msg: "Success", resultData: resp1.resultData });
+    rouletteSpin.updateUserDataAndTransaction(req, resp1, user);
+  } catch (error) {
+    return res.status(500).send({ msg: "Internal Server Error" });
+  }
+});
 
 app.listen(PORT, () => {
   console.log("Server is running.", PORT);
