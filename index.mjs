@@ -19,7 +19,7 @@ import {
 } from "./config/stripe.mjs";
 import cors from "cors";
 import { checkUserCanSpin } from "./rouletteSpin/rouletteUtils.mjs";
-
+import { CryptoToGCQueue, TicketToTokenQueue } from "./utils/Queues.mjs";
 const app = express();
 const PORT = process.env.PORT;
 app.use(cors("*"));
@@ -399,14 +399,14 @@ app.get(
 app.get(
   "/api/convertCryptoToGoldCoin/:address/:transactionHash",
   auth(),
-  rewards.convertCryptoToGoldCoin
+  (req, res) => { CryptoToGCQueue.push({ req, res}, (err, result) => {console.log("ticket converted.", err, result)})}
 );
 
 app.get(
   "/api/coverttickettotoken/:ticketPrice",
   auth(),
   async (req, res) => {
-    const resp = await rewards.convertPrice(req, res);
+    TicketToTokenQueue.push({ req, res}, (err, result) => {console.log("ticket converted.", err, result)})
   }
 );
 
