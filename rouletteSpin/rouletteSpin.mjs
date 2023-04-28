@@ -66,7 +66,7 @@ export async function updateUserDataAndTransaction(req, responseData, user) {
           { _id: ObjectId(req.user._id) },
           {
             $set: {
-              lastSpinTime: Date.now() + 12000,
+              lastSpinTime: Date.now() + 86400000,
             },
             $inc: { wallet: resultData?.token, goldCoin: resultData?.gc },
           }
