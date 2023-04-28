@@ -1385,7 +1385,7 @@ export async function convertPrice(req, res) {
         prevWallet: getUserData?.wallet,
         updatedWallet: getUserData?.wallet + parseInt(ticket),
         userId: ObjectId(userId),
-        updatedTicket: getUserData?.ticket - parseInt(ticket),
+        updatedTicket: getUserData?.ticket,
         updatedGoldCoin: getUserData?.goldCoin,
         prevGoldCoin: getUserData?.goldCoin,
         prevTicket: getUserData?.ticket,
