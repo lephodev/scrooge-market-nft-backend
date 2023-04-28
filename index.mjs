@@ -394,7 +394,7 @@ app.get(
   rewards.convertCryptoToToken
 );
 app.get(
-  "/api/convertCryptoToGoldCoin/:userId/:address/:transactionHash/:pid",
+  "/api/convertCryptoToGoldCoin/:address/:transactionHash",
   auth(),
   rewards.convertCryptoToGoldCoin
 );
