@@ -400,7 +400,7 @@ app.get(
 );
 
 app.get(
-  "/api/coverttickettotoken/:ticketPrice/:tokenPrice/:user_id",
+  "/api/coverttickettotoken/:ticketPrice",
   auth(),
   async (req, res) => {
     const resp = await rewards.convertPrice(req, res);
