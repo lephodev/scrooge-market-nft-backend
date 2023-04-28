@@ -1181,8 +1181,6 @@ export async function convertCryptoToGoldCoin(req, res) {
     if(!dataHex.time || !dataHex.pid)
     return res.status(400).send({ success: false, data: "Invalid transaction"});
 console.log("Math.abs(new Date(time)- new Date() > 5",Math.abs(new Date(time)- new Date()));
-    if(Math.abs(new Date(time)- new Date() > 5))
-    return res.status(400).send({ success: false, data: "Invalid transaction"});
     
   let getBlock=await db.get_scrooge_transactionDB().findOne({'transactionDetails.blockNumber':recipt?.blockNumber})
     if(getBlock?.transactionDetails?.blockNumber===recipt?.blockNumber){
