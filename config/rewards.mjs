@@ -1331,12 +1331,11 @@ export async function convertCryptoToToken(req, res) {
 export async function convertPrice(req, res) {
   let resp;
   try {
-    let userId = req.params.user_id;
+    console.log("req",req.user);
+    let userId = req?.user?._id
       let ticket = parseInt(req.params.ticketPrice);
-      let token = parseInt(req.params.tokenPrice);
-console.log("req.params",req.params);
+     console.log("req.params",req.params);
      if(ticket>0){
-
       let fData = await db
         .get_scrooge_usersDB()
         .findOne({ _id: ObjectId(userId) });
@@ -1362,17 +1361,15 @@ console.log("req.params",req.params);
         {
           $inc: {
             ticket: -parseInt(ticket),
-            wallet: parseInt(token),
+            wallet: parseInt(ticket),
           },
         }
       );
-
-      //  console.log("getUserData",getUserData);
       const transactionPayload = {
         amount: ticket,
         transactionType: "Ticket To Token",
         prevWallet: getUserData?.wallet,
-        updatedWallet: getUserData?.wallet + parseInt(token),
+        updatedWallet: getUserData?.wallet + parseInt(ticket),
         userId: ObjectId(userId),
         updatedTicket: getUserData?.ticket - parseInt(ticket),
         updatedGoldCoin: getUserData?.goldCoin,
@@ -1381,7 +1378,6 @@ console.log("req.params",req.params);
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-      let trans_id;
       console.log("transactionPayload", transactionPayload);
       await db
         .get_scrooge_transactionDB()
