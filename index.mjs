@@ -7,6 +7,7 @@ import * as rewards from "./config/rewards.mjs";
 import * as affiliate from "./config/affiliate.mjs";
 import * as useSDK from "./config/sdk.mjs";
 import * as raffles from "./raffles/raffles.mjs";
+import * as rouletteSpin from "./rouletteSpin/rouletteSpin.mjs";
 import * as sharable from "./config/sharable_data.mjs";
 import * as email from "./email/email.mjs";
 import * as chatgpt from "./config/chatgpt.mjs";
@@ -17,6 +18,8 @@ import {
   processStripeWebhook,
 } from "./config/stripe.mjs";
 import cors from "cors";
+import { checkUserCanSpin } from "./rouletteSpin/rouletteUtils.mjs";
+
 const app = express();
 const PORT = process.env.PORT;
 app.use(cors("*"));
@@ -126,12 +129,12 @@ app.get("/api/sendEmail/:to/:subject/:body", auth(), async (req, res) => {
 //   }
 // );
 
-app.post("/api/getFreeTokens", auth(), async (req, res) => {
-  useSDK.getFreeTokens(req, res);
+// app.post("/api/getFreeTokens", auth(), async (req, res) => {
+//   useSDK.getFreeTokens(req, res);
   // const resp = await useSDK.getFreeTokens(req).then((data) => {
   //   res.send(data);
   // });
-});
+// });
 
 app.get("/api/getItems/:type", auth(), async (req, res) => {
   const resp = await rewards.getItems(req).then((data) => {
@@ -148,6 +151,9 @@ app.get("/api/getPrizes", auth(), auth(), async (req, res) => {
     res.send(data);
   });
 });
+
+app.get("/api/getGCPackages", auth(), rewards.getCryptoToGCPackages);
+app.get("/api/getTicketToToken", auth(), rewards.getTicketToToken);
 
 // Route to get user's redeemed prizes
 app.get("/api/getUserRedeemed/:user_id", auth(), async (req, res) => {
@@ -168,7 +174,7 @@ app.get(
 );
 
 // Route to redeem prize
-app.get("/api/redeemPrize/:address/:user_id/:prize_id", rewards.redeemPrize);
+app.get("/api/redeemPrize/:address/:user_id/:prize_id", auth(), rewards.redeemPrize);
 
 //################################# Raffles #################################//
 // Route to get current raffles
@@ -233,15 +239,15 @@ app.get("/api/getDrawByRaffleID/:prize_id", auth(), async (req, res) => {
 });
 
 // Route to enter raffle
-app.get(
-  "/api/enterRaffle/:raffle_id/:user_id/:address",
-  auth(),
-  async (req, res) => {
-    const resp = await raffles.enterRaffle(req).then((data) => {
-      res.send(data);
-    });
-  }
-);
+// app.get(
+//   "/api/enterRaffle/:raffle_id/:user_id/:address",
+//   auth(),
+//   async (req, res) => {
+//     const resp = await raffles.enterRaffle(req).then((data) => {
+//       res.send(data);
+//     });
+//   }
+// );
 
 // Route to get amount of user's raffle tickets
 app.get("/api/getUserRaffleTickets/:user_id", auth(), async (req, res) => {
@@ -262,15 +268,15 @@ app.get(
 );
 
 // Route to finalize raffle purchase event
-app.get(
-  "/api/finalizeEntryPurchase/:user_id/:address/:amt/:purchase_id/:trans_hash",
-  auth(),
-  async (req, res) => {
-    const resp = await raffles.finalizeEntryPurchase(req).then((data) => {
-      res.send(data);
-    });
-  }
-);
+// app.get(
+//   "/api/finalizeEntryPurchase/:user_id/:address/:amt/:purchase_id/:trans_hash",
+//   auth(),
+//   async (req, res) => {
+//     const resp = await raffles.finalizeEntryPurchase(req).then((data) => {
+//       res.send(data);
+//     });
+//   }
+// );
 
 //################################# Rewards #################################//
 // Route to get last claim date
@@ -386,18 +392,36 @@ app.get("/api/getWalletDLBalance/:address", auth(), async (req, res) => {
 });
 
 app.get(
-  "/api/convertCryptoToToken/:userId/:address/:tokens",
+  "/api/convertCryptoToToken/:userId/:address/:tokens/:transactionHash",
   auth(),
   rewards.convertCryptoToToken
 );
+app.get(
+  "/api/convertCryptoToGoldCoin/:address/:transactionHash",
+  auth(),
+  rewards.convertCryptoToGoldCoin
+);
 
 app.get(
-  "/api/coverttickettotoken/:ticketPrice/:tokenPrice/:user_id",
-  //auth(),
+  "/api/coverttickettotoken/:ticketPrice",
+  auth(),
   async (req, res) => {
     const resp = await rewards.convertPrice(req, res);
   }
 );
+
+app.get("/api/gameResult", auth(), async (req, res) => {
+  try {
+    const { user } = req;
+    if (!checkUserCanSpin(user?.lastSpinTime))
+      return res.status(400).send({ msg: "Not eleigible for Spin" });
+    const resp1 = await rouletteSpin.gameResult(req, user._id);
+    res.status(200).send({ msg: "Success", resultData: resp1.resultData });
+    rouletteSpin.updateUserDataAndTransaction(req, resp1, user);
+  } catch (error) {
+    return res.status(500).send({ msg: "Internal Server Error" });
+  }
+});
 
 app.listen(PORT, () => {
   console.log("Server is running.", PORT);
