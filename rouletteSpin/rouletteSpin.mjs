@@ -55,6 +55,9 @@ export async function updateUserDataAndTransaction(req, responseData, user) {
       updatedGoldCoin: user.goldCoin + resultData?.gc,
       updatedWallet: user.wallet + resultData?.token,
       updatedTicket: user.ticket,
+      amount: resultData?.gc + resultData?.token,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
 
     await Promise.allSettled(
@@ -63,12 +66,16 @@ export async function updateUserDataAndTransaction(req, responseData, user) {
           { _id: ObjectId(req.user._id) },
           {
             $set: {
-              lastSpinTime: Date.now() + 86400000,
+              lastSpinTime: Date.now() + 12000,
             },
             $inc: { wallet: resultData?.token, goldCoin: resultData?.gc },
           }
         ),
-        db.get_scrooge_spinGameDB().insert(gameModelData),
+        db.get_scrooge_spinGameDB().insert({
+          ...gameModelData,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }),
       ],
       db.get_scrooge_transactionDB().insertOne(payload)
     );

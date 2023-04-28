@@ -14,21 +14,21 @@ const spinGameSchema = new Schema(
       type: Number,
       default: 0,
     },
-    resultIndex:{
-      type:Number,
+    resultIndex: {
+      type: Number,
     },
-    rouletteItems:{
-      type:Array
+    rouletteItems: {
+      type: Array,
     },
-    containerLength:{
-      type:Number
+    containerLength: {
+      type: Number,
     },
-    winItem:{
-      type:Object
-    }
+    winItem: {
+      type: Object,
+    },
   },
   { timestamps: true }
 );
-const spinGameModel = mongoose.model('spinGame', spinGameSchema);
+const spinGameModel = mongoose.model("spinGame", spinGameSchema);
 
 export default spinGameModel;
