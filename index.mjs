@@ -399,7 +399,7 @@ app.get(
 app.get(
   "/api/convertCryptoToGoldCoin/:address/:transactionHash",
   auth(),
-  (req, res) => { CryptoToGCQueue.push({ req, res}, (err, result) => {console.log("ticket converted.", err, result)})}
+  (req, res) => { CryptoToGCQueue.push({ req, res}, (err, result) => {console.log("gc purchased converted.", err, result)})}
 );
 
 app.get(
