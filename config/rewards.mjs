@@ -38,7 +38,7 @@ export async function addChips(_user_id, _qty, _address, transactionType, gc,rec
             chips: _qty,
             timestamp: new Date(),
           });
-
+console.log(" user", user)
         const transactionPayload = {
           amount: gc ,
           transactionType: "Crypto To Gold Coin",
