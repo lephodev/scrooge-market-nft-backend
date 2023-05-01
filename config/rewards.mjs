@@ -1,64 +1,64 @@
 import * as db from "./mongodb.mjs";
 import * as useSDK from "./sdk.mjs";
 import { ThirdwebSDK } from "@thirdweb-dev/sdk";
-import { ethers } from "ethers";
+import { BigNumber, ethers } from "ethers";
 
 import * as email from "../email/email.mjs";
 import * as commons from "./commons.mjs";
 import { ObjectId } from "mongodb";
 import itemModel from "../models/itemModel.mjs";
+import dotenv from "dotenv";
 import mongoose from "mongoose";
+import OG_ABI from "../config/OG_ABI.json" assert { type: "json" };
+import JR_ABI from "../config/JR_ABI.json" assert {type: "json" };
+
 const { Schema } = mongoose;
+
+dotenv.config()
+
+const jrAddress = process.env.JR_WALLET_ADDRESS.toLowerCase();
+  const ogAddress = process.env.OG_WALLET_ADDRESS.toLowerCase();
+  const busdAddress = process.env.BUSD_WALLET_ADDRESS.toLowerCase();
+  const jrContractAddress = process.env.JR_CONTRACT_ADDRESS.toLowerCase();
+  const ogContractAddress = process.env.OG_CONTRACT_ADDRESS.toLowerCase();
 
 export async function addChips(_user_id, _qty, _address, transactionType, gc,recipt) {
   try {
-    console.log();
     console.log("Chpis Added", _user_id, _qty, _address, transactionType,gc);
-    let trans_id;
-    const query = await db
+    const {value: user} = await db
       .get_scrooge_usersDB()
-      .findOneAndUpdate({ _id: ObjectId(_user_id) }, {
-        $inc: { goldCoin: parseInt(gc),wallet:parseInt(_qty) }
-      })
-      .then(async (user) => {
-        const queryCT = await db
+      .findOneAndUpdate({ _id: ObjectId(_user_id)}, {
+        $inc: { goldCoin: gc,wallet:_qty }
+      }, { new : true })
+     await db
           .get_marketplace_chip_transactionsDB()
           .insertOne({
-            user_id: ObjectId(_user_id),
+            user_id: _user_id,
             address: _address,
             chips: _qty,
             timestamp: new Date(),
           });
-        console.log("queryCT queryCT", _qty);
-
-        let getUserData = await db
-          .get_scrooge_usersDB()
-          .findOne({ _id: ObjectId(_user_id) });
-
-        console.log("getUserDatauuuuu", getUserData);
-
+console.log(" user", user)
         const transactionPayload = {
           amount: gc ,
           transactionType: "Crypto To Gold Coin",
-          prevWallet: getUserData?.wallet,
-          updatedWallet:getUserData?.wallet,
-          userId: ObjectId(_user_id),
-          updatedTicket: getUserData?.ticket,
-          prevGoldCoin: getUserData?.goldCoin+gc,
-          updatedGoldCoin: getUserData?.goldCoin,
+          prevWallet: user.wallet,
+          updatedWallet:user.wallet + _qty,
+          userId: _user_id,
+          updatedTicket: user.ticket,
+          prevGoldCoin: user.goldCoin,
+          updatedGoldCoin: user.goldCoin + gc,
           createdAt: new Date(),
           updatedAt: new Date(),
           transactionDetails:recipt,
-          prevTicket: getUserData?.ticket,
+          prevTicket: user.ticket,
 
         };
         console.log("transactionPayloadPPPPP", transactionPayload);
-        await db
+        const trans_id = await db
           .get_scrooge_transactionDB()
           .insertOne(transactionPayload)
-          .then((trans) => {
-            trans_id = trans.insertedId;
-          });
+          
        
           // const transPayload = {
           //   amount: _qty,
@@ -80,8 +80,6 @@ export async function addChips(_user_id, _qty, _address, transactionType, gc,rec
           //   .then((trans) => {
           //     trans_id = trans.insertedId;
           //   });
-        
-      });
     return { code: 200, message: " token buy success" };
   } catch (error) {
     console.log("errrr", error);
@@ -1161,20 +1159,61 @@ export async function redeemPrize(req, res) {
   }
 }
 
+const getDecodedData = async (recipt) => {
+  try {
+   
+console.log("rec", recipt.to)
+    let iface, contractAddresss;
+
+    if(recipt.to.toLowerCase() === jrContractAddress){
+      console.log("JR ")
+      iface = new ethers.utils.Interface(JR_ABI);
+      contractAddresss = process.env.JR_CONTRACT_ADDRESS;
+
+    }else{
+      console.log("OG")
+    iface = new ethers.utils.Interface(OG_ABI);
+      contractAddresss = process.env.OG_CONTRACT_ADDRESS;
+    }
+    const decoded = iface.parseTransaction({ data: recipt.data });
+    const cryptoAmt = Number(ethers.utils.formatEther(decoded.args["amount"]))
+    console.log("deco",cryptoAmt)
+    if(recipt.to.toLowerCase() === ogContractAddress || recipt.to.toLowerCase() === jrContractAddress){
+      const res = await fetch(
+        `https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/${contractAddresss}`
+      );
+      const data = await res.json();
+      const current_price = data.market_data.current_price.usd;
+      console.log("curr",current_price);
+  
+       const cryptoUsd = cryptoAmt * current_price;
+       console.log("cryptoToUsd", parseInt(cryptoUsd))
+       return parseInt(cryptoUsd);
+    }
+     console.log("cryptoUsd", parseInt(Number(decoded.args["amount"]._hex)))
+     return parseInt(Number(decoded.args["amount"]._hex))
+    
+  } catch (error) {
+    console.log("error", error)
+  }
+}
+
 export async function convertCryptoToGoldCoin(req, res) {
   const { address, transactionHash } = req.params;
-  console.log("req.params", req?.params);
-  let userId = req?.user?._id
+  const { user: { _id: userId }} = req;
   try {
     let recipt=await useSDK.sdk_OG.getProvider().getTransaction(transactionHash)
-    const dataHex = JSON.parse(ethers.utils.toUtf8String(recipt.data))
-    // const dataHex1 = JSON.parse(ethers.utils.toUtf8String(recipt.data.r))
-    // console.log("dataHex1",dataHex1);
+    console.log({ recipt });
+    if(!recipt)
+    return res.status(400).send({ success: false, data: "Invalid Transaction"})
+   
+    if(!recipt.data.includes(jrAddress) && !recipt.data.includes(ogAddress) && !recipt.data.includes(busdAddress))
+    return res.status(400).send({ success: false, data: "Invalid transactionss"});
 
-    console.log({recipt, dataHex});
-    let dateTime=dataHex?.time
-    console.log("dateTime",dateTime);
-    if(recipt){
+    if(recipt.from !==address){
+      return res.status(400).send({ success: false, data: "Invalid transactionssss"});
+    }
+    
   let getBlock=await db.get_scrooge_transactionDB().findOne({'transactionDetails.blockNumber':recipt?.blockNumber})
     if(getBlock?.transactionDetails?.blockNumber===recipt?.blockNumber){
       return  res.status(200).send({
@@ -1182,17 +1221,23 @@ export async function convertCryptoToGoldCoin(req, res) {
         data: "Transaction is already exist",
       });
     }
+
+    const amt = await getDecodedData(recipt)
     const data = await db.get_marketplace_gcPackagesDB().findOne({
-      _id:ObjectId(dataHex?.pid)
+      priceInBUSD: amt.toString()
     });
-    const response = await addChips(
+    if(!data)
+    return res.status(400).send({ success: false, data: "Invalid transaction pid"});
+
+    const trans = await addChips(
       userId,
       parseInt(data.freeTokenAmount),
       address,
       "Crypto To Gold Coin",
       parseInt(data.gcAmount),
       recipt
-    ).then(async (trans) => {
+    )
+
       console.log("transghghg123", trans);
 
       let getUserDetail = await db
@@ -1203,11 +1248,6 @@ export async function convertCryptoToGoldCoin(req, res) {
         data: "Chips Added Successfully",
         user: getUserDetail,
       });
-    });
-  }
-  else {
-    res.status(500).send({ success: false, message: "Error in Request Process" });
-        }
   } catch (error) {
     console.log("cryptoToToken", error);
     res
@@ -1338,10 +1378,9 @@ export async function convertCryptoToToken(req, res) {
 export async function convertPrice(req, res) {
   let resp;
   try {
-    console.log("req",req.user);
+   
     let userId = req?.user?._id
       let ticket = parseInt(req.params.ticketPrice);
-     console.log("req.params",req.params);
      if(ticket>0){
       let fData = await db
         .get_scrooge_usersDB()
@@ -1360,9 +1399,7 @@ export async function convertPrice(req, res) {
           data: "no data",
         });
       }
-      let getUserData = await db
-        .get_scrooge_usersDB()
-        .findOne({ _id: ObjectId(userId) });
+
       await db.get_scrooge_usersDB().findOneAndUpdate(
         { _id: ObjectId(userId) },
         {
@@ -1372,31 +1409,35 @@ export async function convertPrice(req, res) {
           },
         }
       );
+      let getUserData = await db
+      .get_scrooge_usersDB()
+      .findOne({ _id: ObjectId(userId) });
       const transactionPayload = {
         amount: ticket,
         transactionType: "Ticket To Token",
-        prevWallet: getUserData?.wallet,
-        updatedWallet: getUserData?.wallet + parseInt(ticket),
+        prevWallet: getUserData?.wallet - parseInt(ticket),
+        updatedWallet: getUserData?.wallet,
         userId: ObjectId(userId),
-        updatedTicket: getUserData?.ticket - parseInt(ticket),
+        updatedTicket: getUserData?.ticket,
         updatedGoldCoin: getUserData?.goldCoin,
         prevGoldCoin: getUserData?.goldCoin,
-        prevTicket: getUserData?.ticket,
+        prevTicket: getUserData?.ticket + parseInt(ticket),
         createdAt: new Date(),
         updatedAt: new Date(),
       };
+      
       console.log("transactionPayload", transactionPayload);
       await db
         .get_scrooge_transactionDB()
         .insertOne(transactionPayload)
         .then((trans) => {
           console.log("transtranstrans", trans);
-          trans_id = trans.insertedId;
         })
         .catch((e) => {
           console.log("e", e);
         });
       resp = "Succesfully converted";
+    
       return res.send({ code: 200, success:true, message: resp, data: getUserData });
       }
       else {
