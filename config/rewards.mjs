@@ -38,16 +38,16 @@ export async function addChips(_user_id, _qty, _address, transactionType, gc,rec
             chips: _qty,
             timestamp: new Date(),
           });
-
+console.log(" user", user)
         const transactionPayload = {
           amount: gc ,
           transactionType: "Crypto To Gold Coin",
-          prevWallet: user.wallet - _qty,
-          updatedWallet:user.wallet,
+          prevWallet: user.wallet,
+          updatedWallet:user.wallet + _qty,
           userId: _user_id,
           updatedTicket: user.ticket,
-          prevGoldCoin: user.goldCoin - gc,
-          updatedGoldCoin: user.goldCoin,
+          prevGoldCoin: user.goldCoin,
+          updatedGoldCoin: user.goldCoin + gc,
           createdAt: new Date(),
           updatedAt: new Date(),
           transactionDetails:recipt,
