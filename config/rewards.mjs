@@ -40,8 +40,8 @@ export async function addChips(_user_id, _qty, _address, transactionType, gc=0,r
           });
 console.log(" user", user)
         const transactionPayload = {
-          amount: gc ,
-          transactionType: "Crypto To Gold Coin",
+          amount: gc ? gc : _qty ,
+          transactionType: transactionType,
           prevWallet: user.wallet,
           updatedWallet:user.wallet + _qty,
           userId: _user_id,
