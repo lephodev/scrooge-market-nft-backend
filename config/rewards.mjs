@@ -16,6 +16,8 @@ const { Schema } = mongoose;
 
 dotenv.config()
 
+const pids = { "5.8": 5, "11.6": 10, "29": 25, "58": 50, "116": 100, "290": 250 }
+
 const jrAddress = process.env.JR_WALLET_ADDRESS.toLowerCase();
   const ogAddress = process.env.OG_WALLET_ADDRESS.toLowerCase();
   const busdAddress = process.env.BUSD_WALLET_ADDRESS.toLowerCase();
@@ -1187,10 +1189,12 @@ console.log("rec", recipt.to)
       console.log("curr",current_price);
   
        const cryptoUsd = cryptoAmt * current_price;
-       console.log("cryptoToUsd", parseInt(cryptoUsd))
-       return parseInt(cryptoUsd);
+       console.log("cryp to Usd", cryptoUsd);
+       
+       console.log("cryptoToUsd", Math.round(cryptoUsd))
+       return pids[Math.round(cryptoUsd)]
     }
-     return cryptoAmt - (cryptoAmt * 0.16)
+     return cryptoAmt;
     
   } catch (error) {
     console.log("error", error)
