@@ -33,7 +33,7 @@ export async function addChips(_user_id, _qty, _address, transactionType, gc=0,r
      await db
           .get_marketplace_chip_transactionsDB()
           .insertOne({
-            user_id: _user_id,
+            user_id: ObjectId(_user_id),
             address: _address,
             chips: _qty,
             timestamp: new Date(),
@@ -44,7 +44,7 @@ console.log(" user", user)
           transactionType: transactionType,
           prevWallet: user.wallet,
           updatedWallet:user.wallet + _qty,
-          userId: _user_id,
+          userId: ObjectId(_user_id),
           updatedTicket: user.ticket,
           prevGoldCoin: user.goldCoin,
           updatedGoldCoin: user.goldCoin + gc,
