@@ -1190,7 +1190,7 @@ console.log("rec", recipt.to)
        console.log("cryptoToUsd", parseInt(cryptoUsd))
        return parseInt(cryptoUsd);
     }
-     return cryptoAmt;
+     return cryptoAmt - (cryptoAmt * 0.16)
     
   } catch (error) {
     console.log("error", error)
