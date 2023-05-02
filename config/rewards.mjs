@@ -765,7 +765,7 @@ export async function redeemPrize(req, res) {
         if (prize_token_type === "erc20") {
           balanceRaw = await use_sdk.wallet.balance(prize_contract);
           balance = parseInt(balanceRaw.displayValue);
-          console.log("Balance: ", use_sdk);
+          
           // Verify sdk wallet / contract has enough balance to disburse prize
           console.log("bal123", balance);
           console.log("prize_token_qty", prize_token_qty);
@@ -802,9 +802,9 @@ export async function redeemPrize(req, res) {
                   amount: prize_price,
                   transactionType: "Crypto Redeem",
                   prevWallet: getUserData?.wallet,
-                  updatedWallet: getUserData?.wallet + prize_price,
+                  updatedWallet: getUserData?.wallet + parseInt(prize_price),
                   userId: ObjectId(user_id),
-                  updatedTicket: getUserData?.ticket - prize_price,
+                  updatedTicket: getUserData?.ticket - parseInt(prize_price),
                   updatedGoldCoin: getUserData?.goldCoin,
                   prevGoldCoin: getUserData?.goldCoin,
                   prevTicket: getUserData?.ticket,
@@ -1190,8 +1190,7 @@ console.log("rec", recipt.to)
        console.log("cryptoToUsd", parseInt(cryptoUsd))
        return parseInt(cryptoUsd);
     }
-     console.log("cryptoUsd", parseInt(Number(decoded.args["amount"]._hex)))
-     return parseInt(Number(decoded.args["amount"]._hex))
+     return cryptoAmt;
     
   } catch (error) {
     console.log("error", error)
