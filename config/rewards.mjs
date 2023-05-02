@@ -22,7 +22,7 @@ const jrAddress = process.env.JR_WALLET_ADDRESS.toLowerCase();
   const jrContractAddress = process.env.JR_CONTRACT_ADDRESS.toLowerCase();
   const ogContractAddress = process.env.OG_CONTRACT_ADDRESS.toLowerCase();
 
-export async function addChips(_user_id, _qty, _address, transactionType, gc,recipt) {
+export async function addChips(_user_id, _qty, _address, transactionType, gc=0,recipt= {}) {
   try {
     console.log("Chpis Added", _user_id, _qty, _address, transactionType,gc);
     const {value: user} = await db
@@ -410,7 +410,7 @@ export async function claimHolderTokens(req) {
                 user_id,
                 parseInt(OGValue),
                 address,
-                "Monthly Reward Claim"
+                "Monthly Reward Claim",
               ).then((data) => {
                 resp = { data: OGValue, code: 200 };
               });
