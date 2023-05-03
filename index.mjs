@@ -423,6 +423,12 @@ app.get("/api/gameResult", auth(), async (req, res) => {
   }
 });
 
+
+app.post("/api/bitcartcc-notification", async(req,res) => {
+  console.log("payed on bitcart", { query: req.query, params: req.params, body: req.body})
+  res.send({ success: true})
+})
+
 app.listen(PORT, () => {
   console.log("Server is running.", PORT);
 });
