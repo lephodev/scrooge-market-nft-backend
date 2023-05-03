@@ -16,7 +16,7 @@ const { Schema } = mongoose;
 
 dotenv.config()
 
-const pids = { "5.8": 5, "11.6": 10, "29": 25, "58": 50, "116": 100, "290": 250 }
+const pids = { "6": 5, "12": 10, "29": 25, "58": 50, "116": 100, "290": 250 }
 
 const jrAddress = process.env.JR_WALLET_ADDRESS.toLowerCase();
   const ogAddress = process.env.OG_WALLET_ADDRESS.toLowerCase();
