@@ -308,7 +308,7 @@ app.get("/api/getDLNFTs/:address", auth(), useSDK.getDLNFTs);
 
 // Route to claim holder monthly Tokens
 app.get(
-  "/api/claimHolderTokens/:address/:OGbalance/:currentPrice/:user_id",
+  "/api/claimHolderTokens/:address",
   auth(),
   async (req, res) => {
     const resp = await rewards.claimHolderTokens(req).then((data) => {
@@ -422,6 +422,12 @@ app.get("/api/gameResult", auth(), async (req, res) => {
     return res.status(500).send({ msg: "Internal Server Error" });
   }
 });
+
+
+app.post("/api/bitcartcc-notification", async(req,res) => {
+  console.log("payed on bitcart", { query: req.query, params: req.params, body: req.body})
+  res.send({ success: true})
+})
 
 app.listen(PORT, () => {
   console.log("Server is running.", PORT);
