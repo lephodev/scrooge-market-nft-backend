@@ -345,15 +345,22 @@ export async function claimDailyRewards(req) {
 // Route to claim holder monthly Tokens
 export async function claimHolderTokens(req) {
   let resp;
-  const bal = req.params.OGbalance;
   const address = req.params.address;
-  const user_id = req.params.user_id;
-  const current_price = req.params.currentPrice;
+  const balBigNUm = await useSDK.contractOG.call('balanceOf', [address]);
+const bal = Number(ethers.utils.formatEther(balBigNUm))
+  console.log("balance b", bal)
+  const user = req.user;
+  const res = await fetch(
+    `https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/${ogContractAddress}`
+  );
+  const data = await res.json();
+  const current_price = data.market_data.current_price.usd;
+console.log("current-price", current_price);
   let isClaimable = false,
     prevmonth,
     OGValue,
     lastClaimDate;
-  if (address && user_id && bal && current_price) {
+  if (address && user._id && bal && current_price) {
     console.log("bal========12", bal);
     let OGValueIn = (current_price * bal).toFixed(0);
     if (OGValueIn < 50) {
@@ -368,7 +375,7 @@ export async function claimHolderTokens(req) {
 
     //console.log('Value: ',OGValue);
     if (OGValue > 0) {
-      const qry = { address: address };
+      const qry = { user_id: user._id.toString() };
       const sort = { claimDate: -1 };
       const cursor = db
         .get_marketplace_holder_claim_chips_transactionsDB()
@@ -401,7 +408,7 @@ export async function claimHolderTokens(req) {
             .get_marketplace_holder_claim_chips_transactionsDB()
             .insertOne({
               address: address,
-              user_id: user_id,
+              user_id: user._id.toString(),
               qty: parseInt(OGValue),
               claimDate: new Date(),
               nextClaimDate: nextmonth,
@@ -409,7 +416,7 @@ export async function claimHolderTokens(req) {
             .then(async (trans) => {
               //console.log("Transaction recorded");
               const chipsAdded = await addChips(
-                user_id,
+                user._id.toString(),
                 parseInt(OGValue),
                 address,
                 "Monthly Reward Claim",
