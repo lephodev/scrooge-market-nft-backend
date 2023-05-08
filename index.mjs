@@ -308,7 +308,7 @@ app.get("/api/getDLNFTs/:address", auth(), useSDK.getDLNFTs);
 
 // Route to claim holder monthly Tokens
 app.get(
-  "/api/claimHolderTokens/:address/:OGbalance/:currentPrice/:user_id",
+  "/api/claimHolderTokens/:address",
   auth(),
   async (req, res) => {
     const resp = await rewards.claimHolderTokens(req).then((data) => {
