@@ -691,6 +691,7 @@ export async function redeemPrize(req, res) {
         .get_marketplace_prizesDB()
         .findOne({ _id: ObjectId(prize_id) });
       console.log("prise", prize);
+      
       // assign prize attributes to variables
       prize_name = prize.name; // price of selected prize in tickets
       prize_price = prize.price; // price of selected prize in tickets
@@ -707,9 +708,22 @@ export async function redeemPrize(req, res) {
           curr_price = await useSDK.getJRCurrentPrice();
         }
         prize_token_qty = (prize_price / 100 / curr_price).toFixed(0);
-        console.log("prize_token_qty", prize_token_qty);
-      } else {
+        console.log("prize_token_qty123", prize_token_qty);
+        const RedeemPayload = {
+          status: "pending",
+          address:address,
+          ticket:prize.price,
+          token:parseInt(prize_token_qty),
+          redeemProductId:ObjectId(prize_id),
+         };
+         console.log("RedeemPayload",RedeemPayload);
+         await db
+         .get_db_crypto_redeemDB()
+         .insertOne(RedeemPayload)
         prize_token_qty = prize.token_qty;
+        
+      } else {
+       
         console.log("prize_token_qty2", prize_token_qty); // quantity of tokens to be transferred upon redemption
       }
       prize_category = prize.category; // category of prize
@@ -770,7 +784,9 @@ export async function redeemPrize(req, res) {
           
           // Verify sdk wallet / contract has enough balance to disburse prize
           console.log("bal123", balance);
-          console.log("prize_token_qty", prize_token_qty);
+          console.log("prize_token_qty12222", prize_token_qty);
+         
+
           prize_token_qty = prize_token_qty - prize_token_qty * 0.01;
           if (balance && balance >= prize_token_qty) {
             //sdk wallet has enough balance to allow prize redemption
@@ -779,7 +795,7 @@ export async function redeemPrize(req, res) {
               //initiate transfer from sdk wallet to redeemer wallet
               try {
                 console.log("addresss", address);
-                console.log(" prize_token_qty", prize_token_qty);
+                console.log(" prize_token_qty23", prize_token_qty);
                 console.log("prize_redeem_action", prize_redeem_action);
                 console.log("prize_contract", prize_contract);
                 console.log("address", address);
@@ -800,6 +816,8 @@ export async function redeemPrize(req, res) {
                   .findOne({ _id: ObjectId(user_id) });
                 //  console.log("getUserData",getUserData);
 
+               
+
                 const transactionPayload = {
                   amount: -prize_price,
                   transactionType: "Crypto Redeem",
@@ -815,6 +833,9 @@ export async function redeemPrize(req, res) {
                 };
                 let trans_id;
                 console.log("transactionPayload", transactionPayload);
+                
+
+
                 await db
                   .get_scrooge_transactionDB()
                   .insertOne(transactionPayload)
