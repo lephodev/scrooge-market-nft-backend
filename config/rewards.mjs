@@ -1467,9 +1467,9 @@ export async function convertPrice(req, res) {
 }
 
 export async function redeemPrizeData(req, res) {
-  const user_id = req.params.user_id;
   const address = req.params.address;
   const prize_id = req.params.prize_id;
+  let user_id = req?.user?._id
   try {
     const user = await db
         .get_scrooge_usersDB()
@@ -1509,12 +1509,12 @@ export async function redeemPrizeData(req, res) {
                 const RedeemPayload = {
                   status: "pending",
                   address:address,
-                  redeemProductId:ObjectId(prize_id),
+                  redeemId:ObjectId(prize_id),
                   userId:ObjectId(user_id)
                  };
-                 console.log("RedeemPayload",RedeemPayload);
+                //  console.log("RedeemPayload",RedeemPayload);
                  await db
-                 .get_db_crypto_redeemDB()
+                 .get_db_withdraw_requestDB()
                  .insertOne(RedeemPayload)
                 await db
                   .get_scrooge_transactionDB()
@@ -1526,7 +1526,7 @@ export async function redeemPrizeData(req, res) {
                   .catch((e) => {
                     console.log("e", e);
                   });
-                  return res.send({ success: true, message: "Redeem sucessfully" });
+                  return res.send({ success: true, message: "Your withdraw request send to admin please review in 24 hours" });
                 }
                 else {
                  return res.send({ success: false, message: "Not Enough Tickets" });                }

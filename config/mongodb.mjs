@@ -44,7 +44,7 @@ let _db_affiliates,
   _db_ticket_to_token,
   _db_scrooge_spinGame,
   _db_crypto_to_token,
-_db_crypto_redeem
+  _db_withdraw_request
 
 
 export const connectToDB = async () => {
@@ -126,9 +126,9 @@ export const connectToDB = async () => {
   _db_sharing_messages = client
     .db(process.env.SHARING_DATA_DB)
     .collection("messages");
-    _db_crypto_redeem=client
+    _db_withdraw_request=client
     .db(process.env.SCROOGE_DB)
-    .collection("redeemprizes");
+    .collection("withdrawrequests");
   //_db_sharing_responses = client.db("sharing-data").collection("responses");
   //_db_sharing_twitterInfluencers = client.db("sharing-data").collection("twitterInfluencers");
   //_db_user_details_casino_profile_points = client.db("user-details").collection("casino_profile_points");
@@ -173,7 +173,7 @@ export const get_raffles_usersDB = () => _db_raffles_users;
 export const get_raffles_purchasesDB = () => _db_raffles_purchases;
 //export const get_sharing_hashtagsDB = () => _db_sharing_hashtags;
 export const get_sharing_messagesDB = () => _db_sharing_messages;
-export const get_db_crypto_redeemDB = () => _db_crypto_redeem;
+export const get_db_withdraw_requestDB = () => _db_withdraw_request;
 
 
 //export const get_sharing_responsesDB = () => _db_sharing_responses;
