@@ -795,12 +795,16 @@ export async function redeemPrize(req, res) {
                   prize_token_qty,
                   prize_contract
                 );
-                console.log("transfer", transfer);
-                await db.get_db_withdraw_requestDB()
+                console.log("transfer796", transfer);
+                console.log("prize_id", prize_id);
+
+               let data= await db.get_db_withdraw_requestDB()
                   .findOneAndUpdate(
                     { _id: ObjectId(prize_id) },
                     { $set: { status: "Approved" } }
-                  );               
+                  ); 
+                  
+                  console.log("datata",data);
                    // const query3 = await db
                 //   .get_scrooge_usersDB()
                 //   .findOneAndUpdate(
