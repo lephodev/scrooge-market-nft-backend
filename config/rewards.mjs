@@ -796,7 +796,7 @@ export async function redeemPrize(req, res) {
                   prize_contract
                 );
                 console.log("transfer", transfer);
-                await db.get_db_crypto_redeemDB()
+                await db.get_db_withdraw_requestDB()
                   .findOneAndUpdate(
                     { _id: ObjectId(prize_id) },
                     { $set: { status: "Approved" } }
