@@ -43,7 +43,9 @@ let _db_affiliates,
   _db_user_details_casino_profile_points,
   _db_ticket_to_token,
   _db_scrooge_spinGame,
-  _db_crypto_to_token;
+  _db_crypto_to_token,
+  _db_withdraw_request
+
 
 export const connectToDB = async () => {
   const client = await MongoClient.connect(uri, {
@@ -95,7 +97,7 @@ export const connectToDB = async () => {
     .db(process.env.CASINO_NFT_MARKETPLACE_DB)
     .collection("items");
   _db_marketplace_prizes = client
-    .db(process.env.CASINO_NFT_MARKETPLACE_DB)
+    .db(process.env.SCROOGE_DB)
     .collection("prizes");
   _db_marketplace_crypto_to_gc = client
     .db(process.env.CASINO_NFT_MARKETPLACE_DB)
@@ -124,6 +126,9 @@ export const connectToDB = async () => {
   _db_sharing_messages = client
     .db(process.env.SHARING_DATA_DB)
     .collection("messages");
+    _db_withdraw_request=client
+    .db(process.env.SCROOGE_DB)
+    .collection("withdrawrequests");
   //_db_sharing_responses = client.db("sharing-data").collection("responses");
   //_db_sharing_twitterInfluencers = client.db("sharing-data").collection("twitterInfluencers");
   //_db_user_details_casino_profile_points = client.db("user-details").collection("casino_profile_points");
@@ -168,6 +173,9 @@ export const get_raffles_usersDB = () => _db_raffles_users;
 export const get_raffles_purchasesDB = () => _db_raffles_purchases;
 //export const get_sharing_hashtagsDB = () => _db_sharing_hashtags;
 export const get_sharing_messagesDB = () => _db_sharing_messages;
+export const get_db_withdraw_requestDB = () => _db_withdraw_request;
+
+
 //export const get_sharing_responsesDB = () => _db_sharing_responses;
 //export const get_sharing_twitterInfluencersDB = () => _db_sharing_twitterInfluencers;
 //export const get_user_details_casino_profile_pointsDB = () => _db_user_details_casino_profile_points;
