@@ -1489,24 +1489,30 @@ export async function WithdrawRequest(req, res) {
       if (ticket < prize?.price) {
         return res.send({ success: false, message: "Not Enough Tickets" });             
          }
-      let updatedData=  await db
+        await db
         .get_scrooge_usersDB()
         .findOneAndUpdate(
           { _id: ObjectId(user_id) },
-          { $inc: { ticket: -prize.price } },{new:true});
-                const transactionPayload = {
-                  amount: -prize.price,
-                  transactionType: "Crypto Redeem",
-                  prevWallet: updatedData?.wallet,
-                  updatedWallet: updatedData?.wallet,
-                  userId: ObjectId(user_id),
-                  updatedTicket: updatedData?.ticket,
-                  updatedGoldCoin: updatedData?.goldCoin,
-                  prevGoldCoin: updatedData?.goldCoin,
-                  prevTicket: updatedData?.ticket + parseInt(prize.price ),
-                  createdAt: new Date(),
-                  updatedAt: new Date(),
-                };                
+          { $inc: { ticket: -prize.price } });
+          let getUserData = await db
+          .get_scrooge_usersDB()
+          .findOne({ _id: ObjectId(user_id) });
+        const transactionPayload = {
+          amount: -prize.price,
+          transactionType: "Crypto Redeem",
+          prevWallet: getUserData?.wallet,
+          updatedWallet: getUserData?.wallet,
+          userId: ObjectId(user_id),
+          updatedTicket: getUserData?.ticket,
+          updatedGoldCoin: getUserData?.goldCoin,
+          prevGoldCoin: getUserData?.goldCoin,
+          prevTicket: getUserData?.ticket + parseInt(prize.price ),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        let trans_id;
+        console.log("transactionPayload", transactionPayload);
+        
                 const WithdrwaPayload = {
                   status: "pending",
                   address:address,
@@ -1516,12 +1522,16 @@ export async function WithdrawRequest(req, res) {
                  await db
                  .get_db_withdraw_requestDB()
                  .insertOne(WithdrwaPayload)
-                await db
-                  .get_scrooge_transactionDB()
-                  .insertOne(transactionPayload)
-                  .catch((e) => {
-                    console.log("e", e);
-                  });
+                 await db
+                 .get_scrooge_transactionDB()
+                 .insertOne(transactionPayload)
+                 .then((trans) => {
+                   console.log("transtranstrans", trans);
+                   trans_id = trans.insertedId;
+                 })
+                 .catch((e) => {
+                   console.log("e", e);
+                 });
                   return res.send({ success: true, message: "Your withdraw request send to admin please review in 24 hours" });
                 }
        catch (e) {
