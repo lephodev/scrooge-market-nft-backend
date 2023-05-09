@@ -752,9 +752,6 @@ export async function redeemPrize(req, res) {
       //  console.log('user', user);
       user_ticket = user.ticket; //user's available ticket balance
       // verify user has more (or equal) tickets than price of prize
-      if (user_ticket >= prize_price) {
-        //  console.log("query3", query3);
-
         if (prize_contract_name === "OG") {
           use_sdk = useSDK.sdk_OG;
         } else if (prize_contract_name === "JR") {
@@ -1162,10 +1159,7 @@ export async function redeemPrize(req, res) {
           resp = "Invalid Prize Data";
           return res.send({ success: false, message: resp });
         }
-      } else {
-        resp = "Not Enough Tickets";
-        return res.send({ success: false, message: resp });
-      }
+      
     } else {
       res.send({ success: false, message: "Your kyc is not approved" });
     }
