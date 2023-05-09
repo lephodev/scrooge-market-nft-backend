@@ -1466,77 +1466,62 @@ export async function convertPrice(req, res) {
   return resp;
 }
 
-export async function redeemPrizeData(req, res) {
+export async function WithdrawRequest(req, res) {
   const address = req.params.address;
   const prize_id = req.params.prize_id;
   let user_id = req?.user?._id
+  let ticket=req?.user?.ticket
   try {
-    const user = await db
-        .get_scrooge_usersDB()
-        .findOne({ _id: ObjectId(user_id) });
     let getKycuser = await db
       .get_scrooge_user_kycs()
       .findOne({ userId: ObjectId(user_id) });
     const prize = await db
     .get_marketplace_prizesDB()
     .findOne({ _id: ObjectId(prize_id) });
-    if (getKycuser?.status === "accept") {
-      if (user?.ticket >= prize?.price) {
-          await db
+    if (getKycuser?.status !== "accept") {
+     return res.send({ success: false, message: "Your kyc is not approved" });
+    }
+      if (ticket <= prize?.price) {
+        return res.send({ success: false, message: "Not Enough Tickets" });             
+         }
+      let updatedData=  await db
         .get_scrooge_usersDB()
         .findOneAndUpdate(
           { _id: ObjectId(user_id) },
-          { $inc: { ticket: -prize.price } });
-                let getUserData = await db
-                  .get_scrooge_usersDB()
-                  .findOne({ _id: ObjectId(user_id) });
+          { $inc: { ticket: -prize.price } },{new:true});
                 const transactionPayload = {
                   amount: -prize.price,
                   transactionType: "Crypto Redeem",
-                  prevWallet: getUserData?.wallet,
-                  updatedWallet: getUserData?.wallet,
+                  prevWallet: updatedData?.wallet,
+                  updatedWallet: updatedData?.wallet,
                   userId: ObjectId(user_id),
-                  updatedTicket: getUserData?.ticket,
-                  updatedGoldCoin: getUserData?.goldCoin,
-                  prevGoldCoin: getUserData?.goldCoin,
-                  prevTicket: getUserData?.ticket + parseInt(prize.price ),
+                  updatedTicket: updatedData?.ticket,
+                  updatedGoldCoin: updatedData?.goldCoin,
+                  prevGoldCoin: updatedData?.goldCoin,
+                  prevTicket: updatedData?.ticket + parseInt(prize.price ),
                   createdAt: new Date(),
                   updatedAt: new Date(),
-                };
-                let trans_id;
-                console.log("transactionPayload", transactionPayload);
-                
-                const RedeemPayload = {
+                };                
+                const WithdrwaPayload = {
                   status: "pending",
                   address:address,
                   redeemId:ObjectId(prize_id),
                   userId:ObjectId(user_id)
                  };
-                //  console.log("RedeemPayload",RedeemPayload);
                  await db
                  .get_db_withdraw_requestDB()
-                 .insertOne(RedeemPayload)
+                 .insertOne(WithdrwaPayload)
                 await db
                   .get_scrooge_transactionDB()
                   .insertOne(transactionPayload)
-                  .then((trans) => {
-                    console.log("transtranstrans", trans);
-                    trans_id = trans.insertedId;
-                  })
                   .catch((e) => {
                     console.log("e", e);
                   });
                   return res.send({ success: true, message: "Your withdraw request send to admin please review in 24 hours" });
                 }
-                else {
-                 return res.send({ success: false, message: "Not Enough Tickets" });                }
-  
-    } else {
-      res.send({ success: false, message: "Your kyc is not approved" });
-    }
-  } catch (e) {
-    console.log("outerCatch", e);
-    return res
+       catch (e) {
+     console.log("outerCatch", e);
+     return res
       .status(500)
       .send({ success: false, message: "Error in Request Process" });
   }

@@ -429,7 +429,7 @@ app.post("/api/bitcartcc-notification", async(req,res) => {
   res.send({ success: true})
 })
 
-app.get("/api/redeemPrizeData/:address/:prize_id", auth(), rewards.redeemPrizeData);
+app.get("/api/WithdrawRequest/:address/:prize_id", auth(), rewards.WithdrawRequest);
 
 
 app.listen(PORT, () => {
