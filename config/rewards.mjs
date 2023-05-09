@@ -664,6 +664,7 @@ export async function redeemPrize(req, res) {
   const user_id = req.params.user_id;
   const address = req.params.address;
   const prize_id = req.params.prize_id;
+  const withdraw_id=req.params.withdraw_id
   let sdk,
     balance,
     balanceRaw,
@@ -751,9 +752,6 @@ export async function redeemPrize(req, res) {
       //  console.log('user', user);
       user_ticket = user.ticket; //user's available ticket balance
       // verify user has more (or equal) tickets than price of prize
-      if (user_ticket >= prize_price) {
-        //  console.log("query3", query3);
-
         if (prize_contract_name === "OG") {
           use_sdk = useSDK.sdk_OG;
         } else if (prize_contract_name === "JR") {
@@ -796,16 +794,15 @@ export async function redeemPrize(req, res) {
                   prize_contract
                 );
                 console.log("transfer796", transfer);
-                console.log("prize_id", prize_id,prize);
+                console.log("prize_id", prize_id,withdraw_id);
 
-               let data= await db.get_db_withdraw_requestDB()
+                await db.get_db_withdraw_requestDB()
                   .findOneAndUpdate(
-                    { _id: ObjectId(prize._id) },
+                    { _id: ObjectId(withdraw_id) },
                     { $set: { status: "Approved" } }
                   ); 
-                  
-                  console.log("datata",data);
-                   // const query3 = await db
+                
+                  // const query3 = await db
                 //   .get_scrooge_usersDB()
                 //   .findOneAndUpdate(
                 //     { _id: ObjectId(user_id) },
@@ -1162,10 +1159,7 @@ export async function redeemPrize(req, res) {
           resp = "Invalid Prize Data";
           return res.send({ success: false, message: resp });
         }
-      } else {
-        resp = "Not Enough Tickets";
-        return res.send({ success: false, message: resp });
-      }
+      
     } else {
       res.send({ success: false, message: "Your kyc is not approved" });
     }
@@ -1489,24 +1483,30 @@ export async function WithdrawRequest(req, res) {
       if (ticket < prize?.price) {
         return res.send({ success: false, message: "Not Enough Tickets" });             
          }
-      let updatedData=  await db
+        await db
         .get_scrooge_usersDB()
         .findOneAndUpdate(
           { _id: ObjectId(user_id) },
-          { $inc: { ticket: -prize.price } },{new:true});
-                const transactionPayload = {
-                  amount: -prize.price,
-                  transactionType: "Crypto Redeem",
-                  prevWallet: updatedData?.wallet,
-                  updatedWallet: updatedData?.wallet,
-                  userId: ObjectId(user_id),
-                  updatedTicket: updatedData?.ticket,
-                  updatedGoldCoin: updatedData?.goldCoin,
-                  prevGoldCoin: updatedData?.goldCoin,
-                  prevTicket: updatedData?.ticket + parseInt(prize.price ),
-                  createdAt: new Date(),
-                  updatedAt: new Date(),
-                };                
+          { $inc: { ticket: -prize.price } });
+          let getUserData = await db
+          .get_scrooge_usersDB()
+          .findOne({ _id: ObjectId(user_id) });
+        const transactionPayload = {
+          amount: -prize.price,
+          transactionType: "Crypto Redeem",
+          prevWallet: getUserData?.wallet,
+          updatedWallet: getUserData?.wallet,
+          userId: ObjectId(user_id),
+          updatedTicket: getUserData?.ticket,
+          updatedGoldCoin: getUserData?.goldCoin,
+          prevGoldCoin: getUserData?.goldCoin,
+          prevTicket: getUserData?.ticket + parseInt(prize.price ),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        let trans_id;
+        console.log("transactionPayload", transactionPayload);
+        
                 const WithdrwaPayload = {
                   status: "pending",
                   address:address,
@@ -1516,12 +1516,16 @@ export async function WithdrawRequest(req, res) {
                  await db
                  .get_db_withdraw_requestDB()
                  .insertOne(WithdrwaPayload)
-                await db
-                  .get_scrooge_transactionDB()
-                  .insertOne(transactionPayload)
-                  .catch((e) => {
-                    console.log("e", e);
-                  });
+                 await db
+                 .get_scrooge_transactionDB()
+                 .insertOne(transactionPayload)
+                 .then((trans) => {
+                   console.log("transtranstrans", trans);
+                   trans_id = trans.insertedId;
+                 })
+                 .catch((e) => {
+                   console.log("e", e);
+                 });
                   return res.send({ success: true, message: "Your withdraw request send to admin please review in 24 hours" });
                 }
        catch (e) {
