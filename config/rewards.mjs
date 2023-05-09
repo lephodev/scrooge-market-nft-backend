@@ -664,6 +664,7 @@ export async function redeemPrize(req, res) {
   const user_id = req.params.user_id;
   const address = req.params.address;
   const prize_id = req.params.prize_id;
+  const withdraw_id=req.params.withdraw_id
   let sdk,
     balance,
     balanceRaw,
@@ -796,16 +797,15 @@ export async function redeemPrize(req, res) {
                   prize_contract
                 );
                 console.log("transfer796", transfer);
-                console.log("prize_id", prize_id,prize);
+                console.log("prize_id", prize_id,withdraw_id);
 
-               let data= await db.get_db_withdraw_requestDB()
+                await db.get_db_withdraw_requestDB()
                   .findOneAndUpdate(
-                    { _id: ObjectId(prize._id) },
+                    { _id: ObjectId(withdraw_id) },
                     { $set: { status: "Approved" } }
                   ); 
-                  
-                  console.log("datata",data);
-                   // const query3 = await db
+                
+                  // const query3 = await db
                 //   .get_scrooge_usersDB()
                 //   .findOneAndUpdate(
                 //     { _id: ObjectId(user_id) },
