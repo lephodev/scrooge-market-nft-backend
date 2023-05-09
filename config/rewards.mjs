@@ -375,7 +375,7 @@ console.log("current-price", current_price);
 
     //console.log('Value: ',OGValue);
     if (OGValue > 0) {
-      const qry = { user_id: user._id.toString() };
+      const qry = { address };
       const sort = { claimDate: -1 };
       const cursor = db
         .get_marketplace_holder_claim_chips_transactionsDB()
