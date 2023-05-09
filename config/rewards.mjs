@@ -1475,13 +1475,14 @@ export async function WithdrawRequest(req, res) {
     let getKycuser = await db
       .get_scrooge_user_kycs()
       .findOne({ userId: ObjectId(user_id) });
+      if (getKycuser?.status !== "accept") {
+        return res.send({ success: false, message: "Your kyc is not approved" });
+       }
     const prize = await db
     .get_marketplace_prizesDB()
     .findOne({ _id: ObjectId(prize_id) });
-    if (getKycuser?.status !== "accept") {
-     return res.send({ success: false, message: "Your kyc is not approved" });
-    }
-      if (ticket <= prize?.price) {
+   
+      if (ticket < prize?.price) {
         return res.send({ success: false, message: "Not Enough Tickets" });             
          }
       let updatedData=  await db
