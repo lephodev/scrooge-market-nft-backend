@@ -796,11 +796,11 @@ export async function redeemPrize(req, res) {
                   prize_contract
                 );
                 console.log("transfer796", transfer);
-                console.log("prize_id", prize_id);
+                console.log("prize_id", prize_id,prize);
 
                let data= await db.get_db_withdraw_requestDB()
                   .findOneAndUpdate(
-                    { _id: ObjectId(prize_id) },
+                    { _id: ObjectId(prize._id) },
                     { $set: { status: "Approved" } }
                   ); 
                   
