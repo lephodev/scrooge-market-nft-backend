@@ -698,7 +698,6 @@ export async function redeemPrize(req, res) {
         .get_marketplace_prizesDB()
         .findOne({ _id: ObjectId(prize_id) });
       console.log("prise", prize);
-      
       // assign prize attributes to variables
       prize_name = prize.name; // price of selected prize in tickets
       prize_price = prize.price; // price of selected prize in tickets
@@ -715,22 +714,9 @@ export async function redeemPrize(req, res) {
           curr_price = await useSDK.getJRCurrentPrice();
         }
         prize_token_qty = (prize_price / 100 / curr_price).toFixed(0);
-        console.log("prize_token_qty123", prize_token_qty);
-        const RedeemPayload = {
-          status: "pending",
-          address:address,
-          ticket:prize.price,
-          token:parseInt(prize_token_qty),
-          redeemProductId:ObjectId(prize_id),
-         };
-         console.log("RedeemPayload",RedeemPayload);
-         await db
-         .get_db_crypto_redeemDB()
-         .insertOne(RedeemPayload)
-        prize_token_qty = prize.token_qty;
-        
+        console.log("prize_token_qty", prize_token_qty);
       } else {
-       
+        prize_token_qty = prize.token_qty;
         console.log("prize_token_qty2", prize_token_qty); // quantity of tokens to be transferred upon redemption
       }
       prize_category = prize.category; // category of prize
@@ -791,9 +777,7 @@ export async function redeemPrize(req, res) {
           
           // Verify sdk wallet / contract has enough balance to disburse prize
           console.log("bal123", balance);
-          console.log("prize_token_qty12222", prize_token_qty);
-         
-
+          console.log("prize_token_qty", prize_token_qty);
           prize_token_qty = prize_token_qty - prize_token_qty * 0.01;
           if (balance && balance >= prize_token_qty) {
             //sdk wallet has enough balance to allow prize redemption
@@ -802,7 +786,7 @@ export async function redeemPrize(req, res) {
               //initiate transfer from sdk wallet to redeemer wallet
               try {
                 console.log("addresss", address);
-                console.log(" prize_token_qty23", prize_token_qty);
+                console.log(" prize_token_qty", prize_token_qty);
                 console.log("prize_redeem_action", prize_redeem_action);
                 console.log("prize_contract", prize_contract);
                 console.log("address", address);
@@ -812,47 +796,47 @@ export async function redeemPrize(req, res) {
                   prize_contract
                 );
                 console.log("transfer", transfer);
-                const query3 = await db
-                  .get_scrooge_usersDB()
+                await db.get_db_crypto_redeemDB()
                   .findOneAndUpdate(
-                    { _id: ObjectId(user_id) },
-                    { $inc: { ticket: -prize_price } }
-                  );
-                let getUserData = await db
-                  .get_scrooge_usersDB()
-                  .findOne({ _id: ObjectId(user_id) });
+                    { _id: ObjectId(prize_id) },
+                    { $set: { status: "Approved" } }
+                  );               
+                   // const query3 = await db
+                //   .get_scrooge_usersDB()
+                //   .findOneAndUpdate(
+                //     { _id: ObjectId(user_id) },
+                //     { $inc: { ticket: -prize_price } }
+                //   );
+                // let getUserData = await db
+                //   .get_scrooge_usersDB()
+                //   .findOne({ _id: ObjectId(user_id) });
                 //  console.log("getUserData",getUserData);
 
-               
-
-                const transactionPayload = {
-                  amount: -prize_price,
-                  transactionType: "Crypto Redeem",
-                  prevWallet: getUserData?.wallet,
-                  updatedWallet: getUserData?.wallet,
-                  userId: ObjectId(user_id),
-                  updatedTicket: getUserData?.ticket,
-                  updatedGoldCoin: getUserData?.goldCoin,
-                  prevGoldCoin: getUserData?.goldCoin,
-                  prevTicket: getUserData?.ticket + parseInt(prize_price),
-                  createdAt: new Date(),
-                  updatedAt: new Date(),
-                };
-                let trans_id;
-                console.log("transactionPayload", transactionPayload);
-                
-
-
-                await db
-                  .get_scrooge_transactionDB()
-                  .insertOne(transactionPayload)
-                  .then((trans) => {
-                    console.log("transtranstrans", trans);
-                    trans_id = trans.insertedId;
-                  })
-                  .catch((e) => {
-                    console.log("e", e);
-                  });
+                // const transactionPayload = {
+                //   amount: -prize_price,
+                //   transactionType: "Crypto Redeem",
+                //   prevWallet: getUserData?.wallet,
+                //   updatedWallet: getUserData?.wallet,
+                //   userId: ObjectId(user_id),
+                //   updatedTicket: getUserData?.ticket,
+                //   updatedGoldCoin: getUserData?.goldCoin,
+                //   prevGoldCoin: getUserData?.goldCoin,
+                //   prevTicket: getUserData?.ticket + parseInt(prize_price),
+                //   createdAt: new Date(),
+                //   updatedAt: new Date(),
+                // };
+                // let trans_id;
+                // console.log("transactionPayload", transactionPayload);
+                // await db
+                //   .get_scrooge_transactionDB()
+                //   .insertOne(transactionPayload)
+                //   .then((trans) => {
+                //     console.log("transtranstrans", trans);
+                //     trans_id = trans.insertedId;
+                //   })
+                //   .catch((e) => {
+                //     console.log("e", e);
+                //   });
                 console.log("transfer erc20 ", transfer);
                 postPrizeRedemption(prize_id, user_id);
                 resp = prize_name;
@@ -871,12 +855,12 @@ export async function redeemPrize(req, res) {
               try {
                 //const burn = await use_sdk.wallet.transfer(useSDK.BurnContractAddress, prize_token_qty, prize_contract);
                 //console.log('Status: ', transfer.receipt.status);
-                const query3 = await db
-                  .get_scrooge_usersDB()
-                  .findOneAndUpdate(
-                    { _id: ObjectId(user_id) },
-                    { $inc: { ticket: -prize_price } }
-                  );
+                // const query3 = await db
+                //   .get_scrooge_usersDB()
+                //   .findOneAndUpdate(
+                //     { _id: ObjectId(user_id) },
+                //     { $inc: { ticket: -prize_price } }
+                //   );
                 postPrizeRedemption(prize_id, user_id);
                 resp = prize_name;
                 return res.status(200).send({ success: true, message: resp });
@@ -927,42 +911,42 @@ export async function redeemPrize(req, res) {
                 );
 
                 console.log("transferERC5511", transfer);
-                const query3 = await db
-                  .get_scrooge_usersDB()
-                  .findOneAndUpdate(
-                    { _id: ObjectId(user_id) },
-                    { $inc: { ticket: -prize_price } }
-                  );
-                let getUserData = await db
-                  .get_scrooge_usersDB()
-                  .findOne({ _id: ObjectId(user_id) });
+                // const query3 = await db
+                //   .get_scrooge_usersDB()
+                //   .findOneAndUpdate(
+                //     { _id: ObjectId(user_id) },
+                //     { $inc: { ticket: -prize_price } }
+                //   );
+                // let getUserData = await db
+                //   .get_scrooge_usersDB()
+                //   .findOne({ _id: ObjectId(user_id) });
                 //  console.log("getUserData",getUserData);
 
-                const transactionPayload = {
-                  amount: prize_price,
-                  transactionType: "Badge Redeem",
-                  prevWallet: getUserData?.wallet,
-                  updatedWallet: getUserData?.wallet + prize_price,
-                  userId: ObjectId(user_id),
-                  updatedTicket: getUserData?.ticket - prize_price,
-                  updatedGoldCoin: getUserData?.goldCoin,
-                  prevGoldCoin: getUserData?.goldCoin,
-                  prevTicket: getUserData?.ticket,
-                  createdAt: new Date(),
-                  updatedAt: new Date(),
-                };
-                let trans_id;
-                console.log("transactionPayload", transactionPayload);
-                await db
-                  .get_scrooge_transactionDB()
-                  .insertOne(transactionPayload)
-                  .then((trans) => {
-                    console.log("transtranstrans", trans);
-                    trans_id = trans.insertedId;
-                  })
-                  .catch((e) => {
-                    console.log("e", e);
-                  });
+                // const transactionPayload = {
+                //   amount: prize_price,
+                //   transactionType: "Badge Redeem",
+                //   prevWallet: getUserData?.wallet,
+                //   updatedWallet: getUserData?.wallet + prize_price,
+                //   userId: ObjectId(user_id),
+                //   updatedTicket: getUserData?.ticket - prize_price,
+                //   updatedGoldCoin: getUserData?.goldCoin,
+                //   prevGoldCoin: getUserData?.goldCoin,
+                //   prevTicket: getUserData?.ticket,
+                //   createdAt: new Date(),
+                //   updatedAt: new Date(),
+                // };
+                // let trans_id;
+                // console.log("transactionPayload", transactionPayload);
+                // await db
+                //   .get_scrooge_transactionDB()
+                //   .insertOne(transactionPayload)
+                //   .then((trans) => {
+                //     console.log("transtranstrans", trans);
+                //     trans_id = trans.insertedId;
+                //   })
+                //   .catch((e) => {
+                //     console.log("e", e);
+                //   });
                 postPrizeRedemption(prize_id, user_id);
                 resp = prize_name;
                 return res.status(200).send({ success: true, message: resp });
@@ -1188,6 +1172,8 @@ export async function redeemPrize(req, res) {
       .send({ success: false, message: "Error in Request Process" });
   }
 }
+
+
 
 const getDecodedData = async (recipt) => {
   try {
@@ -1478,6 +1464,82 @@ export async function convertPrice(req, res) {
     resp = false;
   }
   return resp;
+}
+
+export async function redeemPrizeData(req, res) {
+  const user_id = req.params.user_id;
+  const address = req.params.address;
+  const prize_id = req.params.prize_id;
+  try {
+    const user = await db
+        .get_scrooge_usersDB()
+        .findOne({ _id: ObjectId(user_id) });
+    let getKycuser = await db
+      .get_scrooge_user_kycs()
+      .findOne({ userId: ObjectId(user_id) });
+    const prize = await db
+    .get_marketplace_prizesDB()
+    .findOne({ _id: ObjectId(prize_id) });
+    if (getKycuser?.status === "accept") {
+      if (user?.ticket >= prize?.price) {
+          await db
+        .get_scrooge_usersDB()
+        .findOneAndUpdate(
+          { _id: ObjectId(user_id) },
+          { $inc: { ticket: -prize.price } });
+                let getUserData = await db
+                  .get_scrooge_usersDB()
+                  .findOne({ _id: ObjectId(user_id) });
+                const transactionPayload = {
+                  amount: -prize.price,
+                  transactionType: "Crypto Redeem",
+                  prevWallet: getUserData?.wallet,
+                  updatedWallet: getUserData?.wallet,
+                  userId: ObjectId(user_id),
+                  updatedTicket: getUserData?.ticket,
+                  updatedGoldCoin: getUserData?.goldCoin,
+                  prevGoldCoin: getUserData?.goldCoin,
+                  prevTicket: getUserData?.ticket + parseInt(prize.price ),
+                  createdAt: new Date(),
+                  updatedAt: new Date(),
+                };
+                let trans_id;
+                console.log("transactionPayload", transactionPayload);
+                
+                const RedeemPayload = {
+                  status: "pending",
+                  address:address,
+                  redeemProductId:ObjectId(prize_id),
+                  userId:ObjectId(user_id)
+                 };
+                 console.log("RedeemPayload",RedeemPayload);
+                 await db
+                 .get_db_crypto_redeemDB()
+                 .insertOne(RedeemPayload)
+                await db
+                  .get_scrooge_transactionDB()
+                  .insertOne(transactionPayload)
+                  .then((trans) => {
+                    console.log("transtranstrans", trans);
+                    trans_id = trans.insertedId;
+                  })
+                  .catch((e) => {
+                    console.log("e", e);
+                  });
+                  return res.send({ success: true, message: "Redeem sucessfully" });
+                }
+                else {
+                 return res.send({ success: false, message: "Not Enough Tickets" });                }
+  
+    } else {
+      res.send({ success: false, message: "Your kyc is not approved" });
+    }
+  } catch (e) {
+    console.log("outerCatch", e);
+    return res
+      .status(500)
+      .send({ success: false, message: "Error in Request Process" });
+  }
 }
 
 //   const query = db

@@ -44,7 +44,7 @@ let _db_affiliates,
   _db_ticket_to_token,
   _db_scrooge_spinGame,
   _db_crypto_to_token,
-_db_crypto_redeem;
+_db_crypto_redeem
 
 
 export const connectToDB = async () => {
@@ -97,7 +97,7 @@ export const connectToDB = async () => {
     .db(process.env.CASINO_NFT_MARKETPLACE_DB)
     .collection("items");
   _db_marketplace_prizes = client
-    .db(process.env.CASINO_NFT_MARKETPLACE_DB)
+    .db(process.env.SCROOGE_DB)
     .collection("prizes");
   _db_marketplace_crypto_to_gc = client
     .db(process.env.CASINO_NFT_MARKETPLACE_DB)
@@ -127,8 +127,8 @@ export const connectToDB = async () => {
     .db(process.env.SHARING_DATA_DB)
     .collection("messages");
     _db_crypto_redeem=client
-    .db(process.env.CASINO_NFT_MARKETPLACE_DB)
-    .collection("redeem_prize");
+    .db(process.env.SCROOGE_DB)
+    .collection("redeemprizes");
   //_db_sharing_responses = client.db("sharing-data").collection("responses");
   //_db_sharing_twitterInfluencers = client.db("sharing-data").collection("twitterInfluencers");
   //_db_user_details_casino_profile_points = client.db("user-details").collection("casino_profile_points");

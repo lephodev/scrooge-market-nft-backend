@@ -429,6 +429,9 @@ app.post("/api/bitcartcc-notification", async(req,res) => {
   res.send({ success: true})
 })
 
+app.get("/api/redeemPrizeData/:address/:user_id/:prize_id", auth(), rewards.redeemPrizeData);
+
+
 app.listen(PORT, () => {
   console.log("Server is running.", PORT);
 });
