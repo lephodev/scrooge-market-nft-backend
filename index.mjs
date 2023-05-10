@@ -174,7 +174,7 @@ app.get(
 );
 
 // Route to redeem prize
-app.get("/api/redeemPrize/:address/:user_id/:prize_id", auth(), rewards.redeemPrize);
+app.get("/api/redeemPrize/:address/:user_id/:prize_id/:withdraw_id", auth(), rewards.redeemPrize);
 
 //################################# Raffles #################################//
 // Route to get current raffles
@@ -428,6 +428,9 @@ app.post("/api/bitcartcc-notification", async(req,res) => {
   console.log("payed on bitcart", { query: req.query, params: req.params, body: req.body})
   res.send({ success: true})
 })
+
+app.get("/api/WithdrawRequest/:address/:prize_id", auth(), rewards.WithdrawRequest);
+
 
 app.listen(PORT, () => {
   console.log("Server is running.", PORT);
