@@ -1254,13 +1254,44 @@ export async function convertCryptoToGoldCoin(req, res) {
       parseInt(data.gcAmount),
       recipt,
     )
+    let getAdminSettings =  await db
+    .get_db_admin_settingDB().findOne({})     
+    let getUserData = await db
+            .get_scrooge_usersDB()
+            .findOne({ _id: ObjectId(userId) });
+            if(getUserData){
+              const {firstBuy}=getUserData
+              if(!firstBuy){
+              let UserUpData = await db
+            .get_scrooge_usersDB()
+            .findOneAndUpdate({ _id: ObjectId(userId)},{
+               $inc:{
+                wallet:getAdminSettings?.welcomeBonusToken,
+                goldCoin:getAdminSettings?.welcomeBonusGoldCoin,
+              },
+              $set:{firstBuy:true}
+            },{new:true});
+            await await db.get_scrooge_transactionDB().insertOne({
+              userId:userId,
+              amount: getAdminSettings?.welcomeBonusGoldCoin + getAdminSettings?.welcomeBonusToken,
+              transactionDetails: {},
+              prevGoldCoin: parseFloat(UserUpData?.value?.goldCoin),
+              transactionType: "signupBonus",
+              updatedGoldCoin: UserUpData?.value?.goldCoin+getAdminSettings?.welcomeBonusGoldCoin,
+              prevWallet: UserUpData?.value?.wallet,
+              updatedWallet: UserUpData?.value?.wallet+getAdminSettings?.welcomeBonusToken,
+              createdAt:new Date(),
+              updatedAt:new Date()
+            });
+              }
+            }
 
     if(refrenceId){
       let affliateData=await db.get_affiliatesDB().findOne({userId:userId})
       let getAdminSettings =  await db
       .get_db_admin_settingDB().findOne({})
       const {cryptoToGcReferalBonus}=getAdminSettings
-      let getGcBonus=((cryptoToGcReferalBonus/100)*parseInt(data.gcAmount))
+      // let getGcBonus=((cryptoToGcReferalBonus/100)*parseInt(data.gcAmount))
       let getTokenBonus=((cryptoToGcReferalBonus/100)*parseInt(data.freeTokenAmount))
      let affliateUserDetails={
       commission:getTokenBonus,
