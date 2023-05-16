@@ -26,12 +26,14 @@ const jrAddress = process.env.JR_WALLET_ADDRESS.toLowerCase();
 
 export async function addChips(_user_id, _qty, _address, transactionType, gc=0,recipt= {}) {
   try {
-    console.log("Chpis Added", _user_id, _qty, _address, transactionType,gc);
+    console.log("Chpis Added", _user_id, _qty, _address, transactionType,gc,"refrenceId");
     const {value: user} = await db
       .get_scrooge_usersDB()
       .findOneAndUpdate({ _id: ObjectId(_user_id)}, {
         $inc: { goldCoin: gc,wallet:_qty }
       }, { new : true })
+    
+      
      await db
           .get_marketplace_chip_transactionsDB()
           .insertOne({
@@ -1215,7 +1217,7 @@ console.log("rec", recipt.to)
 
 export async function convertCryptoToGoldCoin(req, res) {
   const { address, transactionHash } = req.params;
-  const { user: { _id: userId }} = req;
+  const { user: { _id: userId,refrenceId }} = req;
   try {
     let recipt=await useSDK.sdk_OG.getProvider().getTransaction(transactionHash)
     console.log({ recipt });
@@ -1229,7 +1231,7 @@ export async function convertCryptoToGoldCoin(req, res) {
       return res.status(400).send({ success: false, data: "Invalid transactionssss"});
     }
     
-  let getBlock=await db.get_scrooge_transactionDB().findOne({'transactionDetails.blockNumber':recipt?.blockNumber})
+   let getBlock=await db.get_scrooge_transactionDB().findOne({'transactionDetails.blockNumber':recipt?.blockNumber})
     if(getBlock?.transactionDetails?.blockNumber===recipt?.blockNumber){
       return  res.status(200).send({
         success: false,
@@ -1250,11 +1252,54 @@ export async function convertCryptoToGoldCoin(req, res) {
       address,
       "Crypto To Gold Coin",
       parseInt(data.gcAmount),
-      recipt
+      recipt,
     )
 
-      console.log("transghghg123", trans);
+    if(refrenceId){
+      let affliateData=await db.get_affiliatesDB().findOne({userId:userId})
+      let getAdminSettings =  await db
+      .get_db_admin_settingDB().findOne({})
+      const {cryptoToGcReferalBonus}=getAdminSettings
+      let getGcBonus=((cryptoToGcReferalBonus/100)*parseInt(data.gcAmount))
+      let getTokenBonus=((cryptoToGcReferalBonus/100)*parseInt(data.freeTokenAmount))
+     let affliateUserDetails={
+      commission:getTokenBonus,
+      referred_user_id:ObjectId(refrenceId),
+      affiliate_id:affliateData?._id||null,
+      userId:userId,
+      transactionType:"crypto to Gc refferal",
+      timestamp: new Date(),
+     }
+      await db
+      .get_db_affiliates_transactionDB().insertOne(affliateUserDetails)
+    let getUser=await db
+      .get_scrooge_usersDB()
+      .findOneAndUpdate({ _id: ObjectId(refrenceId)}, {
+        $inc: {wallet:getTokenBonus }
+      }, { new : true })
 
+  db.get_affiliatesDB().findOneAndUpdate({ userId:ObjectId(refrenceId)}, {
+    $inc: {total_earned:getTokenBonus, }
+  }, { new : true })
+  const transactionPayload={
+  amount: getTokenBonus ,
+  transactionType: "Crypto To Gc",
+  prevWallet: getUser?.value?.wallet,
+  updatedWallet:getUser?.value?.wallet + getTokenBonus,
+  userId: ObjectId(refrenceId),
+  updatedTicket: getUser?.value?.ticket,
+  prevGoldCoin: getUser?.value?.goldCoin,
+  updatedGoldCoin: getUser?.value?.goldCoin,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  prevTicket: getUser?.value?.ticket,
+
+};
+const trans_id = await db
+  .get_scrooge_transactionDB()
+  .insertOne(transactionPayload)
+
+}
       let getUserDetail = await db
         .get_scrooge_usersDB()
         .findOne({ _id: ObjectId(userId) });
@@ -1263,6 +1308,7 @@ export async function convertCryptoToGoldCoin(req, res) {
         data: "Chips Added Successfully",
         user: getUserDetail,
       });
+    
   } catch (error) {
     console.log("cryptoToToken", error);
     res
@@ -1298,7 +1344,7 @@ export async function convertCryptoToToken(req, res) {
         userId,
         parseInt(tokens),
         address,
-        "Crypto To Token"
+        "Crypto To Token",
       ).then(async (trans) => {
         // console.log("transghghg123", trans);
         if (trans.code === 200) {
