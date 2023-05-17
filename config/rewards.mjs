@@ -1295,6 +1295,7 @@ export async function convertCryptoToGoldCoin(req, res) {
       let getTicketBonus=((cryptoToGcReferalBonus/100)*parseInt(amt*100))
      let affliateUserDetails={
       commission:getTicketBonus,
+      monthly_earned:getTicketBonus,
       referred_user_id:ObjectId(refrenceId),
       affiliate_id:affliateData?._id||null,
       userId:userId,
