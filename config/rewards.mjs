@@ -1292,33 +1292,35 @@ export async function convertCryptoToGoldCoin(req, res) {
       .get_db_admin_settingDB().findOne({})
       const {cryptoToGcReferalBonus}=getAdminSettings
       // let getGcBonus=((cryptoToGcReferalBonus/100)*parseInt(data.gcAmount))
-      let getTokenBonus=((cryptoToGcReferalBonus/100)*parseInt(data.freeTokenAmount))
+      let getTicketBonus=((cryptoToGcReferalBonus/100)*parseInt(amt*100))
      let affliateUserDetails={
-      commission:getTokenBonus,
+      commission:getTicketBonus,
       referred_user_id:ObjectId(refrenceId),
       affiliate_id:affliateData?._id||null,
       userId:userId,
       transactionType:"crypto to Gc refferal",
-      timestamp: new Date(),
+      createdAt:new Date(),
+      updatedAt: new Date(),
+
      }
       await db
       .get_db_affiliates_transactionDB().insertOne(affliateUserDetails)
     let getUser=await db
       .get_scrooge_usersDB()
       .findOneAndUpdate({ _id: ObjectId(refrenceId)}, {
-        $inc: {wallet:getTokenBonus }
+        $inc: {ticket:getTicketBonus }
       }, { new : true })
 
   db.get_affiliatesDB().findOneAndUpdate({ userId:ObjectId(refrenceId)}, {
-    $inc: {total_earned:getTokenBonus, }
+    $inc: {total_earned:getTicketBonus,monthly_earned:getTicketBonus}
   }, { new : true })
   const transactionPayload={
-  amount: getTokenBonus ,
-  transactionType: "Crypto To Gc",
+  amount: getTicketBonus ,
+  transactionType: "Crypto To Gc bonus",
   prevWallet: getUser?.value?.wallet,
-  updatedWallet:getUser?.value?.wallet + getTokenBonus,
+  updatedWallet:getUser?.value?.wallet,
   userId: ObjectId(refrenceId),
-  updatedTicket: getUser?.value?.ticket,
+  updatedTicket: getUser?.value?.ticket+ getTicketBonus,
   prevGoldCoin: getUser?.value?.goldCoin,
   updatedGoldCoin: getUser?.value?.goldCoin,
   createdAt: new Date(),
