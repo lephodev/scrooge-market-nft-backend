@@ -1,0 +1,286 @@
+[
+    {
+      "type": "function",
+      "name": "name",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "string",
+          "name": ""
+        }
+      ],
+      "constant": true,
+      "payable": false,
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "approve",
+      "inputs": [
+        {
+          "type": "address",
+          "name": "guy"
+        },
+        {
+          "type": "uint256",
+          "name": "wad"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "bool",
+          "name": ""
+        }
+      ],
+      "constant": false,
+      "payable": false,
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "totalSupply",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "uint256",
+          "name": ""
+        }
+      ],
+      "constant": true,
+      "payable": false,
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "transferFrom",
+      "inputs": [
+        {
+          "type": "address",
+          "name": "src"
+        },
+        {
+          "type": "address",
+          "name": "dst"
+        },
+        {
+          "type": "uint256",
+          "name": "wad"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "bool",
+          "name": ""
+        }
+      ],
+      "constant": false,
+      "payable": false,
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "withdraw",
+      "inputs": [
+        {
+          "type": "uint256",
+          "name": "wad"
+        }
+      ],
+      "outputs": [],
+      "constant": false,
+      "payable": false,
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "decimals",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "uint8",
+          "name": ""
+        }
+      ],
+      "constant": true,
+      "payable": false,
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "balanceOf",
+      "inputs": [
+        {
+          "type": "address",
+          "name": ""
+        }
+      ],
+      "outputs": [
+        {
+          "type": "uint256",
+          "name": ""
+        }
+      ],
+      "constant": true,
+      "payable": false,
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "symbol",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "string",
+          "name": ""
+        }
+      ],
+      "constant": true,
+      "payable": false,
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "transfer",
+      "inputs": [
+        {
+          "type": "address",
+          "name": "dst"
+        },
+        {
+          "type": "uint256",
+          "name": "wad"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "bool",
+          "name": ""
+        }
+      ],
+      "constant": false,
+      "payable": false,
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "deposit",
+      "inputs": [],
+      "outputs": [],
+      "constant": false,
+      "payable": true,
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "allowance",
+      "inputs": [
+        {
+          "type": "address",
+          "name": ""
+        },
+        {
+          "type": "address",
+          "name": ""
+        }
+      ],
+      "outputs": [
+        {
+          "type": "uint256",
+          "name": ""
+        }
+      ],
+      "constant": true,
+      "payable": false,
+      "stateMutability": "view"
+    },
+    {
+      "type": "fallback",
+      "name": "",
+      "inputs": [],
+      "outputs": [],
+      "payable": true,
+      "stateMutability": "payable"
+    },
+    {
+      "type": "event",
+      "name": "Approval",
+      "inputs": [
+        {
+          "type": "address",
+          "name": "src",
+          "indexed": true
+        },
+        {
+          "type": "address",
+          "name": "guy",
+          "indexed": true
+        },
+        {
+          "type": "uint256",
+          "name": "wad",
+          "indexed": false
+        }
+      ],
+      "outputs": [],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "Transfer",
+      "inputs": [
+        {
+          "type": "address",
+          "name": "src",
+          "indexed": true
+        },
+        {
+          "type": "address",
+          "name": "dst",
+          "indexed": true
+        },
+        {
+          "type": "uint256",
+          "name": "wad",
+          "indexed": false
+        }
+      ],
+      "outputs": [],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "Deposit",
+      "inputs": [
+        {
+          "type": "address",
+          "name": "dst",
+          "indexed": true
+        },
+        {
+          "type": "uint256",
+          "name": "wad",
+          "indexed": false
+        }
+      ],
+      "outputs": [],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "Withdrawal",
+      "inputs": [
+        {
+          "type": "address",
+          "name": "src",
+          "indexed": true
+        },
+        {
+          "type": "uint256",
+          "name": "wad",
+          "indexed": false
+        }
+      ],
+      "outputs": [],
+      "anonymous": false
+    }
+  ]

@@ -11,6 +11,7 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 import OG_ABI from "../config/OG_ABI.json" assert { type: "json" };
 import JR_ABI from "../config/JR_ABI.json" assert {type: "json" };
+import BNB_ABI from "../config/BNB_ABI.json" assert {type: "json" };
 
 const { Schema } = mongoose;
 
@@ -23,6 +24,7 @@ const jrAddress = process.env.JR_WALLET_ADDRESS.toLowerCase();
   const busdAddress = process.env.BUSD_WALLET_ADDRESS.toLowerCase();
   const jrContractAddress = process.env.JR_CONTRACT_ADDRESS.toLowerCase();
   const ogContractAddress = process.env.OG_CONTRACT_ADDRESS.toLowerCase();
+  const bnbContractAddress = process.env.BNB_CONTRACT_ADDRESS.toLowerCase();
 
 export async function addChips(_user_id, _qty, _address, transactionType, gc=0,recipt= {}) {
   try {
@@ -1186,15 +1188,24 @@ console.log("rec", recipt.to)
       iface = new ethers.utils.Interface(JR_ABI);
       contractAddresss = process.env.JR_CONTRACT_ADDRESS;
 
-    }else{
+    }else if(recipt.to.toLowerCase() === ogContractAddress){
       console.log("OG")
     iface = new ethers.utils.Interface(OG_ABI);
       contractAddresss = process.env.OG_CONTRACT_ADDRESS;
+    }else{
+      console.log("BNB");
+      iface = new ethers.utils.Interface(BNB_ABI);
+      contractAddresss = process.env.BNB_CONTRACT_ADDRESS;
     }
-    const decoded = iface.parseTransaction({ data: recipt.data });
-    const cryptoAmt = Number(ethers.utils.formatEther(decoded.args["amount"]))
+    let decoded;
+    if(recipt.data.length > 2){
+      decoded = iface.parseTransaction({ data: recipt.data });
+    }
+   
+    console.log("ec", decoded)
+    const cryptoAmt =decoded && decoded.args["wad"] ?  Number(ethers.utils.formatEther(decoded.args["wad"])): decoded && decoded.args["amount"] ? Number(ethers.utils.formatEther(decoded.args["amount"])): Number(ethers.utils.formatEther(recipt.value))
     console.log("deco",cryptoAmt)
-    if(recipt.to.toLowerCase() === ogContractAddress || recipt.to.toLowerCase() === jrContractAddress){
+    if(recipt.to.toLowerCase() === ogContractAddress || recipt.to.toLowerCase() === jrContractAddress || recipt.to.toLowerCase() === '0x'+ process.env.BUSD_WALLET_ADDRESS.toLowerCase()){
       const res = await fetch(
         `https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/${contractAddresss}`
       );
@@ -1204,6 +1215,9 @@ console.log("rec", recipt.to)
   
        const cryptoUsd = cryptoAmt * current_price;
        console.log("cryp to Usd", cryptoUsd);
+       if(recipt.to.toLowerCase() === '0x'+ process.env.BUSD_WALLET_ADDRESS.toLowerCase()){
+        return parseInt(cryptoUsd);
+       }
        
        console.log("cryptoToUsd", Math.round(cryptoUsd))
        return pids[Math.round(cryptoUsd)]
@@ -1223,8 +1237,8 @@ export async function convertCryptoToGoldCoin(req, res) {
     console.log({ recipt });
     if(!recipt)
     return res.status(400).send({ success: false, data: "Invalid Transaction"})
-   
-    if(!recipt.data.includes(jrAddress) && !recipt.data.includes(ogAddress) && !recipt.data.includes(busdAddress))
+   console.log("rerer", recipt.to.toLowerCase(), busdAddress, busdAddress === recipt.to.toLowerCase())
+    if(!recipt.data.includes(jrAddress) && !recipt.data.includes(ogAddress) && !recipt.data.includes(busdAddress) && recipt.to.toLowerCase() !== '0x'+process.env.BUSD_WALLET_ADDRESS.toLowerCase())
     return res.status(400).send({ success: false, data: "Invalid transactionss"});
 
     if(recipt.from !==address){
