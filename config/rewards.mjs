@@ -11,7 +11,8 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 import OG_ABI from "../config/OG_ABI.json" assert { type: "json" };
 import JR_ABI from "../config/JR_ABI.json" assert {type: "json" };
-
+import BNB_ABI from "../config/BNB_ABI.json" assert {type: "json" };
+import { sendInvoice } from "../utils/sendx_send_invoice.mjs";
 const { Schema } = mongoose;
 
 dotenv.config()
@@ -23,15 +24,18 @@ const jrAddress = process.env.JR_WALLET_ADDRESS.toLowerCase();
   const busdAddress = process.env.BUSD_WALLET_ADDRESS.toLowerCase();
   const jrContractAddress = process.env.JR_CONTRACT_ADDRESS.toLowerCase();
   const ogContractAddress = process.env.OG_CONTRACT_ADDRESS.toLowerCase();
+  const bnbContractAddress = process.env.BNB_CONTRACT_ADDRESS.toLowerCase();
 
 export async function addChips(_user_id, _qty, _address, transactionType, gc=0,recipt= {}) {
   try {
-    console.log("Chpis Added", _user_id, _qty, _address, transactionType,gc);
+    console.log("Chpis Added", _user_id, _qty, _address, transactionType,gc,"refrenceId");
     const {value: user} = await db
       .get_scrooge_usersDB()
       .findOneAndUpdate({ _id: ObjectId(_user_id)}, {
         $inc: { goldCoin: gc,wallet:_qty }
       }, { new : true })
+    
+      
      await db
           .get_marketplace_chip_transactionsDB()
           .insertOne({
@@ -1184,15 +1188,24 @@ console.log("rec", recipt.to)
       iface = new ethers.utils.Interface(JR_ABI);
       contractAddresss = process.env.JR_CONTRACT_ADDRESS;
 
-    }else{
+    }else if(recipt.to.toLowerCase() === ogContractAddress){
       console.log("OG")
     iface = new ethers.utils.Interface(OG_ABI);
       contractAddresss = process.env.OG_CONTRACT_ADDRESS;
+    }else{
+      console.log("BNB");
+      iface = new ethers.utils.Interface(BNB_ABI);
+      contractAddresss = process.env.BNB_CONTRACT_ADDRESS;
     }
-    const decoded = iface.parseTransaction({ data: recipt.data });
-    const cryptoAmt = Number(ethers.utils.formatEther(decoded.args["amount"]))
+    let decoded;
+    if(recipt.data.length > 2){
+      decoded = iface.parseTransaction({ data: recipt.data });
+    }
+   
+    console.log("ec", decoded)
+    const cryptoAmt =decoded && decoded.args["wad"] ?  Number(ethers.utils.formatEther(decoded.args["wad"])): decoded && decoded.args["amount"] ? Number(ethers.utils.formatEther(decoded.args["amount"])): Number(ethers.utils.formatEther(recipt.value))
     console.log("deco",cryptoAmt)
-    if(recipt.to.toLowerCase() === ogContractAddress || recipt.to.toLowerCase() === jrContractAddress){
+    if(recipt.to.toLowerCase() === ogContractAddress || recipt.to.toLowerCase() === jrContractAddress || recipt.to.toLowerCase() === '0x'+ process.env.BUSD_WALLET_ADDRESS.toLowerCase()){
       const res = await fetch(
         `https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/${contractAddresss}`
       );
@@ -1202,6 +1215,9 @@ console.log("rec", recipt.to)
   
        const cryptoUsd = cryptoAmt * current_price;
        console.log("cryp to Usd", cryptoUsd);
+       if(recipt.to.toLowerCase() === '0x'+ process.env.BUSD_WALLET_ADDRESS.toLowerCase()){
+        return parseInt(cryptoUsd);
+       }
        
        console.log("cryptoToUsd", Math.round(cryptoUsd))
        return pids[Math.round(cryptoUsd)]
@@ -1215,21 +1231,21 @@ console.log("rec", recipt.to)
 
 export async function convertCryptoToGoldCoin(req, res) {
   const { address, transactionHash } = req.params;
-  const { user: { _id: userId }} = req;
+  const { user: { _id: userId,refrenceId,username,email }} = req;
   try {
     let recipt=await useSDK.sdk_OG.getProvider().getTransaction(transactionHash)
     console.log({ recipt });
     if(!recipt)
     return res.status(400).send({ success: false, data: "Invalid Transaction"})
-   
-    if(!recipt.data.includes(jrAddress) && !recipt.data.includes(ogAddress) && !recipt.data.includes(busdAddress))
+   console.log("rerer", recipt.to.toLowerCase(), busdAddress, busdAddress === recipt.to.toLowerCase())
+    if(!recipt.data.includes(jrAddress) && !recipt.data.includes(ogAddress) && !recipt.data.includes(busdAddress) && recipt.to.toLowerCase() !== '0x'+process.env.BUSD_WALLET_ADDRESS.toLowerCase())
     return res.status(400).send({ success: false, data: "Invalid transactionss"});
 
     if(recipt.from !==address){
       return res.status(400).send({ success: false, data: "Invalid transactionssss"});
     }
     
-  let getBlock=await db.get_scrooge_transactionDB().findOne({'transactionDetails.blockNumber':recipt?.blockNumber})
+   let getBlock=await db.get_scrooge_transactionDB().findOne({'transactionDetails.blockNumber':recipt?.blockNumber})
     if(getBlock?.transactionDetails?.blockNumber===recipt?.blockNumber){
       return  res.status(200).send({
         success: false,
@@ -1250,11 +1266,103 @@ export async function convertCryptoToGoldCoin(req, res) {
       address,
       "Crypto To Gold Coin",
       parseInt(data.gcAmount),
-      recipt
-    )
+      recipt,
+    ) 
+    const reciptPayload={
+      username:username,
+      email:email,
+      walletAddress:address,
+      invoicDate:1,
+      paymentMethod:"GC Purchase",
+      packageName:"GoldCoin Purchase",
+      goldCoinQuantity:parseInt(data.gcAmount),
+      tokenQuantity:parseInt(data.freeTokenAmount),
+      purcahsePrice: amt.toString(),
+      Tax:0,
+    }  
 
-      console.log("transghghg123", trans);
 
+    await sendInvoice(reciptPayload)
+    
+    if(refrenceId){
+      let affliateData=await db.get_affiliatesDB().findOne({userId:userId})
+      let getAdminSettings =  await db
+      .get_db_admin_settingDB().findOne({})
+      const {cryptoToGcReferalBonus}=getAdminSettings
+      // let getGcBonus=((cryptoToGcReferalBonus/100)*parseInt(data.gcAmount))
+      let getTicketBonus=((cryptoToGcReferalBonus/100)*parseInt(amt*100))
+     let affliateUserDetails={
+      commission:getTicketBonus,
+      monthly_earned:getTicketBonus,
+      referred_user_id:ObjectId(refrenceId),
+      affiliate_id:affliateData?._id||null,
+      userId:userId,
+      transactionType:"crypto to Gc refferal",
+      createdAt:new Date(),
+      updatedAt: new Date(),
+
+     }
+      await db
+      .get_db_affiliates_transactionDB().insertOne(affliateUserDetails)
+    let getUser=await db
+      .get_scrooge_usersDB()
+      .findOneAndUpdate({ _id: ObjectId(refrenceId)}, {
+        $inc: {ticket:getTicketBonus }
+      }, { new : true })
+
+  db.get_affiliatesDB().findOneAndUpdate({ userId:ObjectId(refrenceId)}, {
+    $inc: {total_earned:getTicketBonus,monthly_earned:getTicketBonus}
+  }, { new : true })
+  const transactionPayload={
+  amount: getTicketBonus ,
+  transactionType: "Crypto To Gc bonus",
+  prevWallet: getUser?.value?.wallet,
+  updatedWallet:getUser?.value?.wallet,
+  userId: ObjectId(refrenceId),
+  updatedTicket: getUser?.value?.ticket+ getTicketBonus,
+  prevGoldCoin: getUser?.value?.goldCoin,
+  updatedGoldCoin: getUser?.value?.goldCoin,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  prevTicket: getUser?.value?.ticket,
+
+};
+const trans_id = await db
+  .get_scrooge_transactionDB()
+  .insertOne(transactionPayload)
+
+
+  // //SignUp bonus
+  // let getUserData = await db
+  //           .get_scrooge_usersDB()
+  //           .findOne({ _id: ObjectId(userId) });
+  //           if(getUserData){
+  //             const {firstBuy}=getUserData
+  //             if(!firstBuy){
+  //             let UserUpData = await db
+  //           .get_scrooge_usersDB()
+  //           .findOneAndUpdate({ _id: ObjectId(refrenceId)},{
+  //              $inc:{
+  //               wallet:getAdminSettings?.welcomeBonusToken,
+  //               goldCoin:getAdminSettings?.welcomeBonusGoldCoin,
+  //             },
+  //             $set:{firstBuy:true}
+  //           },{new:true});
+  //           await await db.get_scrooge_transactionDB().insertOne({
+  //             userId:refrenceId,
+  //             amount: getAdminSettings?.welcomeBonusGoldCoin + getAdminSettings?.welcomeBonusToken,
+  //             transactionDetails: {},
+  //             prevGoldCoin: parseFloat(UserUpData?.value?.goldCoin),
+  //             transactionType: "signupBonus",
+  //             updatedGoldCoin: UserUpData?.value?.goldCoin+getAdminSettings?.welcomeBonusGoldCoin,
+  //             prevWallet: UserUpData?.value?.wallet,
+  //             updatedWallet: UserUpData?.value?.wallet+getAdminSettings?.welcomeBonusToken,
+  //             createdAt:new Date(),
+  //             updatedAt:new Date()
+  //           });
+  //             }
+  //           }
+}
       let getUserDetail = await db
         .get_scrooge_usersDB()
         .findOne({ _id: ObjectId(userId) });
@@ -1263,6 +1371,7 @@ export async function convertCryptoToGoldCoin(req, res) {
         data: "Chips Added Successfully",
         user: getUserDetail,
       });
+    
   } catch (error) {
     console.log("cryptoToToken", error);
     res
@@ -1298,7 +1407,7 @@ export async function convertCryptoToToken(req, res) {
         userId,
         parseInt(tokens),
         address,
-        "Crypto To Token"
+        "Crypto To Token",
       ).then(async (trans) => {
         // console.log("transghghg123", trans);
         if (trans.code === 200) {
