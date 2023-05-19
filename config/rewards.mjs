@@ -12,7 +12,7 @@ import mongoose from "mongoose";
 import OG_ABI from "../config/OG_ABI.json" assert { type: "json" };
 import JR_ABI from "../config/JR_ABI.json" assert {type: "json" };
 import BNB_ABI from "../config/BNB_ABI.json" assert {type: "json" };
-
+import { sendInvoice } from "../utils/sendx_send_invoice.mjs";
 const { Schema } = mongoose;
 
 dotenv.config()
@@ -1231,7 +1231,7 @@ console.log("rec", recipt.to)
 
 export async function convertCryptoToGoldCoin(req, res) {
   const { address, transactionHash } = req.params;
-  const { user: { _id: userId,refrenceId }} = req;
+  const { user: { _id: userId,refrenceId,username,email }} = req;
   try {
     let recipt=await useSDK.sdk_OG.getProvider().getTransaction(transactionHash)
     console.log({ recipt });
@@ -1267,7 +1267,22 @@ export async function convertCryptoToGoldCoin(req, res) {
       "Crypto To Gold Coin",
       parseInt(data.gcAmount),
       recipt,
-    )   
+    ) 
+    const reciptPayload={
+      username:username,
+      email:email,
+      walletAddress:address,
+      invoicDate:1,
+      paymentMethod:"GC Purchase",
+      packageName:"GoldCoin Purchase",
+      goldCoinQuantity:parseInt(data.gcAmount),
+      tokenQuantity:parseInt(data.freeTokenAmount),
+      purcahsePrice: amt.toString(),
+      Tax:0,
+    }  
+
+
+    await sendInvoice(reciptPayload)
     
     if(refrenceId){
       let affliateData=await db.get_affiliatesDB().findOne({userId:userId})
