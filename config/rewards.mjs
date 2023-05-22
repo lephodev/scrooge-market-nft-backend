@@ -115,6 +115,7 @@ export async function getNextClaimDate(req, res) {
     console.log("------", data);
     if (typeof data[0] !== "undefined") {
       if (type === "daily") {
+        console.log("daily",daily);
         lastClaimDate = data[0].claimDate;
         nextClaimDate = new Date(data[0].claimDate);
         nextClaimDate.setDate(nextClaimDate.getDate() + 1);
@@ -162,6 +163,7 @@ export async function claimDLTokens(req) {
   const address = req.params.address;
   const user_id = req.params.user_id;
   const token_id = req.params.token_id;
+  console.log("req.params",req.params);
   let balance,
     balanceRaw,
     rarity_pct,
@@ -170,7 +172,7 @@ export async function claimDLTokens(req) {
     lastClaimDate,
     isClaimable = false;
   if (address && user_id && token_id) {
-    const checkOwner = await useSDK.contractDL.call("ownerOf", token_id);
+    const checkOwner = await useSDK.contractDL.call("ownerOf", [token_id]);
     const getNFT = await useSDK.contractDL.erc721.get(token_id);
     // rarity_pct = getNFT.metadata.attributes[12].value;
     rarity_pts = getNFT.metadata.attributes[11].value;
@@ -199,19 +201,20 @@ export async function claimDLTokens(req) {
         if (typeof lastClaimDate != "undefined") {
           //console.log(today);
           //console.log(nextmonth);
-          //console.log(lastClaimDate);
+        console.log("lastClaimDate",lastClaimDate,"prevmonth",prevmonth);
           //console.log(prevmonth);
-          if (lastClaimDate <= prevmonth) {
-            //console.log("Available");
+          if (lastClaimDate >= prevmonth) {
+            console.log("Available");
             isClaimable = true;
           } else {
-            //console.log("Unavailable");
+            console.log("Unavailable");
             isClaimable = false;
           }
         } else {
-          //console.log("No Claim Date");
+          console.log("No Claim Date");
           isClaimable = true;
         }
+        console.log("isClaimable",isClaimable);
         if (isClaimable) {
           //console.log("isClaimable is true");
           const queryCT = await db
@@ -665,9 +668,6 @@ export async function redeemPrize(req, res) {
   console.log("abbcccc");
   let resp;
   let trans_id;
-  const user_id = req.params.user_id;
-  const address = req.params.address;
-  const prize_id = req.params.prize_id;
   const withdraw_id=req.params.withdraw_id
   let sdk,
     balance,
@@ -693,6 +693,13 @@ export async function redeemPrize(req, res) {
     use_sdk;
 
   try {
+
+    const query=await db.get_db_withdraw_requestDB().findOne({_id:ObjectId(withdraw_id)})
+    const user_id = query.userId;
+    const address = query.address;
+    const prize_id = query.redeemId;
+
+
     let getKycuser = await db
       .get_scrooge_user_kycs()
       .findOne({ userId: ObjectId(user_id) });
@@ -893,7 +900,7 @@ export async function redeemPrize(req, res) {
           // balanceRaw = await use_sdk.wallet.balance(sdk_wallet);
           balanceRaw = await useSDK.contractCasinoNFT.erc1155.balanceOf(
             sdk_wallet,
-            prize_token_id
+            [prize_token_id]
           );
           console.log("balraw", balanceRaw);
           console.log("prize_token_id", prize_token_id);
@@ -1053,7 +1060,7 @@ export async function redeemPrize(req, res) {
           } else {
             const sdk_wallet = await use_sdk.wallet.getAddress();
             console.log("sdk_wallet960", sdk_wallet);
-            balanceRaw = await useSDK.contractDL.call("balanceOf", sdk_wallet);
+            balanceRaw = await useSDK.contractDL.call("balanceOf", [sdk_wallet]);
             // balanceRaw = await use_sdk.wallet.balance(sdk_wallet);
             console.log("balanraw963", balanceRaw);
             balance = parseInt(balanceRaw);
@@ -1075,9 +1082,9 @@ export async function redeemPrize(req, res) {
                   // );
                   const transfer = await useSDK.contractDL.call(
                     "safeTransferFrom",
-                    sdk_wallet,
+                    [sdk_wallet,
                     address,
-                    DL_token_id
+                    DL_token_id], { gasPrice: ethers.utils.parseUnits('1', 'gwei'), gasLimit: 1000000}
                   );
                   //update claim flag to true in ducky_lucks_prizes table
                   updateDLClaimFlag(DL_token_obj_id);
