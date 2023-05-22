@@ -668,8 +668,6 @@ export async function redeemPrize(req, res) {
   console.log("abbcccc");
   let resp;
   let trans_id;
-  const address = req.params.address;
-  const prize_id = req.params.prize_id;
   const withdraw_id=req.params.withdraw_id
   let sdk,
     balance,
@@ -698,6 +696,10 @@ export async function redeemPrize(req, res) {
 
     const query=await db.get_db_withdraw_requestDB().findOne({_id:ObjectId(withdraw_id)})
     const user_id = query.userId;
+    const address = query.address;
+    const prize_id = query.redeemId;
+
+
     let getKycuser = await db
       .get_scrooge_user_kycs()
       .findOne({ userId: ObjectId(user_id) });
