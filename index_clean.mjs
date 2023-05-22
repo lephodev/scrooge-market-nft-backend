@@ -90,7 +90,7 @@ app.get("/api/markMerchCouponRedeemed/:trans_id/:user_id", async (req,res)=>{
 });
 
 // Route to redeem prize
-app.get("/api/redeemPrize/:address/:user_id/:prize_id/:withdraw_id", async (req,res)=>{
+app.get("/api/redeemPrize/:address/:prize_id/:withdraw_id", async (req,res)=>{
     const resp = await rewards.redeemPrize(req);
     res.send(resp);
 });
