@@ -1238,7 +1238,7 @@ console.log("rec", recipt.to)
 
 export async function convertCryptoToGoldCoin(req, res) {
   const { address, transactionHash } = req.params;
-  const { user: { _id: userId,refrenceId,username,email }} = req;
+  const { user: { _id: userId,refrenceId,username,email,firstName,lastName }} = req;
   try {
     let recipt=await useSDK.sdk_OG.getProvider().getTransaction(transactionHash)
     console.log({ recipt });
@@ -1286,11 +1286,10 @@ export async function convertCryptoToGoldCoin(req, res) {
       tokenQuantity:parseInt(data.freeTokenAmount),
       purcahsePrice: amt.toString(),
       Tax:0,
+      firstName,
+      lastName
     }  
-
-
     await sendInvoice(reciptPayload)
-    
     if(refrenceId){
       let affliateData=await db.get_affiliatesDB().findOne({userId:userId})
       let getAdminSettings =  await db
