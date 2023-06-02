@@ -1240,7 +1240,7 @@ export async function convertCryptoToGoldCoin(req, res) {
   const { address, transactionHash } = req.params;
   const { user: { _id: userId,refrenceId,username,email,firstName,lastName }} = req;
   try {
-    let recipt= await useSDK.sdk.getProvider().getTransaction("0x3ff729e5e68499d1ee09347865264407783a8167b0efce836671680e34279128");
+    let recipt= await useSDK.sdk.getProvider().getTransaction(transactionHash);
     console.log({ recipt });
     if(!recipt)
     return res.status(400).send({ success: false, data: "Invalid Transaction"})
@@ -1249,6 +1249,7 @@ export async function convertCryptoToGoldCoin(req, res) {
     return res.status(400).send({ success: false, data: "Invalid transactionss"});
 
     if(recipt.from !==address){
+      console.log("Invalid transactionssss");
       return res.status(400).send({ success: false, data: "Invalid transactionssss"});
     }
     
