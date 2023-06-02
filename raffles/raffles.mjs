@@ -359,28 +359,28 @@ export async function finalizeEntryPurchase(req) {
 }
 
 ////////function to transfer NFT to user
-async function transferNFT(user_id, address, item_id) {
-    let resp, balance, balanceRaw;
-    const item = await db.get_marketplace_itemsDB().findOne({ _id: ObjectId(item_id) });
-    //start erc1155 process
-    const sdk_wallet = useSDK.sdk_casino_nfts_wallet;
-    const contractCasinoNFT = useSDK.contractCasinoNFT;
-    balanceRaw = await contractCasinoNFT.balanceOf(sdk_wallet, item.token_id);
-    balance = parseInt(balanceRaw);
-    // Verify sdk wallet / contract has enough balance to disburse prize
-    if(balance > 0){
-        try {
-            const transfer = await contractCasinoNFT.transfer(address, item.token_id, 1);
-            resp = "Success";
-        } catch (error) {
-            resp = 'Transaction Failed.';
-        }
-    } else {
-        console.log("Not enough balance");
-        resp = "Not enough balance.";
-    }
-    return resp;
-}
+// async function transferNFT(user_id, address, item_id) {
+//     let resp, balance, balanceRaw;
+//     const item = await db.get_marketplace_itemsDB().findOne({ _id: ObjectId(item_id) });
+//     //start erc1155 process
+//     const sdk_wallet = useSDK.sdk_casino_nfts_wallet;
+//     const contractCasinoNFT = useSDK.contractCasinoNFT;
+//     balanceRaw = await contractCasinoNFT.balanceOf(sdk_wallet, item.token_id);
+//     balance = parseInt(balanceRaw);
+//     // Verify sdk wallet / contract has enough balance to disburse prize
+//     if(balance > 0){
+//         try {
+//             const transfer = await contractCasinoNFT.transfer(address, item.token_id, 1);
+//             resp = "Success";
+//         } catch (error) {
+//             resp = 'Transaction Failed.';
+//         }
+//     } else {
+//         console.log("Not enough balance");
+//         resp = "Not enough balance.";
+//     }
+//     return resp;
+// }
 
 async function checkTransactionHash(transactionHash) {
     
