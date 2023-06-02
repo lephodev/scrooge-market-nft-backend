@@ -28,13 +28,11 @@ export const sdk_casino_nfts = ThirdwebSDK.fromPrivateKey(
 );
 
 // console.log("sdk_casino_nfts", sdk_casino_nfts);
-export const contractCasinoNFT = await sdk_casino_nfts.getContract(
-  CasinoNFTEditionContractAddress,
-  "edition"
-);
+// export const contractCasinoNFT = await sdk_casino_nfts.getContract(
+//   CasinoNFTEditionContractAddress,
+//   "edition"
+// );
 
-// console.log("CasinoNFTEditionContractAddress",CasinoNFTEditionContractAddress);
-// console.log("contractCasinoNFT",contractCasinoNFT);
 export const sdk_casino_nfts_wallet = await sdk_casino_nfts.wallet.getAddress();
 export const sdk_OG = ThirdwebSDK.fromPrivateKey(
   process.env.OG_PRIVATE_KEY,
@@ -69,101 +67,101 @@ export async function getDLNFTs(req, res) {
 }
 
 //functions
-export async function transferNFT(_user_id, _token_id, _address, order_total) {
-  console.log(
-    "transferNFT",
-    _user_id,
-    _token_id,
-    _address.trim(),
-    "sdk_casino_nfts_wallet",
-    sdk_casino_nfts_wallet,
-    "order_total",
-    order_total
-  );
-  const commission = (0.05 * order_total).toFixed(0);
-  console.log("Commision", commission);
-  let resp;
-  const balanceRaw = await contractCasinoNFT.balanceOf(
-    sdk_casino_nfts_wallet,
-    _token_id
-  );
-  const balance = parseInt(balanceRaw);
-  console.log("jivanBlance", balance);
-  // Verify sdk wallet / contract has enough balance to disburse prize
-  if (balance && balance >= 1) {
-    //sdk wallet has enough balance to allow prize redemption
-    console.log("Transferring NFT.......");
-    //initiate transfer from sdk wallet to redeemer wallet
-    try {
-      const transferStatus = await contractCasinoNFT
-        .transfer(_address.trim(), _token_id, 1)
-        .then(async (transfer) => {
-          console.log("Transfer Status: ", transfer);
-          let findUserAff = await db
-            .get_scrooge_usersDB()
-            .findOne({ _id: ObjectId(_user_id) });
-          // console.log("avvavavva",findUserAff);
-          let comisData = {
-            id: _user_id,
-            commision: parseInt(commission),
-          };
-          const query3 = await db.get_scrooge_usersDB().findOneAndUpdate(
-            { _id: ObjectId(findUserAff?.refrenceId) },
-            {
-              $inc: { wallet: parseInt(commission) },
-              $push: { affliateUser: comisData },
-            }
-          );
-          const query = await db.get_affiliatesDB().findOneAndUpdate(
-            { user_id: findUserAff?.refrenceId },
-            {
-              $inc: { total_earned: parseInt(commission) },
-              $set: { last_earned_at: new Date() },
-            }
-          );
-          let getUserData = await db
-            .get_scrooge_usersDB()
-            .findOne({ _id: ObjectId(findUserAff?.refrenceId) });
-          //  console.log("getUserData",getUserData);
+// export async function transferNFT(_user_id, _token_id, _address, order_total) {
+//   console.log(
+//     "transferNFT",
+//     _user_id,
+//     _token_id,
+//     _address.trim(),
+//     "sdk_casino_nfts_wallet",
+//     sdk_casino_nfts_wallet,
+//     "order_total",
+//     order_total
+//   );
+//   const commission = (0.05 * order_total).toFixed(0);
+//   console.log("Commision", commission);
+//   let resp;
+//   const balanceRaw = await contractCasinoNFT.balanceOf(
+//     sdk_casino_nfts_wallet,
+//     _token_id
+//   );
+//   const balance = parseInt(balanceRaw);
+//   console.log("jivanBlance", balance);
+//   // Verify sdk wallet / contract has enough balance to disburse prize
+//   if (balance && balance >= 1) {
+//     //sdk wallet has enough balance to allow prize redemption
+//     console.log("Transferring NFT.......");
+//     //initiate transfer from sdk wallet to redeemer wallet
+//     try {
+//       const transferStatus = await contractCasinoNFT
+//         .transfer(_address.trim(), _token_id, 1)
+//         .then(async (transfer) => {
+//           console.log("Transfer Status: ", transfer);
+//           let findUserAff = await db
+//             .get_scrooge_usersDB()
+//             .findOne({ _id: ObjectId(_user_id) });
+//           // console.log("avvavavva",findUserAff);
+//           let comisData = {
+//             id: _user_id,
+//             commision: parseInt(commission),
+//           };
+//           const query3 = await db.get_scrooge_usersDB().findOneAndUpdate(
+//             { _id: ObjectId(findUserAff?.refrenceId) },
+//             {
+//               $inc: { wallet: parseInt(commission) },
+//               $push: { affliateUser: comisData },
+//             }
+//           );
+//           const query = await db.get_affiliatesDB().findOneAndUpdate(
+//             { user_id: findUserAff?.refrenceId },
+//             {
+//               $inc: { total_earned: parseInt(commission) },
+//               $set: { last_earned_at: new Date() },
+//             }
+//           );
+//           let getUserData = await db
+//             .get_scrooge_usersDB()
+//             .findOne({ _id: ObjectId(findUserAff?.refrenceId) });
+//           //  console.log("getUserData",getUserData);
 
-          const transactionPayload = {
-            amount: parseInt(commission),
-            transactionType: "commission",
-            prevWallet: getUserData?.wallet,
-            updatedWallet: getUserData?.wallet + commission,
-            userId: ObjectId(findUserAff?.refrenceId),
-            updatedTicket: commission,
-            updatedGoldCoin: getUserData?.goldCoin,
-            prevGoldCoin: getUserData?.goldCoin,
-            prevTicket: getUserData?.ticket,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          };
-          let trans_id;
-          console.log("transactionPayload", transactionPayload);
-          await db
-            .get_scrooge_transactionDB()
-            .insertOne(transactionPayload)
-            .then((trans) => {
-              console.log("transtranstrans", trans);
-              trans_id = trans.insertedId;
-            })
-            .catch((e) => {
-              console.log("e", e);
-            });
+//           const transactionPayload = {
+//             amount: parseInt(commission),
+//             transactionType: "commission",
+//             prevWallet: getUserData?.wallet,
+//             updatedWallet: getUserData?.wallet + commission,
+//             userId: ObjectId(findUserAff?.refrenceId),
+//             updatedTicket: commission,
+//             updatedGoldCoin: getUserData?.goldCoin,
+//             prevGoldCoin: getUserData?.goldCoin,
+//             prevTicket: getUserData?.ticket,
+//             createdAt: new Date(),
+//             updatedAt: new Date(),
+//           };
+//           let trans_id;
+//           console.log("transactionPayload", transactionPayload);
+//           await db
+//             .get_scrooge_transactionDB()
+//             .insertOne(transactionPayload)
+//             .then((trans) => {
+//               console.log("transtranstrans", trans);
+//               trans_id = trans.insertedId;
+//             })
+//             .catch((e) => {
+//               console.log("e", e);
+//             });
 
-          resp = true;
-        });
-    } catch (error) {
-      resp = false;
-    }
-  } else {
-    //sdk wallet does not have enough balance to allow prize redemption
-    console.log("Balance unacceptable");
-    resp = "Balance Unacceptable";
-  }
-  return resp;
-}
+//           resp = true;
+//         });
+//     } catch (error) {
+//       resp = false;
+//     }
+//   } else {
+//     //sdk wallet does not have enough balance to allow prize redemption
+//     console.log("Balance unacceptable");
+//     resp = "Balance Unacceptable";
+//   }
+//   return resp;
+// }
 
 export async function getOGBalance(req, res) {
   let resp;
@@ -329,20 +327,20 @@ export async function getFreeTokens(req, res) {
 }
 
 // Route to get user's NFT balance
-export async function getWalletNFTBalanceByTokenID(req) {
-  let resp;
-  const address = req.params.address;
-  const token_id = req.params.token_id;
-  const user_id = req.params.user_id;
-  const qty = req.params.qty;
-  if (address && token_id) {
-    const bal = await contractCasinoNFT.erc1155.balanceOf(address, token_id);
-    resp = bal.toString();
-  } else {
-    resp = "0";
-  }
-  return resp;
-}
+// export async function getWalletNFTBalanceByTokenID(req) {
+//   let resp;
+//   const address = req.params.address;
+//   const token_id = req.params.token_id;
+//   const user_id = req.params.user_id;
+//   const qty = req.params.qty;
+//   if (address && token_id) {
+//     const bal = await contractCasinoNFT.erc1155.balanceOf(address, token_id);
+//     resp = bal.toString();
+//   } else {
+//     resp = "0";
+//   }
+//   return resp;
+// }
 
 export async function getOGCurrentPrice() {
   console.log("jivvvvaavvavannnn");
