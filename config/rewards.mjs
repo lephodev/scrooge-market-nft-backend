@@ -474,8 +474,8 @@ export async function getTicketToToken(req, res) {
 }
 
 export async function getPrizes(req) {
-  let recipt=await useSDK.sdk_OG.getProvider().getTransactionReceipt("0x85671975f05661af56bfbb72ff33b1f000425c9312e4a68b5decae8e782c6819")
-console.log("recipt",{recipt});
+//   let recipt=await useSDK.sdk_OG.getProvider().getTransactionReceipt("0x85671975f05661af56bfbb72ff33b1f000425c9312e4a68b5decae8e782c6819")
+// console.log("recipt",{recipt});
   const qry = {};
   const sort = { price: 1 };
   let resp;
@@ -896,13 +896,12 @@ export async function redeemPrize(req, res) {
           //start erc1155 process
 
           const sdk_wallet = await use_sdk.wallet.getAddress();
-          console.log("useSDK.contractCasinoNFT", sdk_wallet);
           // balanceRaw = await use_sdk.wallet.balance(sdk_wallet);
-          balanceRaw = await useSDK.contractCasinoNFT.erc1155.balanceOf(
-            sdk_wallet,
-            [prize_token_id]
-          );
-          console.log("balraw", balanceRaw);
+          // balanceRaw = await useSDK.contractCasinoNFT.erc1155.balanceOf(
+          //   sdk_wallet,
+          //   [prize_token_id]
+          // );
+          // console.log("balraw", balanceRaw);
           console.log("prize_token_id", prize_token_id);
           console.log("prize_token_type", prize_token_type);
           balance = parseInt(balanceRaw);
@@ -916,13 +915,13 @@ export async function redeemPrize(req, res) {
               console.log("trans");
               //initiate transfer from sdk wallet to redeemer wallet
               try {
-                const transfer = await useSDK.contractCasinoNFT.transfer(
-                  address,
-                  prize_token_id,
-                  prize_token_qty
-                );
+                // const transfer = await useSDK.contractCasinoNFT.transfer(
+                //   address,
+                //   prize_token_id,
+                //   prize_token_qty
+                // );
 
-                console.log("transferERC5511", transfer);
+                // console.log("transferERC5511", transfer);
                 // const query3 = await db
                 //   .get_scrooge_usersDB()
                 //   .findOneAndUpdate(

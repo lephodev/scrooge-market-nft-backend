@@ -10,56 +10,56 @@ const envconfig = dotenv.config();
 const stripe = Stripe(process.env.STRIPE_API_TEST_KEY);
 
 export async function processStripeCheckOut(req, res) {
-  try {
-    console.log("request", req.body);
-    const {
-      asset: { name, description, image, id },
-      buyoutCurrencyValuePerToken: { displayValue },
-      address,
-      userId,
-      affID,
-    } = req.body;
-    const balanceRaw = await useSDK.contractCasinoNFT.balanceOf(
-      useSDK.sdk_casino_nfts_wallet,
-      id
-    );
+  // try {
+  //   console.log("request", req.body);
+  //   const {
+  //     asset: { name, description, image, id },
+  //     buyoutCurrencyValuePerToken: { displayValue },
+  //     address,
+  //     userId,
+  //     affID,
+  //   } = req.body;
+  //   const balanceRaw = await useSDK.contractCasinoNFT.balanceOf(
+  //     useSDK.sdk_casino_nfts_wallet,
+  //     id
+  //   );
 
-    console.log("IDDDDDDDDDDDDDDDDDDDDDDDDDDD", id);
-    console.log("balanceRawJivan", balanceRaw);
-    const balance = parseInt(balanceRaw);
-    if (balance > 0) {
-      console.log("getProduct", balance);
+  //   console.log("IDDDDDDDDDDDDDDDDDDDDDDDDDDD", id);
+  //   console.log("balanceRawJivan", balanceRaw);
+  //   const balance = parseInt(balanceRaw);
+  //   if (balance > 0) {
+  //     console.log("getProduct", balance);
 
-      const session = await stripe.checkout.sessions.create({
-        payment_method_types: ["card"],
-        line_items: [
-          {
-            price_data: {
-              currency: "usd",
-              product_data: {
-                name,
-                description,
-                images: [image],
-              },
-              unit_amount: parseFloat(displayValue) * 100,
-            },
-            quantity: 1,
-          },
-        ],
-        mode: "payment",
-        success_url: `${
-          process.env.SERVER
-        }/webhook/stripe?session_id={CHECKOUT_SESSION_ID}&method=${"card"}&userId=${userId}&address=${address} &token_id=${id}&aff_id=${affID}`,
-        cancel_url: `${process.env.CLIENT}/payment?status=fail`,
-      });
-      res.send({ code: 200, id: session.id });
-    } else {
-      res.send({ code: 400, msg: "Balance Unacceptable" });
-    }
-  } catch (error) {
-    console.log("Error in Stripe payment checkout creation =>", error);
-    res.send({ code: 500, msg: "Internal Server error", error: error.message });
-  }
+  //     const session = await stripe.checkout.sessions.create({
+  //       payment_method_types: ["card"],
+  //       line_items: [
+  //         {
+  //           price_data: {
+  //             currency: "usd",
+  //             product_data: {
+  //               name,
+  //               description,
+  //               images: [image],
+  //             },
+  //             unit_amount: parseFloat(displayValue) * 100,
+  //           },
+  //           quantity: 1,
+  //         },
+  //       ],
+  //       mode: "payment",
+  //       success_url: `${
+  //         process.env.SERVER
+  //       }/webhook/stripe?session_id={CHECKOUT_SESSION_ID}&method=${"card"}&userId=${userId}&address=${address} &token_id=${id}&aff_id=${affID}`,
+  //       cancel_url: `${process.env.CLIENT}/payment?status=fail`,
+  //     });
+  //     res.send({ code: 200, id: session.id });
+  //   } else {
+  //     res.send({ code: 400, msg: "Balance Unacceptable" });
+  //   }
+  // } catch (error) {
+  //   console.log("Error in Stripe payment checkout creation =>", error);
+  //   res.send({ code: 500, msg: "Internal Server error", error: error.message });
+  // }
 }
 
 /* Stripe Webhooks */
