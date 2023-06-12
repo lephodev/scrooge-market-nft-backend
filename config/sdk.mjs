@@ -275,12 +275,16 @@ export async function getFreeTokens(req, res) {
                 .findOne({ _id: ObjectId(findUserAff?.refrenceId) });
               //  console.log("getUserData",getUserData);
 
+              const {_id,username,email,firstName,lastName,profile} = getUserData
+
               const transactionPayload = {
                 amount: parseInt(commission),
                 transactionType: "commission",
                 prevWallet: getUserData?.wallet,
                 updatedWallet: getUserData?.wallet + commission,
-                userId: ObjectId(findUserAff?.refrenceId),
+                userId: {
+                  _id,username,email,firstName,lastName,profile
+                },
                 updatedTicket: commission,
                 updatedGoldCoin: getUserData?.goldCoin,
                 prevGoldCoin: getUserData?.goldCoin,
