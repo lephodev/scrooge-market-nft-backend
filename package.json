@@ -21,6 +21,7 @@
     "dotenv": "^16.0.3",
     "ethers": "^5.7.2",
     "express": "^4.17.1",
+    "helmet": "^7.0.0",
     "http-status": "^1.6.2",
     "jsonwebtoken": "^9.0.0",
     "moment": "^2.29.4",
@@ -35,7 +36,8 @@
     "send_x_rest_api": "^1.0.0",
     "stripe": "^11.6.0",
     "wagmi-core": "^0.1.22",
-    "web3": "^1.8.2"
+    "web3": "^1.8.2",
+    "winston": "^3.9.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.13",
