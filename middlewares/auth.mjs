@@ -5,7 +5,6 @@ import { roleRights } from "../config/roles.mjs";
 
 const verifyCallback =
   (req, resolve, reject, requiredRights) => async (err, user, info) => {
-    console.log("err", err, info, !user);
     if (err || info || !user) {
       return reject(
         new ApiError(httpStatus.UNAUTHORIZED, "Please authenticate")
@@ -39,7 +38,8 @@ const auth =
       .then(() => next())
       .catch((err) => {
         console.log("erororororor", err);
-        next(err);
+        res.status(400).send({message:"Please authenticate"})
+        // next(err);
       });
   };
 
