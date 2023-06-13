@@ -45,12 +45,18 @@ export async function addChips(_user_id, _qty, _address, transactionType, gc=0,r
             timestamp: new Date(),
           });
 console.log(" user", user)
+
+          const {
+            _id,username,email,firstName,lastName,profile
+          } = user;
         const transactionPayload = {
           amount: gc ? gc : _qty ,
           transactionType: transactionType,
           prevWallet: user.wallet,
           updatedWallet:user.wallet + _qty,
-          userId: ObjectId(_user_id),
+          userId: {
+            _id,username,email,firstName,lastName,profile
+          },
           updatedTicket: user.ticket,
           prevGoldCoin: user.goldCoin,
           updatedGoldCoin: user.goldCoin + gc,
@@ -1011,12 +1017,16 @@ export async function redeemPrize(req, res) {
             .findOne({ _id: ObjectId(user_id) });
           //  console.log("getUserData",getUserData);
 
+          const {_id,username,email,firstName,lastName,profile} = getUserData
+
           const transactionPayload = {
             amount: prize_price,
             transactionType: "Merch Redeem",
             prevWallet: getUserData?.wallet,
             updatedWallet: getUserData?.wallet + prize_price,
-            userId: ObjectId(user_id),
+            userId:{
+              _id,username,email,firstName,lastName,profile
+            },
             updatedTicket: getUserData?.ticket + prize_price,
             updatedGoldCoin: getUserData?.goldCoin,
             prevGoldCoin: getUserData?.goldCoin,
@@ -1097,13 +1107,17 @@ export async function redeemPrize(req, res) {
                     .get_scrooge_usersDB()
                     .findOne({ _id: ObjectId(user_id) });
                   console.log("getUserData", getUserData);
+                 
+                  const {_id,username,email,firstName,lastName,profile} = getUserData
 
                   const transactionPayload = {
                     amount: prize_price,
                     transactionType: "DL Redeem",
                     prevWallet: getUserData?.wallet,
                     updatedWallet: getUserData?.wallet - prize_price,
-                    userId: ObjectId(user_id),
+                    userId:{
+                      _id,username,email,firstName,lastName,profile
+                    },
                     updatedTicket: getUserData?.ticket - prize_price,
                     updatedGoldCoin: getUserData?.goldCoin,
                     prevGoldCoin: getUserData?.goldCoin,
@@ -1237,7 +1251,7 @@ console.log("rec", recipt.to)
 
 export async function convertCryptoToGoldCoin(req, res) {
   const { address, transactionHash } = req.params;
-  const { user: { _id: userId,refrenceId,username,email,firstName,lastName }} = req;
+  const { user: { _id: userId,refrenceId,username,email,firstName,lastName,profile}} = req;
   try {
     let recipt= await useSDK.sdk.getProvider().getTransaction(transactionHash);
     console.log({ recipt });
@@ -1324,7 +1338,10 @@ export async function convertCryptoToGoldCoin(req, res) {
   transactionType: "Crypto To Gc bonus",
   prevWallet: getUser?.value?.wallet,
   updatedWallet:getUser?.value?.wallet,
-  userId: ObjectId(refrenceId),
+  // userId: ObjectId(refrenceId),
+  userId:{
+    _id:userId,username,email,firstName,lastName,profile
+  },
   updatedTicket: getUser?.value?.ticket+ getTicketBonus,
   prevGoldCoin: getUser?.value?.goldCoin,
   updatedGoldCoin: getUser?.value?.goldCoin,
@@ -1448,13 +1465,16 @@ export async function convertCryptoToToken(req, res) {
               .get_scrooge_usersDB()
               .findOne({ _id: ObjectId(findUserAff?.refrenceId) });
             // console.log("getUserData---->>>>>>", getUserData);
+            const {_id,username,email,firstName,lastName,profile} = getUserData
 
             const transactionPayload = {
               amount: parseInt(commission),
               transactionType: "commission",
               prevWallet: getUserData?.wallet,
               updatedWallet: getUserData?.wallet + commission,
-              userId: ObjectId(findUserAff?.refrenceId),
+              userId: {
+                _id,username,email,firstName,lastName,profile
+              },
               updatedTicket: commission,
               updatedGoldCoin: getUserData?.goldCoin,
               prevGoldCoin: getUserData?.goldCoin,
@@ -1542,12 +1562,17 @@ export async function convertPrice(req, res) {
       let getUserData = await db
       .get_scrooge_usersDB()
       .findOne({ _id: ObjectId(userId) });
+
+      const {_id,username,email,firstName,lastName,profile} = getUserData
+
       const transactionPayload = {
         amount: ticket,
         transactionType: "Ticket To Token",
         prevWallet: getUserData?.wallet - parseInt(ticket),
         updatedWallet: getUserData?.wallet,
-        userId: ObjectId(userId),
+        userId: {
+          _id,username,email,firstName,lastName,profile
+        },
         updatedTicket: getUserData?.ticket,
         updatedGoldCoin: getUserData?.goldCoin,
         prevGoldCoin: getUserData?.goldCoin,
@@ -1606,12 +1631,17 @@ export async function WithdrawRequest(req, res) {
           let getUserData = await db
           .get_scrooge_usersDB()
           .findOne({ _id: ObjectId(user_id) });
+
+          const {_id,username,email,firstName,lastName,profile} = getUserData
+
         const transactionPayload = {
           amount: -prize.price,
           transactionType: "Crypto Redeem",
           prevWallet: getUserData?.wallet,
           updatedWallet: getUserData?.wallet,
-          userId: ObjectId(user_id),
+          userId: {
+            _id,username,email,firstName,lastName,profile
+          },
           updatedTicket: getUserData?.ticket,
           updatedGoldCoin: getUserData?.goldCoin,
           prevGoldCoin: getUserData?.goldCoin,
