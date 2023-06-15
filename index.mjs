@@ -23,8 +23,19 @@ import { checkUserCanSpin } from "./rouletteSpin/rouletteUtils.mjs";
 import { CryptoToGCQueue, TicketToTokenQueue } from "./utils/Queues.mjs";
 import logger from "./config/logger.mjs";
 const app = express();
-app.use(helmet());
-
+// set security HTTP headers
+app.use(
+  helmet({
+    frameguard: {
+      action: 'sameorigin'
+    },
+    hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true
+    }
+  })
+);
 const PORT = process.env.PORT;
 app.use(
   cors({
