@@ -807,7 +807,7 @@ export async function redeemPrize(req, res) {
                 console.log("address", address);
                 const transfer = await use_sdk.wallet.transfer(
                   address,
-                  100,
+                  prize_token_qty,
                   prize_contract
                 );
                 console.log("transfer796", transfer);
