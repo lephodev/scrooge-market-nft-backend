@@ -722,7 +722,7 @@ export async function redeemPrize(req, res) {
       if (prize.isDynamic) {
         //coupon_code = await getMerchCouponCode('JR', 'pr10off');
         //console.log("post coupon code: ", coupon_code);
-        if (prize.contract === "0xfA1BA18067aC6884fB26e329e60273488a247FC3") {
+        if (prize.contract === "0x9DfeE72aEa65dc7e375d50Ea2Bd90384313A165A") {
           console.log("OG");
           curr_price = await useSDK.getOGCurrentPrice();
         } else if (
