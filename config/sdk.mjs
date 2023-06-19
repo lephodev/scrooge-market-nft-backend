@@ -348,12 +348,11 @@ export async function getFreeTokens(req, res) {
 // }
 
 export async function getOGCurrentPrice() {
-  console.log("jivvvvaavvavannnn");
   let curr_price;
   await axios.post('https://api.coinbrain.com/public/coin-info', {
-    "56":["0x9DfeE72aEa65dc7e375d50Ea2Bd90384313A165A"]
+    "56":[OGContractAddress]
 })  .then((response) => {
-  console.log("abc",response);
+  console.log("response",response);
 
    curr_price = response.data[0].priceUsd;
 }, (error) => {
