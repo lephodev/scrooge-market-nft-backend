@@ -6,6 +6,7 @@ import JR_ABI from "./JR_ABI.json" assert { type: "json" };
 import { ObjectId } from "mongodb";
 import * as db from "./mongodb.mjs";
 import { allChains } from "wagmi-core";
+import axios from "axios";
 
 export const sdk = new ThirdwebSDK("https://bsc-dataseed4.binance.org/");
 export const CasinoNFTEditionContractAddress =
