@@ -349,17 +349,26 @@ export async function getFreeTokens(req, res) {
 export async function getOGCurrentPrice() {
   console.log("jivvvvaavvavannnn");
   let curr_price;
-  await fetch(
-    "https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/0x9DfeE72aEa65dc7e375d50Ea2Bd90384313A165A"
-  )
-    .then((response) => response.json())
-    .then((data) => {
-      curr_price = data.market_data.current_price.usd;
-    })
-    .catch((e) => {
-      console.log(e);
-      curr_price = false;
-    });
+  await axios.post('https://api.coinbrain.com/public/coin-info', {
+    "56":["0x9DfeE72aEa65dc7e375d50Ea2Bd90384313A165A"]
+})  .then((response) => {
+  console.log("abc",response);
+
+   curr_price = response.data[0].priceUsd;
+}, (error) => {
+  console.log(error);
+});
+  // await fetch(
+  //   "https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/0x9DfeE72aEa65dc7e375d50Ea2Bd90384313A165A"
+  // )
+  //   .then((response) => response.json())
+  //   .then((data) => {
+  //     curr_price = data.market_data.current_price.usd;
+  //   })
+  //   .catch((e) => {
+  //     console.log(e);
+  //     curr_price = false;
+  //   });
 
   console.log("curr_pricecurr_pricecurr_price", curr_price);
   return curr_price;
