@@ -370,7 +370,7 @@ const bal = Number(ethers.utils.formatEther(balBigNUm))
     `https://api.coinbrain.com/public/coin-info`,{
       method: "post",
     body:JSON.stringify({
-      "56":["0x9DfeE72aEa65dc7e375d50Ea2Bd90384313A165A"]
+      "56":[process.env.OG_CONTRACT_ADDRESS]
     })})
    
 

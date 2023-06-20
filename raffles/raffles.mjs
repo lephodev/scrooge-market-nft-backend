@@ -385,7 +385,7 @@ export async function finalizeEntryPurchase(req) {
 async function checkTransactionHash(transactionHash) {
     
     var web3 = new Web3(Web3.givenProvider);
-    var contract = new web3.eth.Contract(OG_ABI, '0x9DfeE72aEa65dc7e375d50Ea2Bd90384313A165A');
+    var contract = new web3.eth.Contract(OG_ABI, process.env.OG_CONTRACT_ADDRESS);
     async function getAmount(transactionHash) {
     var amount = await contract.methods.getAmount(transactionHash).call();
     contract.methods
