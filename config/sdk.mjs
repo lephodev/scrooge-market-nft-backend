@@ -6,13 +6,14 @@ import JR_ABI from "./JR_ABI.json" assert { type: "json" };
 import { ObjectId } from "mongodb";
 import * as db from "./mongodb.mjs";
 import { allChains } from "wagmi-core";
+import axios from "axios";
 
 export const sdk = new ThirdwebSDK("https://bsc-dataseed4.binance.org/");
 export const CasinoNFTEditionContractAddress =
   "0x729FDb31f1Cd2633aE26F0A87EfD0CC55a336F9f";
 export const CasinoMarketplaceContractAddress =
   "0x91197754fCC899B543FebB5BE4dae193C75EF9d1";
-export const OGContractAddress = "0xfA1BA18067aC6884fB26e329e60273488a247FC3";
+export const OGContractAddress = "0x9DfeE72aEa65dc7e375d50Ea2Bd90384313A165A";
 export const JRContractAddress = "0x2e9F79aF51dD1bb56Bbb1627FBe4Cc90aa8985Dd";
 export const DLContractAddress = "0xEe7c31b42e8bC3F2e04B5e1bfde84462fe1aA768";
 export const BurnContractAddress = "0x000000000000000000000000000000000000dEaD";
@@ -347,19 +348,27 @@ export async function getFreeTokens(req, res) {
 // }
 
 export async function getOGCurrentPrice() {
-  console.log("jivvvvaavvavannnn");
   let curr_price;
-  await fetch(
-    "https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/0xfa1ba18067ac6884fb26e329e60273488a247fc3"
-  )
-    .then((response) => response.json())
-    .then((data) => {
-      curr_price = data.market_data.current_price.usd;
-    })
-    .catch((e) => {
-      console.log(e);
-      curr_price = false;
-    });
+  await axios.post('https://api.coinbrain.com/public/coin-info', {
+    "56":[OGContractAddress]
+})  .then((response) => {
+  console.log("response",response);
+
+   curr_price = response.data[0].priceUsd;
+}, (error) => {
+  console.log(error);
+});
+  // await fetch(
+  //   "https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/0x9DfeE72aEa65dc7e375d50Ea2Bd90384313A165A"
+  // )
+  //   .then((response) => response.json())
+  //   .then((data) => {
+  //     curr_price = data.market_data.current_price.usd;
+  //   })
+  //   .catch((e) => {
+  //     console.log(e);
+  //     curr_price = false;
+  //   });
 
   console.log("curr_pricecurr_pricecurr_price", curr_price);
   return curr_price;
