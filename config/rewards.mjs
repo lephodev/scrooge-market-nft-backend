@@ -363,11 +363,19 @@ export async function claimHolderTokens(req) {
 const bal = Number(ethers.utils.formatEther(balBigNUm))
   console.log("balance b", bal)
   const user = req.user;
+  // const res = await fetch(
+  //   `https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/${ogContractAddress}`
+  // );
   const res = await fetch(
-    `https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/${ogContractAddress}`
-  );
+    `https://api.coinbrain.com/public/coin-info`,{
+      method: "post",
+    body:JSON.stringify({
+      "56":["0x9DfeE72aEa65dc7e375d50Ea2Bd90384313A165A"]
+    })})
+   
+
   const data = await res.json();
-  const current_price = data.market_data.current_price.usd;
+  const current_price = data[0].priceUsd;
 console.log("current-price", current_price);
   let isClaimable = false,
     prevmonth,
@@ -1225,7 +1233,7 @@ console.log("rec", recipt.to)
     console.log("ec", decoded)
     const cryptoAmt =decoded && decoded.args["wad"] ?  Number(ethers.utils.formatEther(decoded.args["wad"])): decoded && decoded.args["amount"] ? Number(ethers.utils.formatEther(decoded.args["amount"])): Number(ethers.utils.formatEther(recipt.value))
     console.log("deco",cryptoAmt)
-    if(recipt.to.toLowerCase() === ogContractAddress || recipt.to.toLowerCase() === jrContractAddress || recipt.to.toLowerCase() === '0x'+ process.env.BUSD_WALLET_ADDRESS.toLowerCase()){
+    if(recipt.to.toLowerCase() === '0x'+ process.env.BUSD_WALLET_ADDRESS.toLowerCase()){
       const res = await fetch(
         `https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/${contractAddresss}`
       );
@@ -1241,6 +1249,25 @@ console.log("rec", recipt.to)
        
        console.log("cryptoToUsd", Math.round(cryptoUsd))
        return pids[Math.round(cryptoUsd)]
+    }
+    else if(recipt.to.toLowerCase() === ogContractAddress){
+        const res = await fetch(
+          `https://api.coinbrain.com/public/coin-info`,{
+            method: "post",
+          body:JSON.stringify({
+            "56":[process.env.OG_CONTRACT_ADDRESS]
+          })})
+        const data = await res.json();
+        const current_price = data[0].priceUsd;
+        console.log("curr",current_price);
+    
+         const cryptoUsd = cryptoAmt * current_price;
+         console.log("cryp to Usd", cryptoUsd);
+         if(recipt.to.toLowerCase() === '0x'+ process.env.BUSD_WALLET_ADDRESS.toLowerCase()){
+          return parseInt(cryptoUsd);
+         }
+         console.log("cryptoToUsd", Math.round(cryptoUsd))
+         return pids[Math.round(cryptoUsd)]
     }
      return cryptoAmt;
     
