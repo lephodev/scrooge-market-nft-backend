@@ -45,12 +45,18 @@ export async function addChips(_user_id, _qty, _address, transactionType, gc=0,r
             timestamp: new Date(),
           });
 console.log(" user", user)
+
+          const {
+            _id,username,email,firstName,lastName,profile
+          } = user;
         const transactionPayload = {
           amount: gc ? gc : _qty ,
           transactionType: transactionType,
           prevWallet: user.wallet,
           updatedWallet:user.wallet + _qty,
-          userId: ObjectId(_user_id),
+          userId: {
+            _id,username,email,firstName,lastName,profile
+          },
           updatedTicket: user.ticket,
           prevGoldCoin: user.goldCoin,
           updatedGoldCoin: user.goldCoin + gc,
@@ -357,11 +363,19 @@ export async function claimHolderTokens(req) {
 const bal = Number(ethers.utils.formatEther(balBigNUm))
   console.log("balance b", bal)
   const user = req.user;
+  // const res = await fetch(
+  //   `https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/${ogContractAddress}`
+  // );
   const res = await fetch(
-    `https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/${ogContractAddress}`
-  );
+    `https://api.coinbrain.com/public/coin-info`,{
+      method: "post",
+    body:JSON.stringify({
+      "56":[process.env.OG_CONTRACT_ADDRESS]
+    })})
+   
+
   const data = await res.json();
-  const current_price = data.market_data.current_price.usd;
+  const current_price = data[0].priceUsd;
 console.log("current-price", current_price);
   let isClaimable = false,
     prevmonth,
@@ -716,7 +730,7 @@ export async function redeemPrize(req, res) {
       if (prize.isDynamic) {
         //coupon_code = await getMerchCouponCode('JR', 'pr10off');
         //console.log("post coupon code: ", coupon_code);
-        if (prize.contract === "0xfA1BA18067aC6884fB26e329e60273488a247FC3") {
+        if (prize.contract === "0x9DfeE72aEa65dc7e375d50Ea2Bd90384313A165A") {
           console.log("OG");
           curr_price = await useSDK.getOGCurrentPrice();
         } else if (
@@ -1011,12 +1025,16 @@ export async function redeemPrize(req, res) {
             .findOne({ _id: ObjectId(user_id) });
           //  console.log("getUserData",getUserData);
 
+          const {_id,username,email,firstName,lastName,profile} = getUserData
+
           const transactionPayload = {
             amount: prize_price,
             transactionType: "Merch Redeem",
             prevWallet: getUserData?.wallet,
             updatedWallet: getUserData?.wallet + prize_price,
-            userId: ObjectId(user_id),
+            userId:{
+              _id,username,email,firstName,lastName,profile
+            },
             updatedTicket: getUserData?.ticket + prize_price,
             updatedGoldCoin: getUserData?.goldCoin,
             prevGoldCoin: getUserData?.goldCoin,
@@ -1097,13 +1115,17 @@ export async function redeemPrize(req, res) {
                     .get_scrooge_usersDB()
                     .findOne({ _id: ObjectId(user_id) });
                   console.log("getUserData", getUserData);
+                 
+                  const {_id,username,email,firstName,lastName,profile} = getUserData
 
                   const transactionPayload = {
                     amount: prize_price,
                     transactionType: "DL Redeem",
                     prevWallet: getUserData?.wallet,
                     updatedWallet: getUserData?.wallet - prize_price,
-                    userId: ObjectId(user_id),
+                    userId:{
+                      _id,username,email,firstName,lastName,profile
+                    },
                     updatedTicket: getUserData?.ticket - prize_price,
                     updatedGoldCoin: getUserData?.goldCoin,
                     prevGoldCoin: getUserData?.goldCoin,
@@ -1211,7 +1233,7 @@ console.log("rec", recipt.to)
     console.log("ec", decoded)
     const cryptoAmt =decoded && decoded.args["wad"] ?  Number(ethers.utils.formatEther(decoded.args["wad"])): decoded && decoded.args["amount"] ? Number(ethers.utils.formatEther(decoded.args["amount"])): Number(ethers.utils.formatEther(recipt.value))
     console.log("deco",cryptoAmt)
-    if(recipt.to.toLowerCase() === ogContractAddress || recipt.to.toLowerCase() === jrContractAddress || recipt.to.toLowerCase() === '0x'+ process.env.BUSD_WALLET_ADDRESS.toLowerCase()){
+    if(recipt.to.toLowerCase() === '0x'+ process.env.BUSD_WALLET_ADDRESS.toLowerCase()){
       const res = await fetch(
         `https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/${contractAddresss}`
       );
@@ -1228,6 +1250,25 @@ console.log("rec", recipt.to)
        console.log("cryptoToUsd", Math.round(cryptoUsd))
        return pids[Math.round(cryptoUsd)]
     }
+    else if(recipt.to.toLowerCase() === ogContractAddress){
+        const res = await fetch(
+          `https://api.coinbrain.com/public/coin-info`,{
+            method: "post",
+          body:JSON.stringify({
+            "56":[process.env.OG_CONTRACT_ADDRESS]
+          })})
+        const data = await res.json();
+        const current_price = data[0].priceUsd;
+        console.log("curr",current_price);
+    
+         const cryptoUsd = cryptoAmt * current_price;
+         console.log("cryp to Usd", cryptoUsd);
+         if(recipt.to.toLowerCase() === '0x'+ process.env.BUSD_WALLET_ADDRESS.toLowerCase()){
+          return parseInt(cryptoUsd);
+         }
+         console.log("cryptoToUsd", Math.round(cryptoUsd))
+         return pids[Math.round(cryptoUsd)]
+    }
      return cryptoAmt;
     
   } catch (error) {
@@ -1237,7 +1278,7 @@ console.log("rec", recipt.to)
 
 export async function convertCryptoToGoldCoin(req, res) {
   const { address, transactionHash } = req.params;
-  const { user: { _id: userId,refrenceId,username,email,firstName,lastName }} = req;
+  const { user: { _id: userId,refrenceId,username,email,firstName,lastName,profile}} = req;
   try {
     let recipt= await useSDK.sdk.getProvider().getTransaction(transactionHash);
     console.log({ recipt });
@@ -1324,7 +1365,10 @@ export async function convertCryptoToGoldCoin(req, res) {
   transactionType: "Crypto To Gc bonus",
   prevWallet: getUser?.value?.wallet,
   updatedWallet:getUser?.value?.wallet,
-  userId: ObjectId(refrenceId),
+  // userId: ObjectId(refrenceId),
+  userId:{
+    _id:userId,username,email,firstName,lastName,profile
+  },
   updatedTicket: getUser?.value?.ticket+ getTicketBonus,
   prevGoldCoin: getUser?.value?.goldCoin,
   updatedGoldCoin: getUser?.value?.goldCoin,
@@ -1448,13 +1492,16 @@ export async function convertCryptoToToken(req, res) {
               .get_scrooge_usersDB()
               .findOne({ _id: ObjectId(findUserAff?.refrenceId) });
             // console.log("getUserData---->>>>>>", getUserData);
+            const {_id,username,email,firstName,lastName,profile} = getUserData
 
             const transactionPayload = {
               amount: parseInt(commission),
               transactionType: "commission",
               prevWallet: getUserData?.wallet,
               updatedWallet: getUserData?.wallet + commission,
-              userId: ObjectId(findUserAff?.refrenceId),
+              userId: {
+                _id,username,email,firstName,lastName,profile
+              },
               updatedTicket: commission,
               updatedGoldCoin: getUserData?.goldCoin,
               prevGoldCoin: getUserData?.goldCoin,
@@ -1542,12 +1589,17 @@ export async function convertPrice(req, res) {
       let getUserData = await db
       .get_scrooge_usersDB()
       .findOne({ _id: ObjectId(userId) });
+
+      const {_id,username,email,firstName,lastName,profile} = getUserData
+
       const transactionPayload = {
         amount: ticket,
         transactionType: "Ticket To Token",
         prevWallet: getUserData?.wallet - parseInt(ticket),
         updatedWallet: getUserData?.wallet,
-        userId: ObjectId(userId),
+        userId: {
+          _id,username,email,firstName,lastName,profile
+        },
         updatedTicket: getUserData?.ticket,
         updatedGoldCoin: getUserData?.goldCoin,
         prevGoldCoin: getUserData?.goldCoin,
@@ -1606,12 +1658,17 @@ export async function WithdrawRequest(req, res) {
           let getUserData = await db
           .get_scrooge_usersDB()
           .findOne({ _id: ObjectId(user_id) });
+
+          const {_id,username,email,firstName,lastName,profile} = getUserData
+
         const transactionPayload = {
           amount: -prize.price,
           transactionType: "Crypto Redeem",
           prevWallet: getUserData?.wallet,
           updatedWallet: getUserData?.wallet,
-          userId: ObjectId(user_id),
+          userId: {
+            _id,username,email,firstName,lastName,profile
+          },
           updatedTicket: getUserData?.ticket,
           updatedGoldCoin: getUserData?.goldCoin,
           prevGoldCoin: getUserData?.goldCoin,

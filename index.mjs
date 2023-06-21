@@ -3,6 +3,7 @@ import * as db from "./config/mongodb.mjs";
 import passport from "passport";
 import auth from "./middlewares/auth.mjs";
 import jwtStrategy from "./config/passport.mjs";
+import helmet from 'helmet';
 import * as rewards from "./config/rewards.mjs";
 import * as affiliate from "./config/affiliate.mjs";
 import * as useSDK from "./config/sdk.mjs";
@@ -20,11 +21,62 @@ import {
 import cors from "cors";
 import { checkUserCanSpin } from "./rouletteSpin/rouletteUtils.mjs";
 import { CryptoToGCQueue, TicketToTokenQueue } from "./utils/Queues.mjs";
+import logger from "./config/logger.mjs";
 const app = express();
+// set security HTTP headers
+app.use(
+  helmet({
+    frameguard: {
+      action: 'sameorigin'
+    },
+    hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true
+    }
+  })
+);
 const PORT = process.env.PORT;
-app.use(cors("*"));
+app.use(
+  cors({
+    origin: [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'http://localhost:3004',
+      'http://localhost:4242',
+      'https://scrooge.casino',
+      'https://poker.scrooge.casino',
+      'https://blackjack.scrooge.casino',
+      'https://slot.scrooge.casino',
+      'https://admin.scrooge.casino',
+      'https://market.scrooge.casino',
+      'https://roulette.scrooge.casino',
+
+      'https://dev.scrooge.casino',
+      'https://devpoker.scrooge.casino',
+      'https://devslot.scrooge.casino',
+      'https://devblackjack.scrooge.casino',
+      'https://devadmin.scrooge.casino',
+      'https://devmarket.scrooge.casino',
+      'https://devroulette.scrooge.casino',
+
+      'https://beta.scrooge.casino',
+      'https://betapoker.scrooge.casino',
+      'https://betaslot.scrooge.casino',
+      'https://betablackjack.scrooge.casino',
+      'https://betaadmin.scrooge.casino',
+      'https://betamarket.scrooge.casino',
+      'https://betaroulette.scrooge.casino',
+    ],
+    credentials: true,
+  })
+);
 app.use(json());
 passport.use("jwt", jwtStrategy);
+app.use((req, _, next) => {
+  logger.info(`HEADERS ${req.headers} `);
+  next();
+});
 app.use(async (req, res, next) => {
   if (
     !db.get_scrooge_usersDB() ||
