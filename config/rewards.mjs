@@ -1331,6 +1331,7 @@ export async function convertCryptoToGoldCoin(req, res) {
     }  
     await sendInvoice(reciptPayload)
     if(refrenceId){
+      console.log("refrenceId",refrenceId);
       let affliateData=await db.get_affiliatesDB().findOne({userId:userId})
       let getAdminSettings =  await db
       .get_db_admin_settingDB().findOne({})
@@ -1340,7 +1341,7 @@ export async function convertCryptoToGoldCoin(req, res) {
      let affliateUserDetails={
       commission:getTicketBonus,
       monthly_earned:getTicketBonus,
-      referred_user_id:ObjectId(refrenceId),
+      referred_user_id:refrenceId,
       affiliate_id:affliateData?._id||null,
       userId:userId,
       transactionType:"crypto to Gc refferal",
