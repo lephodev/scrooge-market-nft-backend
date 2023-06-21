@@ -121,7 +121,6 @@ export async function getNextClaimDate(req, res) {
     console.log("------", data);
     if (typeof data[0] !== "undefined") {
       if (type === "daily") {
-        console.log("daily",daily);
         lastClaimDate = data[0].claimDate;
         nextClaimDate = new Date(data[0].claimDate);
         nextClaimDate.setDate(nextClaimDate.getDate() + 1);
