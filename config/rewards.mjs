@@ -1353,11 +1353,11 @@ export async function convertCryptoToGoldCoin(req, res) {
       .get_db_affiliates_transactionDB().insertOne(affliateUserDetails)
     let getUser=await db
       .get_scrooge_usersDB()
-      .findOneAndUpdate({ _id: ObjectId(refrenceId)}, {
+      .findOneAndUpdate({ _id: refrenceId}, {
         $inc: {ticket:getTicketBonus }
       }, { new : true })
 
-  db.get_affiliatesDB().findOneAndUpdate({ userId:ObjectId(refrenceId)}, {
+  db.get_affiliatesDB().findOneAndUpdate({ userId:refrenceId}, {
     $inc: {total_earned:getTicketBonus,monthly_earned:getTicketBonus}
   }, { new : true })
   const transactionPayload={
