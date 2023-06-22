@@ -3,7 +3,7 @@ pipeline {
   stages {
     stage('Upload Build') {
           steps {
-            sshPublisher(publishers: [sshPublisherDesc(configName: 'scrooge-nft', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: '''rm /home/ubuntu/package.json
+            sshPublisher(publishers: [sshPublisherDesc(configName: 'scrooge-casino-dev', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: '''rm /home/ubuntu/package.json
 cd /home/ubuntu/dev-marketplace/market-nft-backend && git add .
 cd /home/ubuntu/dev-marketplace/market-nft-backend && git commit -m "update"
 cd /home/ubuntu/dev-marketplace/market-nft-backend && git pull origin dev
