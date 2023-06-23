@@ -1220,7 +1220,7 @@ console.log("rec", recipt.to)
     iface = new ethers.utils.Interface(OG_ABI);
       contractAddresss = process.env.OG_CONTRACT_ADDRESS;
     }else{
-      console.log("BNB");
+      console.log("BNB",process.env.BNB_CONTRACT_ADDRESS);
       iface = new ethers.utils.Interface(BNB_ABI);
       contractAddresss = process.env.BNB_CONTRACT_ADDRESS;
     }
