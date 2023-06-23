@@ -1206,7 +1206,7 @@ export async function redeemPrize(req, res) {
 
 const getDecodedData = async (recipt) => {
   try {
-   
+   console.log("reciptreciptreciptrecipt",recipt);
 console.log("rec", recipt.to)
     let iface, contractAddresss;
 
@@ -1330,7 +1330,9 @@ export async function convertCryptoToGoldCoin(req, res) {
       lastName
     }  
     await sendInvoice(reciptPayload)
+    console.log("refrenceId",refrenceId);
     if(refrenceId){
+      console.log("refrenceIdrefrenceId",refrenceId);
       let affliateData=await db.get_affiliatesDB().findOne({userId:userId})
       let getAdminSettings =  await db
       .get_db_admin_settingDB().findOne({})
