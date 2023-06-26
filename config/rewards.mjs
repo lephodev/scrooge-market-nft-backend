@@ -1206,7 +1206,7 @@ export async function redeemPrize(req, res) {
 
 const getDecodedData = async (recipt) => {
   try {
-   
+   console.log("reciptreciptreciptrecipt",recipt);
 console.log("rec", recipt.to)
     let iface, contractAddresss;
 
@@ -1220,7 +1220,7 @@ console.log("rec", recipt.to)
     iface = new ethers.utils.Interface(OG_ABI);
       contractAddresss = process.env.OG_CONTRACT_ADDRESS;
     }else{
-      console.log("BNB");
+      console.log("BNB",process.env.BNB_CONTRACT_ADDRESS);
       iface = new ethers.utils.Interface(BNB_ABI);
       contractAddresss = process.env.BNB_CONTRACT_ADDRESS;
     }
@@ -1330,8 +1330,13 @@ export async function convertCryptoToGoldCoin(req, res) {
       lastName
     }  
     await sendInvoice(reciptPayload)
+    console.log("refrenceId",refrenceId);
     if(refrenceId){
+
+      console.log("refrenceIdrefrenceId",refrenceId);
+
       console.log("refrenceId",refrenceId);
+
       let affliateData=await db.get_affiliatesDB().findOne({userId:userId})
       let getAdminSettings =  await db
       .get_db_admin_settingDB().findOne({})
