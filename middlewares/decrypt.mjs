@@ -4,7 +4,7 @@ export const decryptPass = (encryptedPassword) => {
 	try {
     console.log("encryptedPassword",encryptedPassword);
 		const algorithm = 'aes-192-cbc';
-		const password = process.env.CRYPTO_KEY;
+		const password = "gvytbffvsca#a%#$%#$j^$m#NHM4A645335";
         console.log("password",password);
 		const key = crypto.scryptSync(password, 'salt', 24);
 		const iv = Buffer.alloc(16, 0);
