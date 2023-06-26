@@ -2,7 +2,6 @@ import Joi from 'joi';
 import httpStatus from 'http-status';
 import pick from '../utils/pick.js';
 import ApiError from '../utils/ApiError.js';
-import crypto from 'crypto';
 
 const validate = (schema) => (req, res, next) => {
   const validSchema = pick(schema, ['params', 'query', 'body']);
@@ -19,9 +18,4 @@ const validate = (schema) => (req, res, next) => {
   return next();
 };
 
-
-
-
-
-
-export default {validate};
+export default validate;

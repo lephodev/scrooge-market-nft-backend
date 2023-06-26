@@ -23,7 +23,6 @@
     "express": "^4.17.1",
     "helmet": "^7.0.0",
     "http-status": "^1.6.2",
-    "joi": "^17.9.2",
     "jsonwebtoken": "^9.0.0",
     "moment": "^2.29.4",
     "mongodb": "^4.13.0",
