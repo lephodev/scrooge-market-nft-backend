@@ -1332,7 +1332,11 @@ export async function convertCryptoToGoldCoin(req, res) {
     await sendInvoice(reciptPayload)
     console.log("refrenceId",refrenceId);
     if(refrenceId){
+
       console.log("refrenceIdrefrenceId",refrenceId);
+
+      console.log("refrenceId",refrenceId);
+
       let affliateData=await db.get_affiliatesDB().findOne({userId:userId})
       let getAdminSettings =  await db
       .get_db_admin_settingDB().findOne({})
@@ -1342,7 +1346,7 @@ export async function convertCryptoToGoldCoin(req, res) {
      let affliateUserDetails={
       commission:getTicketBonus,
       monthly_earned:getTicketBonus,
-      referred_user_id:ObjectId(refrenceId),
+      referred_user_id:refrenceId,
       affiliate_id:affliateData?._id||null,
       userId:userId,
       transactionType:"crypto to Gc refferal",
@@ -1354,11 +1358,11 @@ export async function convertCryptoToGoldCoin(req, res) {
       .get_db_affiliates_transactionDB().insertOne(affliateUserDetails)
     let getUser=await db
       .get_scrooge_usersDB()
-      .findOneAndUpdate({ _id: ObjectId(refrenceId)}, {
+      .findOneAndUpdate({ _id: refrenceId}, {
         $inc: {ticket:getTicketBonus }
       }, { new : true })
 
-  db.get_affiliatesDB().findOneAndUpdate({ userId:ObjectId(refrenceId)}, {
+  db.get_affiliatesDB().findOneAndUpdate({ userId:refrenceId}, {
     $inc: {total_earned:getTicketBonus,monthly_earned:getTicketBonus}
   }, { new : true })
   const transactionPayload={
