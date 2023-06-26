@@ -3,12 +3,12 @@ pipeline {
   stages {
     stage('Upload Build') {
           steps {
-            sshPublisher(publishers: [sshPublisherDesc(configName: 'scrooge-casino-dev', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: '''rm /home/ubuntu/package.json
+            sshPublisher(publishers: [sshPublisherDesc(configName: 'scrooge-nft', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: '''rm /home/ubuntu/package.json
 cd /home/ubuntu/dev-marketplace/market-nft-backend && git add .
 cd /home/ubuntu/dev-marketplace/market-nft-backend && git commit -m "update"
 cd /home/ubuntu/dev-marketplace/market-nft-backend && git pull origin dev
 cd /home/ubuntu/dev-marketplace/market-nft-backend && npm install
-pm2 delete market-server
+pm2 delete dev
 cd /home/ubuntu/dev-marketplace/market-nft-backend && pm2 start ecosystem.config.json''', execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '/', remoteDirectorySDF: false, removePrefix: '', sourceFiles: 'package.json')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: true)])
             }
         }
