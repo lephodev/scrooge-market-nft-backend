@@ -481,6 +481,12 @@ app.post("/api/bitcartcc-notification", async(req,res) => {
   res.send({ success: true})
 })
 
+
+app.post("/api/approvely-webhook", async(req,res) => {
+  console.log("post payed on approvely", { query: req.query, params: req.params, body: req.body})
+  res.send({ success: true})
+})
+
 app.get("/api/WithdrawRequest/:address/:prize_id", auth(), rewards.WithdrawRequest);
 
 
