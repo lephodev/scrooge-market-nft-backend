@@ -1346,7 +1346,7 @@ export async function convertCryptoToGoldCoin(req, res) {
      let affliateUserDetails={
       commission:getTicketBonus,
       monthly_earned:getTicketBonus,
-      referred_user_id:refrenceId,
+      referred_user_id:ObjectId(refrenceId),
       affiliate_id:affliateData?._id||null,
       userId:userId,
       transactionType:"crypto to Gc refferal",
