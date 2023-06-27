@@ -196,7 +196,7 @@ app.get("/api/getItems/:type", auth(), async (req, res) => {
 
 //################################# Prizes #################################//
 // Route to get available prizes
-app.get("/api/getPrizes", auth(), auth(), async (req, res) => {
+app.get("/api/getPrizes",auth(), async (req, res) => {
   console.log("abcccc");
   const resp = await rewards.getPrizes(req).then((data) => {
     // console.log("prizes resp: ", data);
