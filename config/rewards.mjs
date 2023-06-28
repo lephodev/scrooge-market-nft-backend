@@ -1365,14 +1365,22 @@ export async function convertCryptoToGoldCoin(req, res) {
   db.get_affiliatesDB().findOneAndUpdate({ userId:refrenceId}, {
     $inc: {total_earned:getTicketBonus,monthly_earned:getTicketBonus}
   }, { new : true })
+
+  let getUserData = await db
+  .get_scrooge_usersDB()
+  .findOne({ _id: ObjectId(refrenceId) });
+console.log("getUserData", getUserData);
+const {_id:referUserId,username:referUserName,email:referUserEmail,firstName:referUserFirstName,lastName:referUserLastName,profile:referUserProfile}=getUserData
   const transactionPayload={
   amount: getTicketBonus ,
   transactionType: "Crypto To Gc bonus",
   prevWallet: getUser?.value?.wallet,
   updatedWallet:getUser?.value?.wallet,
   // userId: ObjectId(refrenceId),
+
+
   userId:{
-    _id:userId,username,email,firstName,lastName,profile
+    _id:referUserId,username:referUserName,email:referUserEmail,firstName:referUserFirstName,referUserLastName,profile:referUserProfile
   },
   updatedTicket: getUser?.value?.ticket+ getTicketBonus,
   prevGoldCoin: getUser?.value?.goldCoin,
