@@ -29,7 +29,7 @@ const verifyCallback =
 const auth =
   (...requiredRights) =>
   async (req, res, next) => { 
-  let decryptedToken = decryptPass(req?.headers?.authorization?.split(' ')[1]);
+  let decryptedToken = decryptPass(req.cookies['token']);
   req.headers.authEncrypted = req.headers.authorization;
   req.headers.authorization=`Bearer ${decryptedToken}`
   console.log("decryptedToken",decryptedToken);
