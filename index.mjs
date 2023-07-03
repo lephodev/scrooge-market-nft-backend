@@ -3,6 +3,8 @@ import * as db from "./config/mongodb.mjs";
 import passport from "passport";
 import auth from "./middlewares/auth.mjs";
 import jwtStrategy from "./config/passport.mjs";
+import cookieParser from 'cookie-parser';
+
 import helmet from 'helmet';
 import * as rewards from "./config/rewards.mjs";
 import * as affiliate from "./config/affiliate.mjs";
@@ -24,18 +26,18 @@ import { CryptoToGCQueue, TicketToTokenQueue } from "./utils/Queues.mjs";
 import logger from "./config/logger.mjs";
 const app = express();
 // set security HTTP headers
-app.use(
-  helmet({
-    frameguard: {
-      action: 'sameorigin'
-    },
-    hsts: {
-      maxAge: 31536000,
-      includeSubDomains: true,
-      preload: true
-    }
-  })
-);
+// app.use(
+//   helmet({
+//     frameguard: {
+//       action: 'sameorigin'
+//     },
+//     hsts: {
+//       maxAge: 31536000,
+//       includeSubDomains: true,
+//       preload: true
+//     }
+//   })
+// );
 const PORT = process.env.PORT;
 app.use(
   cors({
@@ -72,11 +74,13 @@ app.use(
   })
 );
 app.use(json());
+app.use(cookieParser());
+
 passport.use("jwt", jwtStrategy);
-app.use((req, _, next) => {
-  logger.info(`HEADERS ${req.headers} `);
-  next();
-});
+// app.use((req, _, next) => {
+//   logger.info(`HEADERS ${req.headers} `);
+//   next();
+// });
 app.use(async (req, res, next) => {
   if (
     !db.get_scrooge_usersDB() ||
