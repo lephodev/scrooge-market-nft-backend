@@ -825,6 +825,12 @@ export async function redeemPrize(req, res) {
                     { _id: ObjectId(withdraw_id) },
                     { $set: { status: "Approved" } }
                   ); 
+                  await db
+                    .get_scrooge_usersDB()
+                    .findOneAndUpdate(
+                      { _id: ObjectId(user_id) },
+                      { $inc: { totalProfit: -prize?.price/100,totalRedeem:prize?.price/100 } }
+                    );
                 
                   // const query3 = await db
                 //   .get_scrooge_usersDB()
