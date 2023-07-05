@@ -838,36 +838,36 @@ export async function redeemPrize(req, res) {
                 //     { _id: ObjectId(user_id) },
                 //     { $inc: { ticket: -prize_price } }
                 //   );
-                // let getUserData = await db
-                //   .get_scrooge_usersDB()
-                //   .findOne({ _id: ObjectId(user_id) });
-                //  console.log("getUserData",getUserData);
+                let getUserData = await db
+                  .get_scrooge_usersDB()
+                  .findOne({ _id: ObjectId(user_id) });
+                 console.log("getUserData",getUserData);
 
-                // const transactionPayload = {
-                //   amount: -prize_price,
-                //   transactionType: "Crypto Redeem",
-                //   prevWallet: getUserData?.wallet,
-                //   updatedWallet: getUserData?.wallet,
-                //   userId: ObjectId(user_id),
-                //   updatedTicket: getUserData?.ticket,
-                //   updatedGoldCoin: getUserData?.goldCoin,
-                //   prevGoldCoin: getUserData?.goldCoin,
-                //   prevTicket: getUserData?.ticket + parseInt(prize_price),
-                //   createdAt: new Date(),
-                //   updatedAt: new Date(),
-                // };
-                // let trans_id;
-                // console.log("transactionPayload", transactionPayload);
-                // await db
-                //   .get_scrooge_transactionDB()
-                //   .insertOne(transactionPayload)
-                //   .then((trans) => {
-                //     console.log("transtranstrans", trans);
-                //     trans_id = trans.insertedId;
-                //   })
-                //   .catch((e) => {
-                //     console.log("e", e);
-                //   });
+                const transactionPayload = {
+                  amount: prize_price,
+                  transactionType: "Approve Crypto Redeem",
+                  prevWallet: getUserData?.wallet,
+                  updatedWallet: getUserData?.wallet,
+                  userId: ObjectId(user_id),
+                  updatedTicket: getUserData?.ticket,
+                  updatedGoldCoin: getUserData?.goldCoin,
+                  prevGoldCoin: getUserData?.goldCoin,
+                  prevTicket: getUserData?.ticket + parseInt(prize_price),
+                  createdAt: new Date(),
+                  updatedAt: new Date(),
+                };
+                let trans_id;
+                console.log("transactionPayload", transactionPayload);
+                await db
+                  .get_scrooge_transactionDB()
+                  .insertOne(transactionPayload)
+                  .then((trans) => {
+                    console.log("transtranstrans", trans);
+                    trans_id = trans.insertedId;
+                  })
+                  .catch((e) => {
+                    console.log("e", e);
+                  });
                 console.log("transfer erc20 ", transfer);
                 postPrizeRedemption(prize_id, user_id);
                 resp = prize_name;
