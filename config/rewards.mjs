@@ -1336,7 +1336,7 @@ export async function convertCryptoToGoldCoin(req, res) {
       .get_scrooge_usersDB()
       .findOneAndUpdate(
         { _id: ObjectId(userId) },
-        { $inc: { totalBuy: amt.toString() } }
+        { $inc: { totalBuy: amt } }
       ); 
     }
 //     if(refrenceId){
