@@ -1331,6 +1331,14 @@ export async function convertCryptoToGoldCoin(req, res) {
     }  
     await sendInvoice(reciptPayload)
     console.log("refrenceId",refrenceId);
+    if(refrenceId){
+      await db
+      .get_scrooge_usersDB()
+      .findOneAndUpdate(
+        { _id: ObjectId(userId) },
+        { $inc: { tokenBuy: amt.toString() } }
+      ); 
+    }
 //     if(refrenceId){
 //       console.log("refrenceIdrefrenceId",refrenceId);
 //       let affliateData=await db.get_affiliatesDB().findOne({userId:userId})
