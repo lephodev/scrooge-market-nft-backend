@@ -842,13 +842,15 @@ export async function redeemPrize(req, res) {
                   .get_scrooge_usersDB()
                   .findOne({ _id: ObjectId(user_id) });
                  console.log("getUserData",getUserData);
-
+                   const { _id,username,email,firstName,lastName,profile}=getUserData
                 const transactionPayload = {
                   amount: prize_price,
                   transactionType: "Approve Crypto Redeem",
                   prevWallet: getUserData?.wallet,
                   updatedWallet: getUserData?.wallet,
-                  userId: ObjectId(user_id),
+                  userId: {
+                    _id,username,email,firstName,lastName,profile
+                  },
                   updatedTicket: getUserData?.ticket,
                   updatedGoldCoin: getUserData?.goldCoin,
                   prevGoldCoin: getUserData?.goldCoin,
