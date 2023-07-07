@@ -7,7 +7,7 @@ const cookieExtractor = (req) => {
   let jwt = null;
 
   if (req && req.cookies) {
-    jwt = req.cookies["token"];
+    jwt = req.cookies['token'];
   }
   return jwt;
 };
