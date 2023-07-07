@@ -200,7 +200,7 @@ app.get("/api/getItems/:type", auth(), async (req, res) => {
 
 //################################# Prizes #################################//
 // Route to get available prizes
-app.get("/api/getPrizes",auth(), async (req, res) => {
+app.get("/api/getPrizes", auth(), async (req, res) => {
   console.log("abcccc");
   const resp = await rewards.getPrizes(req).then((data) => {
     // console.log("prizes resp: ", data);
@@ -230,7 +230,7 @@ app.get(
 );
 
 // Route to redeem prize
-app.get("/api/redeemPrize/:withdraw_id", auth(), rewards.redeemPrize);
+app.get("/api/redeemPrize/:withdraw_id", /* auth(), */ rewards.redeemPrize);
 
 //################################# Raffles #################################//
 // Route to get current raffles
