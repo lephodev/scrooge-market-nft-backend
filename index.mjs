@@ -487,8 +487,8 @@ app.post("/api/bitcartcc-notification", async(req,res) => {
 
 
 app.post("/api/approvely-webhook", async(req,res) => {
-  console.log("post payed on approvely", { query: req.query, params: req.params, body: req.body})
-  res.send({ success: true})
+  console.log("post payed on approvely", req.body, req.originalUrl, req.headers, req.params, req)
+  res.redirect("https://market.scrooge.casino/payment?status=success")
 })
 
 app.get("/api/WithdrawRequest/:address/:prize_id", auth(), rewards.WithdrawRequest);
