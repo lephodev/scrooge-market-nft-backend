@@ -539,7 +539,7 @@ app.post("/api/accept-deceptor", auth(), async(req,res) => {
       .get_scrooge_usersDB()
       .findOneAndUpdate(
         { _id: ObjectId(user._id) },
-        { $inc: { totalBuy: amt,totalProfit:amt} }
+        { $inc: { totalBuy: body.item.price,totalProfit:body.item.price} }
       ); 
     }
     let getUserDetail = await db
