@@ -42,7 +42,6 @@ export const sendInvoice = async (payload) => {
           var email2 = email; // String |
           var trackDetails = new SendXRestApi.TrackRequest(); // TrackRequest | Track Details
           trackDetails.removeTags = [find];
-    
           var callback = function (error, data, response) {
             if (error) {
               console.error(error);
