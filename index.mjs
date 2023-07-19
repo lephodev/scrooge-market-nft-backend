@@ -533,8 +533,8 @@ app.post("/api/accept-deceptor", auth(), async(req,res) => {
       firstName: user.firstName,
       lastName: user.lastName
     }  
-    await sendInvoice(reciptPayload)
-    console.log("refrenceId",user.refrenceId);
+    // await sendInvoice(reciptPayload)
+    // console.log("refrenceId",user.refrenceId);
     if(user.refrenceId){
       await db
       .get_scrooge_usersDB()
