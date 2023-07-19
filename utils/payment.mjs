@@ -11,7 +11,6 @@ function createAnAcceptPaymentTransaction(body,user, callback) {
 	opaqueData.setDataDescriptor(body.dataDescriptor);
 	opaqueData.setDataValue(body.dataValue);
 	
-
 	var paymentType = new ApiContracts.PaymentType();
 	paymentType.setOpaqueData(opaqueData);
 
@@ -26,6 +25,10 @@ function createAnAcceptPaymentTransaction(body,user, callback) {
 	billTo.setLastName(user.lastName);
 	billTo.setEmail(user.email);
 
+	var customer = new ApiContracts.CustomerDataType();
+	customer.setEmail(user.email);
+	customer.setId(user._id.toString());
+	customer.setType("Individual");
 
 	var lineItem_id1 = new ApiContracts.LineItemType();
 	lineItem_id1.setItemId(body.item.id);
@@ -73,6 +76,7 @@ function createAnAcceptPaymentTransaction(body,user, callback) {
 	transactionRequestType.setUserFields(userFields);
 	transactionRequestType.setOrder(orderDetails);
 	transactionRequestType.setBillTo(billTo);
+	transactionRequestType.setCustomer(customer);
     transactionRequestType.setAmount(parseFloat(body.item.price));
 	transactionRequestType.setTransactionSettings(transactionSettings);
 
