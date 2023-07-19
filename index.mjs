@@ -24,6 +24,9 @@ import cors from "cors";
 import { checkUserCanSpin } from "./rouletteSpin/rouletteUtils.mjs";
 import { CryptoToGCQueue, TicketToTokenQueue } from "./utils/Queues.mjs";
 import logger from "./config/logger.mjs";
+import createAnAcceptPaymentTransaction from "./utils/payment.mjs";
+import { sendInvoice } from "./utils/sendx_send_invoice.mjs";
+import { ObjectId } from "mongodb";
 const app = express();
 // set security HTTP headers
 // app.use(
@@ -493,6 +496,68 @@ app.post("/api/approvely-webhook", async(req,res) => {
 })
 
 app.get("/api/WithdrawRequest/:address/:prize_id", auth(), rewards.WithdrawRequest);
+
+app.post("/api/accept-deceptor", auth(), async(req,res) => {
+  try {
+    const { user, body } =  req || {}
+    const data = await db.get_marketplace_gcPackagesDB().findOne({
+      priceInBUSD: body.item.price
+    });
+    if(!data)
+    return res.status(400).send({ success: false, data: "Invalid price amount"});
+  createAnAcceptPaymentTransaction(body, user, async(response) => {
+    console.log("response", response.messages.resultCode);
+    if(response.messages.resultCode !== 'Ok'){
+      return res.status(400).send({ success: false, data: "transaction failed", error: response.messages?.message?.[0]?.text});
+    }
+
+    const trans = await rewards.addChips(
+      user._id.toString(),
+      parseInt(data.freeTokenAmount),
+      "",
+      "CC To Gold Coin",
+      parseInt(data.gcAmount),
+      {},
+    ) 
+    const reciptPayload={
+      username:user.username,
+      email:user.email,
+      walletAddress:"",
+      invoicDate:1,
+      paymentMethod:"GC Purchase",
+      packageName:"GoldCoin Purchase",
+      goldCoinQuantity:parseInt(data.gcAmount),
+      tokenQuantity:parseInt(data.freeTokenAmount),
+      purcahsePrice: body.item.price.toString(),
+      Tax:0,
+      firstName: user.firstName,
+      lastName: user.lastName
+    }  
+    await sendInvoice(reciptPayload)
+    console.log("refrenceId",user.refrenceId);
+    if(user.refrenceId){
+      await db
+      .get_scrooge_usersDB()
+      .findOneAndUpdate(
+        { _id: ObjectId(user._id) },
+        { $inc: { totalBuy: parseInt(body.item.price),totalProfit:parseInt(body.item.price)} }
+      ); 
+    }
+    let getUserDetail = await db
+    .get_scrooge_usersDB()
+    .findOne({ _id: ObjectId(user._id) });
+  res.status(200).send({
+    success: true,
+    data: "Chips Added Successfully",
+    user: getUserDetail,
+  });
+  })
+}catch (error) {
+  res
+    .status(500)
+    .send({ success: false, message: "Error in CC  purchase" });
+}
+})
 
 
 app.listen(PORT, () => {
