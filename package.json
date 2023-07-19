@@ -13,6 +13,7 @@
   "dependencies": {
     "@thirdweb-dev/react": "^3.6.9",
     "@thirdweb-dev/sdk": "^3.6.8",
+    "authorizenet": "^1.0.8",
     "axios": "^1.2.2",
     "better-queue": "^3.8.12",
     "bignumber.js": "^9.1.1",
@@ -25,6 +26,7 @@
     "helmet": "^7.0.0",
     "http-status": "^1.6.2",
     "joi": "^17.9.2",
+    "js-sha512": "^0.8.0",
     "jsonwebtoken": "^9.0.0",
     "moment": "^2.29.4",
     "mongodb": "^4.13.0",

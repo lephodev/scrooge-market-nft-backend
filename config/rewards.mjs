@@ -1323,21 +1323,21 @@ export async function convertCryptoToGoldCoin(req, res) {
       parseInt(data.gcAmount),
       recipt,
     ) 
-    const reciptPayload={
-      username:username,
-      email:email,
-      walletAddress:address,
-      invoicDate:1,
-      paymentMethod:"GC Purchase",
-      packageName:"GoldCoin Purchase",
-      goldCoinQuantity:parseInt(data.gcAmount),
-      tokenQuantity:parseInt(data.freeTokenAmount),
-      purcahsePrice: amt.toString(),
-      Tax:0,
-      firstName,
-      lastName
-    }  
-    await sendInvoice(reciptPayload)
+    // const reciptPayload={
+    //   username:username,
+    //   email:email,
+    //   walletAddress:address,
+    //   invoicDate:1,
+    //   paymentMethod:"GC Purchase",
+    //   packageName:"GoldCoin Purchase",
+    //   goldCoinQuantity:parseInt(data.gcAmount),
+    //   tokenQuantity:parseInt(data.freeTokenAmount),
+    //   purcahsePrice: amt.toString(),
+    //   Tax:0,
+    //   firstName,
+    //   lastName
+    // }  
+    // await sendInvoice(reciptPayload)
     console.log("refrenceId",refrenceId);
     if(refrenceId){
       await db

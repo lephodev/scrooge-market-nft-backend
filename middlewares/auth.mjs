@@ -12,7 +12,7 @@ const verifyCallback =
       );
     }
     req.user = user;
-
+    console.log("user", user)
     if (requiredRights.length) {
       const userRights = roleRights.get(user.role);
       const hasRequiredRights = requiredRights.every((requiredRight) =>
@@ -32,7 +32,6 @@ const auth =
     let decryptedToken = decryptPass(req.cookies['token']);
     req.headers.authEncrypted = req.headers.authorization;
     req.headers.authorization=`Bearer ${decryptedToken}`
-  console.log("decryptedToken",decryptedToken);
     return new Promise((resolve, reject) => {
       passport.authenticate(
         "jwt",
