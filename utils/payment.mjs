@@ -27,8 +27,6 @@ function createAnAcceptPaymentTransaction(body,user, callback) {
 
 	var customer = new ApiContracts.CustomerDataType();
 	customer.setEmail(user.email);
-	customer.setId(user._id.toString());
-	customer.setType("Individual");
 
 	var lineItem_id1 = new ApiContracts.LineItemType();
 	lineItem_id1.setItemId(body.item.id);
