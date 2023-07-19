@@ -4,8 +4,8 @@ const {APIContracts: ApiContracts, APIControllers: ApiControllers} = Authorize;
 
 function createAnAcceptPaymentTransaction(body,user, callback) {
 	var merchantAuthenticationType = new ApiContracts.MerchantAuthenticationType();
-	merchantAuthenticationType.setName(process.env.SANDBOX_AUTHORIZE_LOGIN_ID);
-	merchantAuthenticationType.setTransactionKey(process.env.SANDBOX_AUTHORIZE_TRANSACTION_KEY);
+	merchantAuthenticationType.setName(process.env.AUTHORIZE_LOGIN_ID);
+	merchantAuthenticationType.setTransactionKey(process.env.AUTHORIZE_TRANSACTION_KEY);
 
 	var opaqueData = new ApiContracts.OpaqueDataType();
 	opaqueData.setDataDescriptor(body.dataDescriptor);
@@ -85,7 +85,7 @@ function createAnAcceptPaymentTransaction(body,user, callback) {
 		
 	var ctrl = new ApiControllers.CreateTransactionController(createRequest.getJSON());
 	//Defaults to sandbox
-	// ctrl.setEnvironment("https://api.authorize.net/xml/v1/request.api");
+	 ctrl.setEnvironment("https://api.authorize.net/xml/v1/request.api");
 
 	ctrl.execute(function(){
 
