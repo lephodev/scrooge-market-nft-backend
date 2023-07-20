@@ -506,7 +506,7 @@ app.post("/api/accept-deceptor", auth(), async(req,res) => {
   createAnAcceptPaymentTransaction(body, user, async(response) => {
     console.log("response", response.messages.resultCode);
     if(response.messages.resultCode !== 'Ok' || response.transactionResponse?.errors){
-      return res.status(400).send({ success: false, data: "transaction failed", error: response.messages?.message?.[0]?.text || response.transactionResponse?.errors?.error[0]?.errorText});
+      return res.status(400).send({ success: false, data: "transaction failed", error: response.transactionResponse?.errors?.error[0]?.errorText});
     }
 
     const trans = await rewards.addChips(
