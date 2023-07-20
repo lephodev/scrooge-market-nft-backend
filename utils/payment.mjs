@@ -2,6 +2,13 @@
 import Authorize from 'authorizenet';
 const {APIContracts: ApiContracts, APIControllers: ApiControllers} = Authorize;
 
+const getRandomId = (min = 0, max = 500000) => {
+	min = Math.ceil(min);
+	max = Math.floor(max);
+	const num =  Math.floor(Math.random() * (max - min + 1)) + min;
+	return num.toString().padStart(6, "0")
+  };
+
 function createAnAcceptPaymentTransaction(body,user, callback) {
 	var merchantAuthenticationType = new ApiContracts.MerchantAuthenticationType();
 	merchantAuthenticationType.setName(process.env.AUTHORIZE_LOGIN_ID);
@@ -15,8 +22,8 @@ function createAnAcceptPaymentTransaction(body,user, callback) {
 	paymentType.setOpaqueData(opaqueData);
 
 	var orderDetails = new ApiContracts.OrderType();
-	orderDetails.setInvoiceNumber('INV-12345');
-	orderDetails.setDescription('Product Description');
+	orderDetails.setInvoiceNumber(`INV-${getRandomId(1000, 9999999999999)}`);
+	orderDetails.setDescription(body.item.description);
 
 
 
