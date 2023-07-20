@@ -490,9 +490,7 @@ app.post("/api/bitcartcc-notification", async(req,res) => {
 
 
 app.post("/api/approvely-webhook", async(req,res) => {
-  console.log("post payed on approvely", req.body, req.originalUrl, req.headers, req.params, req)
-  res.send('<div style="display: flex;justify-content: center;align-items: center;flex-direction: column;"><h4>Transaction is successfull</h4><a href="https://market.scrooge.casino/payment?status=success" style="font-size: 13px; font-weight: bold; display: block;">Back to Marketplace </a></div>')
-  
+  res.send({ success: true})
 })
 
 app.get("/api/WithdrawRequest/:address/:prize_id", auth(), rewards.WithdrawRequest);
@@ -507,8 +505,8 @@ app.post("/api/accept-deceptor", auth(), async(req,res) => {
     return res.status(400).send({ success: false, data: "Invalid price amount"});
   createAnAcceptPaymentTransaction(body, user, async(response) => {
     console.log("response", response.messages.resultCode);
-    if(response.messages.resultCode !== 'Ok'){
-      return res.status(400).send({ success: false, data: "transaction failed", error: response.messages?.message?.[0]?.text});
+    if(response.messages.resultCode !== 'Ok' || response.transactionResponse?.errors){
+      return res.status(400).send({ success: false, data: "transaction failed", error: response.transactionResponse?.errors?.error[0]?.errorText});
     }
 
     const trans = await rewards.addChips(
