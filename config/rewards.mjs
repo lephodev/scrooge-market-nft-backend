@@ -1339,7 +1339,7 @@ export async function convertCryptoToGoldCoin(req, res) {
     //   firstName,
     //   lastName
     // }  
-     await sendInvoice(reciptPayload)
+     //await sendInvoice(reciptPayload)
     console.log("refrenceId",refrenceId);
     if(refrenceId){
       await db
