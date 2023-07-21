@@ -1212,10 +1212,14 @@ export async function redeemPrize(req, res) {
 
 
 
-const getDecodedData = async (recipt) => {
+const getDecodedData = async (recipt, amt) => {
   try {
+    let taxbleAmt = amt * 0.16
+    const mainAmt = Math.round(taxbleAmt + amt)
+    console.log("mainAmt",mainAmt);
+    console.log();
    console.log("reciptreciptreciptrecipt",recipt);
-console.log("rec", recipt.to)
+   console.log("rec", recipt.to)
     let iface, contractAddresss;
 
     if(recipt.to.toLowerCase() === jrContractAddress){
@@ -1255,7 +1259,9 @@ console.log("rec", recipt.to)
        }
        
        console.log("cryptoToUsd", Math.round(cryptoUsd))
-       return pids[Math.round(cryptoUsd)]
+      //  return pids[Math.round(cryptoUsd)]
+      return pids[mainAmt]
+
     }
     else if(recipt.to.toLowerCase() === ogContractAddress){
       console.log("ogContractAddress1261");
@@ -1275,7 +1281,8 @@ console.log("rec", recipt.to)
           return parseInt(cryptoUsd);
          }
          console.log("cryptoToUsd1276", Math.round(cryptoUsd))
-         return pids[Math.round(cryptoUsd)]
+        //  return pids[Math.round(cryptoUsd)]
+         return pids[mainAmt]
     }
 
     console.log("cryptoAmt1281",cryptoAmt);
@@ -1288,7 +1295,7 @@ console.log("rec", recipt.to)
 
 export async function convertCryptoToGoldCoin(req, res) {
   const { address, transactionHash } = req.params;
-  const {promocode}=req.query
+  const {promocode,previousAmount}=req.query
   console.log("req.query",req.query);
   console.log("req.params",req.params);
   const { user: { _id: userId,refrenceId,username,email,firstName,lastName,profile}} = req;
@@ -1314,7 +1321,7 @@ export async function convertCryptoToGoldCoin(req, res) {
       });
     }
 
-    const amt = await getDecodedData(recipt)
+    const amt = await getDecodedData(recipt, parseFloat(previousAmount))
     console.log("amtamtamt===>>>1318",amt);
     const data = await db.get_marketplace_gcPackagesDB().findOne({
       priceInBUSD: amt.toString()
@@ -1370,9 +1377,8 @@ let updatePromo = await db
       $push: { claimedUser: payload },
       }
       );
-
+      console.log("updatePromoupdatePromo===>>>>",updatePromo);
     }
-    console.log("updatePromoupdatePromo===>>>>",updatePromo);
 //     if(refrenceId){
 //       console.log("refrenceIdrefrenceId",refrenceId);
 //       let affliateData=await db.get_affiliatesDB().findOne({userId:userId})
