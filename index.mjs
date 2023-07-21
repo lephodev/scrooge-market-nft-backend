@@ -494,6 +494,8 @@ app.post("/api/approvely-webhook", async(req,res) => {
   res.send({ success: true})
 })
 
+
+
 app.get("/api/WithdrawRequest/:address/:prize_id", auth(), rewards.WithdrawRequest);
 
 app.post("/api/accept-deceptor", auth(), async(req,res) => {
@@ -557,6 +559,8 @@ app.post("/api/accept-deceptor", auth(), async(req,res) => {
     .send({ success: false, message: "Error in CC  purchase" });
 }
 })
+
+app.post("/api/applyPromoCode", auth(), rewards.applyPromoCode);
 
 
 app.listen(PORT, () => {
