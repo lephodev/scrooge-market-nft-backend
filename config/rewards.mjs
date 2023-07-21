@@ -1285,6 +1285,8 @@ console.log("rec", recipt.to)
 
 export async function convertCryptoToGoldCoin(req, res) {
   const { address, transactionHash } = req.params;
+  const {promocode}=req.query
+  console.log("req.params",req.params);
   const { user: { _id: userId,refrenceId,username,email,firstName,lastName,profile}} = req;
   try {
     let recipt= await useSDK.sdk.getProvider().getTransaction(transactionHash);
@@ -1337,7 +1339,7 @@ export async function convertCryptoToGoldCoin(req, res) {
     //   firstName,
     //   lastName
     // }  
-    // await sendInvoice(reciptPayload)
+     await sendInvoice(reciptPayload)
     console.log("refrenceId",refrenceId);
     if(refrenceId){
       await db
@@ -1346,6 +1348,20 @@ export async function convertCryptoToGoldCoin(req, res) {
         { _id: ObjectId(userId) },
         { $inc: { totalBuy: amt,totalProfit:amt} }
       ); 
+    }
+    if(promocode){
+      let payload={
+     userId:userId,
+      claimedDate: new Date(),
+}
+let updatePromo = await db
+      .get_scrooge_promoDB()
+      .findOneAndUpdate({ couponCode: promocode },
+        {
+      $push: { claimedUser: payload },
+      }
+      );
+
     }
 //     if(refrenceId){
 //       console.log("refrenceIdrefrenceId",refrenceId);
@@ -1747,6 +1763,8 @@ export async function WithdrawRequest(req, res) {
 //         if (prize.contract === '0xfA1BA18067aC6884fB26e329e60273488a247FC3') {
 //           console.log('OG');
 //           curr_price = await getOGCurrentPrice();
+
+
 //         } else if (
 //           prize.contract === '0x2e9F79aF51dD1bb56Bbb1627FBe4Cc90aa8985Dd'
 //         ) {
@@ -1986,3 +2004,43 @@ export async function WithdrawRequest(req, res) {
 //           console.log('error', e);
 //         });
 //     });
+
+
+export async function applyPromoCode(req, res) {
+
+  let user=req.user._id
+  try {
+    console.log("applyPromoCode",req.body);
+    const {promocode}=req.body
+    let query={
+      couponCode:promocode,
+      expireDate:{$gte: new Date()},
+    }
+    let getPromo = await db
+      .get_scrooge_promoDB()
+      .findOne(query);
+      console.log("getPromo",getPromo);
+      const {coupanInUse,claimedUser}=getPromo||{}
+      if(coupanInUse==="One Time"){
+        let findUser=claimedUser.find((el)=>el.userId.toString()===user.toString())
+        if(findUser){
+          return res.status(404).send({ code:404,success: false, message: "Promo code already in use." });
+        }
+      }
+    if(!getPromo){
+  return res.status(404).send({ code:404,success: false, message: "Invalid promo code." });
+}
+
+    return res.send({ code:200,success: true, getPromo,  message: "promo code applied." });
+
+
+  }
+  
+
+       catch (e) {
+     console.log("outerCatch", e);
+     return res
+      .status(500)
+      .send({ success: false, message: "Error in Request Process" });
+  }
+}
