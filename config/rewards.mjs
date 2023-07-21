@@ -1286,6 +1286,7 @@ console.log("rec", recipt.to)
 export async function convertCryptoToGoldCoin(req, res) {
   const { address, transactionHash } = req.params;
   const {promocode}=req.query
+  console.log("req.query",req.query);
   console.log("req.params",req.params);
   const { user: { _id: userId,refrenceId,username,email,firstName,lastName,profile}} = req;
   try {
@@ -1314,6 +1315,8 @@ export async function convertCryptoToGoldCoin(req, res) {
     const data = await db.get_marketplace_gcPackagesDB().findOne({
       priceInBUSD: amt.toString()
     });
+    console.log("amotttttt====>>>",amt);
+    console.log("datadata===>>>>>",data);
     if(!data)
     return res.status(400).send({ success: false, data: "Invalid transaction pid"});
 
@@ -1354,6 +1357,8 @@ export async function convertCryptoToGoldCoin(req, res) {
      userId:userId,
       claimedDate: new Date(),
 }
+
+console.log("payload===>>>>1361",payload);
 let updatePromo = await db
       .get_scrooge_promoDB()
       .findOneAndUpdate({ couponCode: promocode },
@@ -1363,6 +1368,7 @@ let updatePromo = await db
       );
 
     }
+    console.log("updatePromoupdatePromo===>>>>",updatePromo);
 //     if(refrenceId){
 //       console.log("refrenceIdrefrenceId",refrenceId);
 //       let affliateData=await db.get_affiliatesDB().findOne({userId:userId})
