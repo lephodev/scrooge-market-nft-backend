@@ -1258,6 +1258,7 @@ console.log("rec", recipt.to)
        return pids[Math.round(cryptoUsd)]
     }
     else if(recipt.to.toLowerCase() === ogContractAddress){
+      console.log("ogContractAddress1261");
         const res = await fetch(
           `https://api.coinbrain.com/public/coin-info`,{
             method: "post",
@@ -1266,16 +1267,18 @@ console.log("rec", recipt.to)
           })})
         const data = await res.json();
         const current_price = data[0].priceUsd;
-        console.log("curr",current_price);
+        console.log("cur1269r",current_price);
     
          const cryptoUsd = cryptoAmt * current_price;
-         console.log("cryp to Usd", cryptoUsd);
+         console.log("cryp to Usd1272", cryptoUsd);
          if(recipt.to.toLowerCase() === '0x'+ process.env.BUSD_WALLET_ADDRESS.toLowerCase()){
           return parseInt(cryptoUsd);
          }
-         console.log("cryptoToUsd", Math.round(cryptoUsd))
+         console.log("cryptoToUsd1276", Math.round(cryptoUsd))
          return pids[Math.round(cryptoUsd)]
     }
+
+    console.log("cryptoAmt1281",cryptoAmt);
      return cryptoAmt;
     
   } catch (error) {
@@ -1312,6 +1315,7 @@ export async function convertCryptoToGoldCoin(req, res) {
     }
 
     const amt = await getDecodedData(recipt)
+    console.log("amtamtamt===>>>1318",amt);
     const data = await db.get_marketplace_gcPackagesDB().findOne({
       priceInBUSD: amt.toString()
     });
