@@ -1214,77 +1214,82 @@ export async function redeemPrize(req, res) {
 
 const getDecodedData = async (recipt) => {
   try {
-   console.log("reciptreciptreciptrecipt",recipt);
-console.log("rec", recipt.to)
-    let iface, contractAddresss;
-
-    if(recipt.to.toLowerCase() === jrContractAddress){
-      console.log("JR ")
-      iface = new ethers.utils.Interface(JR_ABI);
-      contractAddresss = process.env.JR_CONTRACT_ADDRESS;
-
-    }else if(recipt.to.toLowerCase() === ogContractAddress){
-      console.log("OG")
-    iface = new ethers.utils.Interface(OG_ABI);
-      contractAddresss = process.env.OG_CONTRACT_ADDRESS;
-    }else{
-      console.log("BNB",process.env.BNB_CONTRACT_ADDRESS);
-      iface = new ethers.utils.Interface(BNB_ABI);
-      contractAddresss = process.env.BNB_CONTRACT_ADDRESS;
-    }
-    let decoded;
-    if(recipt.data.length > 2){
-      decoded = iface.parseTransaction({ data: recipt.data });
-    }
+    console.log("reciptreciptreciptrecipt",recipt);
+     console.log("rec", recipt.to)
+     let iface, contractAddresss;
+ 
+     if(recipt.to.toLowerCase() === jrContractAddress){
+       console.log("JR ")
+       iface = new ethers.utils.Interface(JR_ABI);
+       contractAddresss = process.env.JR_CONTRACT_ADDRESS;
+ 
+     }else if(recipt.to.toLowerCase() === ogContractAddress){
+       console.log("OG")
+     iface = new ethers.utils.Interface(OG_ABI);
+       contractAddresss = process.env.OG_CONTRACT_ADDRESS;
+     }else{
+       console.log("BNB",process.env.BNB_CONTRACT_ADDRESS);
+       iface = new ethers.utils.Interface(BNB_ABI);
+       contractAddresss = process.env.BNB_CONTRACT_ADDRESS;
+     }
+     let decoded;
+     if(recipt.data.length > 2){
+       decoded = iface.parseTransaction({ data: recipt.data });
+     }
+    
+     console.log("ec", decoded)
+     const cryptoAmt =decoded && decoded.args["wad"] ?  Number(ethers.utils.formatEther(decoded.args["wad"])): decoded && decoded.args["amount"] ? Number(ethers.utils.formatEther(decoded.args["amount"])): Number(ethers.utils.formatEther(recipt.value))
+     console.log("deco",cryptoAmt)
+     if(recipt.to.toLowerCase() === '0x'+ process.env.BUSD_WALLET_ADDRESS.toLowerCase()){
+       const res = await fetch(
+         `https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/${contractAddresss}`
+       );
+       const data = await res.json();
+       const current_price = data.market_data.current_price.usd;
+       console.log("curr",current_price);
    
-    console.log("ec", decoded)
-    const cryptoAmt =decoded && decoded.args["wad"] ?  Number(ethers.utils.formatEther(decoded.args["wad"])): decoded && decoded.args["amount"] ? Number(ethers.utils.formatEther(decoded.args["amount"])): Number(ethers.utils.formatEther(recipt.value))
-    console.log("deco",cryptoAmt)
-    if(recipt.to.toLowerCase() === '0x'+ process.env.BUSD_WALLET_ADDRESS.toLowerCase()){
-      const res = await fetch(
-        `https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/${contractAddresss}`
-      );
-      const data = await res.json();
-      const current_price = data.market_data.current_price.usd;
-      console.log("curr",current_price);
-  
-       const cryptoUsd = cryptoAmt * current_price;
-       console.log("cryp to Usd", cryptoUsd);
-       if(recipt.to.toLowerCase() === '0x'+ process.env.BUSD_WALLET_ADDRESS.toLowerCase()){
-        return parseInt(cryptoUsd);
-       }
-       
-       console.log("cryptoToUsd", Math.round(cryptoUsd))
-       return pids[Math.round(cryptoUsd)]
-    }
-    else if(recipt.to.toLowerCase() === ogContractAddress){
-        const res = await fetch(
-          `https://api.coinbrain.com/public/coin-info`,{
-            method: "post",
-          body:JSON.stringify({
-            "56":[process.env.OG_CONTRACT_ADDRESS]
-          })})
-        const data = await res.json();
-        const current_price = data[0].priceUsd;
-        console.log("curr",current_price);
-    
-         const cryptoUsd = cryptoAmt * current_price;
-         console.log("cryp to Usd", cryptoUsd);
-         if(recipt.to.toLowerCase() === '0x'+ process.env.BUSD_WALLET_ADDRESS.toLowerCase()){
-          return parseInt(cryptoUsd);
-         }
-         console.log("cryptoToUsd", Math.round(cryptoUsd))
-         return pids[Math.round(cryptoUsd)]
-    }
-     return cryptoAmt;
-    
-  } catch (error) {
-    console.log("error", error)
-  }
+        const cryptoUsd = cryptoAmt * current_price;
+        console.log("cryp to Usd", cryptoUsd);
+        if(recipt.to.toLowerCase() === '0x'+ process.env.BUSD_WALLET_ADDRESS.toLowerCase()){
+         return parseInt(cryptoUsd);
+        }
+        
+        console.log("cryptoToUsd", Math.round(cryptoUsd))
+        return pids[Math.round(cryptoUsd)]
+     }
+     else if(recipt.to.toLowerCase() === ogContractAddress){
+         const res = await fetch(
+           `https://api.coinbrain.com/public/coin-info`,{
+             method: "post",
+           body:JSON.stringify({
+             "56":[process.env.OG_CONTRACT_ADDRESS]
+           })})
+         const data = await res.json();
+         const current_price = data[0].priceUsd;
+         console.log("curr",current_price);
+     
+          const cryptoUsd = cryptoAmt * current_price;
+          console.log("cryp to Usd", cryptoUsd);
+          if(recipt.to.toLowerCase() === '0x'+ process.env.BUSD_WALLET_ADDRESS.toLowerCase()){
+           return parseInt(cryptoUsd);
+          }
+          console.log("cryptoToUsd", Math.round(cryptoUsd))
+          return pids[Math.round(cryptoUsd)]
+     }
+      return cryptoAmt;
+     
+   } catch (error) {
+     console.log("error", error)
+   }
 }
+
+
 
 export async function convertCryptoToGoldCoin(req, res) {
   const { address, transactionHash } = req.params;
+  const {promoCode}=req.query
+  console.log("req.query",req.query);
+  console.log("req.params",req.params);
   const { user: { _id: userId,refrenceId,username,email,firstName,lastName,profile}} = req;
   try {
     let recipt= await useSDK.sdk.getProvider().getTransaction(transactionHash);
@@ -1308,37 +1313,48 @@ export async function convertCryptoToGoldCoin(req, res) {
       });
     }
 
-    const amt = await getDecodedData(recipt)
+    const amt = await getDecodedData(recipt)    
+    // console.log("amtamtamt===>>>1318",amt);
     const data = await db.get_marketplace_gcPackagesDB().findOne({
       priceInBUSD: amt.toString()
     });
+    // console.log("amotttttt====>>>",amt);
+    // console.log("datadata===>>>>>",data);
     if(!data)
     return res.status(400).send({ success: false, data: "Invalid transaction pid"});
 
+    let query={
+      couponCode:promoCode,
+      expireDate:{$gte: new Date()},
+    }
+    let findPromoData=await db
+  .get_scrooge_promoDB().findOne(query);
+  console.log("findPromoDatafindPromoData",findPromoData);
     const trans = await addChips(
       userId,
-      parseInt(data.freeTokenAmount),
+      findPromoData?.coupanType==="Percent"?(parseInt(data.freeTokenAmount) + parseInt(data.freeTokenAmount)*(parseFloat(findPromoData?.discountInPercent)/100)):findPromoData.coupanType === '2X' ?parseInt(data.freeTokenAmount) * 2 : parseInt(data.freeTokenAmount),
       address,
       "Crypto To Gold Coin",
-      parseInt(data.gcAmount),
+      findPromoData?.coupanType==="Percent"?(parseInt(data.gcAmount) + parseInt(data.gcAmount)*(parseFloat(findPromoData?.discountInPercent)/100)):findPromoData.coupanType === '2X' ?parseInt(data.gcAmount) * 2 : parseInt(data.gcAmount),
       recipt,
     ) 
-    // const reciptPayload={
-    //   username:username,
-    //   email:email,
-    //   walletAddress:address,
-    //   invoicDate:1,
-    //   paymentMethod:"GC Purchase",
-    //   packageName:"GoldCoin Purchase",
-    //   goldCoinQuantity:parseInt(data.gcAmount),
-    //   tokenQuantity:parseInt(data.freeTokenAmount),
-    //   purcahsePrice: amt.toString(),
-    //   Tax:0,
-    //   firstName,
-    //   lastName
-    // }  
-    // await sendInvoice(reciptPayload)
-    console.log("refrenceId",refrenceId);
+    const reciptPayload={
+      username:username,
+      email:email,
+      walletAddress:address,
+      invoicDate:1,
+      paymentMethod:"GC Purchase",
+      packageName:"GoldCoin Purchase",
+      tokenQuantity:parseInt(data.freeTokenAmount),
+      goldCoinQuantity:findPromoData?.coupanType==="Percent"?(parseInt(data.gcAmount) + parseInt(data.gcAmount)*(parseFloat(findPromoData?.discountInPercent)/100)):findPromoData.coupanType === '2X' ?parseInt(data.gcAmount) * 2 : parseInt(data.gcAmount),
+      tokenQuantity:findPromoData?.coupanType==="Percent"?(parseInt(data.freeTokenAmount) + parseInt(data.freeTokenAmount)*(parseFloat(findPromoData?.discountInPercent)/100)):findPromoData.coupanType === '2X' ?parseInt(data.freeTokenAmount) * 2 : parseInt(data.freeTokenAmount)      ,
+      purcahsePrice: amt.toString(),
+      Tax:0,
+      firstName,
+      lastName
+    }  
+      // await sendInvoice(reciptPayload)
+    // console.log("refrenceId",refrenceId);
     if(refrenceId){
       await db
       .get_scrooge_usersDB()
@@ -1346,6 +1362,22 @@ export async function convertCryptoToGoldCoin(req, res) {
         { _id: ObjectId(userId) },
         { $inc: { totalBuy: amt,totalProfit:amt} }
       ); 
+    }
+    if(promoCode){
+      let payload={
+     userId:userId,
+      claimedDate: new Date(),
+}
+
+console.log("payload===>>>>1361",payload);
+let updatePromo = await db
+      .get_scrooge_promoDB()
+      .findOneAndUpdate({ couponCode: promoCode },
+        {
+      $push: { claimedUser: payload },
+      }
+      );
+      console.log("updatePromoupdatePromo===>>>>",updatePromo);
     }
 //     if(refrenceId){
 //       console.log("refrenceIdrefrenceId",refrenceId);
@@ -1747,6 +1779,8 @@ export async function WithdrawRequest(req, res) {
 //         if (prize.contract === '0xfA1BA18067aC6884fB26e329e60273488a247FC3') {
 //           console.log('OG');
 //           curr_price = await getOGCurrentPrice();
+
+
 //         } else if (
 //           prize.contract === '0x2e9F79aF51dD1bb56Bbb1627FBe4Cc90aa8985Dd'
 //         ) {
@@ -1986,3 +2020,43 @@ export async function WithdrawRequest(req, res) {
 //           console.log('error', e);
 //         });
 //     });
+
+
+export async function applyPromoCode(req, res) {
+
+  let user=req.user._id
+  try {
+    console.log("applyPromoCode",req.body);
+    const {promocode}=req.body
+    let query={
+      couponCode:promocode,
+      expireDate:{$gte: new Date()},
+    }
+    let getPromo = await db
+      .get_scrooge_promoDB()
+      .findOne(query);
+      console.log("getPromo",getPromo);
+      const {coupanInUse,claimedUser}=getPromo||{}
+      if(coupanInUse==="One Time"){
+        let findUser=claimedUser.find((el)=>el.userId.toString()===user.toString())
+        if(findUser){
+          return res.status(404).send({ code:404,success: false, message: "Promo code already in use." });
+        }
+      }
+    if(!getPromo){
+  return res.status(404).send({ code:404,success: false, message: "Invalid promo code." });
+}
+
+    return res.send({ code:200,success: true, getPromo,  message: "Promo code applied." });
+
+
+  }
+  
+
+       catch (e) {
+     console.log("outerCatch", e);
+     return res
+      .status(500)
+      .send({ success: false, message: "Error in Request Process" });
+  }
+}
