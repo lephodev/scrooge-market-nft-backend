@@ -529,9 +529,9 @@ app.post("/api/accept-deceptor", auth(), async(req,res) => {
   .get_scrooge_promoDB().findOne(query);
     const trans = await rewards.addChips(
       user._id.toString(),
-      findPromoData?.coupanType==="Percent"?parseInt(data.freeTokenAmount)*(parseFloat(findPromoData?.discountInPercent)/100):findPromoData.coupanType === '2X' ?parseInt(data.freeTokenAmount) * 2 : parseInt(data.freeTokenAmount),      "",
+      findPromoData?.coupanType==="Percent"?parseInt(data.freeTokenAmount)*(parseFloat(findPromoData?.discountInPercent)/100):findPromoData?.coupanType === '2X' ?parseInt(data.freeTokenAmount) * 2 : parseInt(data.freeTokenAmount),      "",
       "CC To Gold Coin",
-      findPromoData?.coupanType==="Percent"?(parseInt(data.gcAmount) + parseInt(data.gcAmount)*(parseFloat(findPromoData?.discountInPercent)/100)):findPromoData.coupanType === '2X' ?parseInt(data.gcAmount) * 2 : parseInt(data.gcAmount),
+      findPromoData?.coupanType==="Percent"?(parseInt(data.gcAmount) + parseInt(data.gcAmount)*(parseFloat(findPromoData?.discountInPercent)/100)):findPromoData?.coupanType === '2X' ?parseInt(data.gcAmount) * 2 : parseInt(data.gcAmount),
       {},
     ) 
     const reciptPayload={
@@ -541,14 +541,14 @@ app.post("/api/accept-deceptor", auth(), async(req,res) => {
       invoicDate:1,
       paymentMethod:"GC Purchase",
       packageName:"GoldCoin Purchase",
-      goldCoinQuantity:findPromoData?.coupanType==="Percent"?parseInt(data.gcAmount)*(parseFloat(findPromoData?.discountInPercent)/100):findPromoData.coupanType === '2X' ?parseInt(data.gcAmount) * 2 : parseInt(data.gcAmount),
-      tokenQuantity:findPromoData?.coupanType==="Percent"?(parseInt(data.freeTokenAmount) + parseInt(data.freeTokenAmount)*(parseFloat(findPromoData?.discountInPercent)/100)):findPromoData.coupanType === '2X' ?parseInt(data.freeTokenAmount) * 2 : parseInt(data.freeTokenAmount)    ,
+      goldCoinQuantity:findPromoData?.coupanType==="Percent"?parseInt(data.gcAmount)*(parseFloat(findPromoData?.discountInPercent)/100):findPromoData?.coupanType === '2X' ?parseInt(data.gcAmount) * 2 : parseInt(data.gcAmount),
+      tokenQuantity:findPromoData?.coupanType==="Percent"?(parseInt(data.freeTokenAmount) + parseInt(data.freeTokenAmount)*(parseFloat(findPromoData?.discountInPercent)/100)):findPromoData?.coupanType === '2X' ?parseInt(data.freeTokenAmount) * 2 : parseInt(data.freeTokenAmount)    ,
       purcahsePrice: body.item.price.toString(),
       Tax:0,
       firstName: user.firstName,
       lastName: user.lastName
     }  
-    //  await sendInvoice(reciptPayload)
+    await sendInvoice(reciptPayload)
     // console.log("refrenceId",user.refrenceId);
     if(user.refrenceId){
       await db
