@@ -498,9 +498,17 @@ app.post("/api/approvely-webhook", async(req,res) => {
 app.get("/api/WithdrawRequest/:address/:prize_id", auth(), rewards.WithdrawRequest);
 
 app.post("/api/accept-deceptor", auth(), async(req,res) => {
+
   try {
     const { user, body } =  req || {}
-    console.log("bodybodybody503",body);
+    // console.log("bodybodybody503",body);
+    let query={
+      couponCode:body.item.promoCode,
+      expireDate:{$gte: new Date()},
+    }
+  //   let findPromoData=await db
+  // .get_scrooge_promoDB().findOne(query);
+  //   console.log("findPromoData",findPromoData);
     const data = await db.get_marketplace_gcPackagesDB().findOne({
       priceInBUSD: body.item.actualAmount
     });
@@ -512,12 +520,19 @@ app.post("/api/accept-deceptor", auth(), async(req,res) => {
       return res.status(400).send({ success: false, data: "transaction failed", error: response.transactionResponse?.errors?.error[0]?.errorText});
     }
 
+    let query={
+      couponCode:body.item.promoCode,
+      expireDate:{$gte: new Date()},
+    }
+   
+    let findPromoData=await db
+  .get_scrooge_promoDB().findOne(query);
     const trans = await rewards.addChips(
       user._id.toString(),
-      body.item.promoCode?parseInt(data.freeTokenAmount)*2:parseInt(data.freeTokenAmount),
+      findPromoData?parseInt(data.freeTokenAmount)*2:parseInt(data.freeTokenAmount),
       "",
       "CC To Gold Coin",
-      body.item.promoCode?parseInt(data.gcAmount)*2:parseInt(data.gcAmount),
+      findPromoData?parseInt(data.gcAmount)*2:parseInt(data.gcAmount),
       {},
     ) 
     const reciptPayload={
@@ -527,8 +542,8 @@ app.post("/api/accept-deceptor", auth(), async(req,res) => {
       invoicDate:1,
       paymentMethod:"GC Purchase",
       packageName:"GoldCoin Purchase",
-      goldCoinQuantity: body.item.promoCode?parseInt(data.gcAmount)*2:parseInt(data.gcAmount),
-      tokenQuantity:body.item.promoCode?parseInt(data.freeTokenAmount)*2:parseInt(data.freeTokenAmount),
+      goldCoinQuantity:findPromoData?parseInt(data.gcAmount)*2:parseInt(data.gcAmount),
+      tokenQuantity:findPromoData?parseInt(data.freeTokenAmount)*2:parseInt(data.freeTokenAmount),
       purcahsePrice: body.item.price.toString(),
       Tax:0,
       firstName: user.firstName,

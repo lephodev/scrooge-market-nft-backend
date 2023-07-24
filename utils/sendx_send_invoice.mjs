@@ -18,7 +18,7 @@ export const sendInvoice = async (payload) => {
     lastName
   } = payload;
 
-  console.log("payloadpayloadpayload",payload);
+  // console.log("payloadpayloadpayload",payload);
   const api = new SendXRestApi.ContactApi();
 
   const apiKey = process.env.SENDEX_API_KEY; // {String}
@@ -130,7 +130,7 @@ export const sendInvoice = async (payload) => {
       if (error) {
         console.error(error);
       } else {
-        console.log('API called successfully. Returned data2', data.data);
+         console.log('API called successfully. Returned data2', data.data);
       }
     };
     api.contactIdentifyPost(apiKey, teamId, contactDetails, callback);
