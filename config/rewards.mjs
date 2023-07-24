@@ -1346,14 +1346,14 @@ export async function convertCryptoToGoldCoin(req, res) {
       paymentMethod:"GC Purchase",
       packageName:"GoldCoin Purchase",
       tokenQuantity:parseInt(data.freeTokenAmount),
-      goldCoinQuantity:findPromoData?.coupanType==="Percent"?parseInt(data.gcAmount)*(parseFloat(findPromoData?.discountInPercent)/100):findPromoData.coupanType === '2X' ?parseInt(data.gcAmount) * 2 : parseInt(data.gcAmount),
-      tokenQuantity:findPromoData?.coupanType==="Percent"?parseInt(data.freeTokenAmount)*(parseFloat(findPromoData?.discountInPercent)/100):findPromoData.coupanType === '2X' ?parseInt(data.freeTokenAmount) * 2 : parseInt(data.freeTokenAmount),
+      goldCoinQuantity:findPromoData?.coupanType==="Percent"?(parseInt(data.gcAmount) + parseInt(data.gcAmount)*(parseFloat(findPromoData?.discountInPercent)/100)):findPromoData.coupanType === '2X' ?parseInt(data.gcAmount) * 2 : parseInt(data.gcAmount),
+      tokenQuantity:findPromoData?.coupanType==="Percent"?(parseInt(data.freeTokenAmount) + parseInt(data.freeTokenAmount)*(parseFloat(findPromoData?.discountInPercent)/100)):findPromoData.coupanType === '2X' ?parseInt(data.freeTokenAmount) * 2 : parseInt(data.freeTokenAmount)      ,
       purcahsePrice: amt.toString(),
       Tax:0,
       firstName,
       lastName
     }  
-    //  await sendInvoice(reciptPayload)
+      await sendInvoice(reciptPayload)
     // console.log("refrenceId",refrenceId);
     if(refrenceId){
       await db
