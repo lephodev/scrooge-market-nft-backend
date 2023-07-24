@@ -498,10 +498,19 @@ app.post("/api/approvely-webhook", async(req,res) => {
 app.get("/api/WithdrawRequest/:address/:prize_id", auth(), rewards.WithdrawRequest);
 
 app.post("/api/accept-deceptor", auth(), async(req,res) => {
+
   try {
     const { user, body } =  req || {}
+    // console.log("bodybodybody503",body);
+    let query={
+      couponCode:body.item.promoCode,
+      expireDate:{$gte: new Date()},
+    }
+  //   let findPromoData=await db
+  // .get_scrooge_promoDB().findOne(query);
+  //   console.log("findPromoData",findPromoData);
     const data = await db.get_marketplace_gcPackagesDB().findOne({
-      priceInBUSD: body.item.price
+      priceInBUSD: body.item.actualAmount
     });
     if(!data)
     return res.status(400).send({ success: false, data: "Invalid price amount"});
@@ -511,12 +520,18 @@ app.post("/api/accept-deceptor", auth(), async(req,res) => {
       return res.status(400).send({ success: false, data: "transaction failed", error: response.transactionResponse?.errors?.error[0]?.errorText});
     }
 
+    let query={
+      couponCode:body.item.promoCode,
+      expireDate:{$gte: new Date()},
+    }
+   
+    let findPromoData=await db
+  .get_scrooge_promoDB().findOne(query);
     const trans = await rewards.addChips(
       user._id.toString(),
-      parseInt(data.freeTokenAmount),
-      "",
+      findPromoData?.coupanType==="Percent"?parseInt(data.freeTokenAmount)*(parseFloat(findPromoData?.discountInPercent)/100):findPromoData.coupanType === '2X' ?parseInt(data.freeTokenAmount) * 2 : parseInt(data.freeTokenAmount),      "",
       "CC To Gold Coin",
-      parseInt(data.gcAmount),
+      findPromoData?.coupanType==="Percent"?(parseInt(data.gcAmount) + parseInt(data.gcAmount)*(parseFloat(findPromoData?.discountInPercent)/100)):findPromoData.coupanType === '2X' ?parseInt(data.gcAmount) * 2 : parseInt(data.gcAmount),
       {},
     ) 
     const reciptPayload={
@@ -526,14 +541,14 @@ app.post("/api/accept-deceptor", auth(), async(req,res) => {
       invoicDate:1,
       paymentMethod:"GC Purchase",
       packageName:"GoldCoin Purchase",
-      goldCoinQuantity:parseInt(data.gcAmount),
-      tokenQuantity:parseInt(data.freeTokenAmount),
+      goldCoinQuantity:findPromoData?.coupanType==="Percent"?parseInt(data.gcAmount)*(parseFloat(findPromoData?.discountInPercent)/100):findPromoData.coupanType === '2X' ?parseInt(data.gcAmount) * 2 : parseInt(data.gcAmount),
+      tokenQuantity:findPromoData?.coupanType==="Percent"?(parseInt(data.freeTokenAmount) + parseInt(data.freeTokenAmount)*(parseFloat(findPromoData?.discountInPercent)/100)):findPromoData.coupanType === '2X' ?parseInt(data.freeTokenAmount) * 2 : parseInt(data.freeTokenAmount)    ,
       purcahsePrice: body.item.price.toString(),
       Tax:0,
       firstName: user.firstName,
       lastName: user.lastName
     }  
-    // await sendInvoice(reciptPayload)
+    //  await sendInvoice(reciptPayload)
     // console.log("refrenceId",user.refrenceId);
     if(user.refrenceId){
       await db
@@ -548,7 +563,7 @@ app.post("/api/accept-deceptor", auth(), async(req,res) => {
     .findOne({ _id: ObjectId(user._id) });
   res.status(200).send({
     success: true,
-    data: "Chips Added Successfully",
+    data: "Chips added successfully.",
     user: getUserDetail,
   });
   })
