@@ -1321,12 +1321,14 @@ export async function convertCryptoToGoldCoin(req, res) {
     if(!data)
     return res.status(400).send({ success: false, data: "Invalid transaction pid"});
 
+    let findPromoData=await db
+  .get_scrooge_promoDB().findOne({couponCode:promoCode});
     const trans = await addChips(
       userId,
-      promoCode?parseInt(data.freeTokenAmount)*2:parseInt(data.freeTokenAmount),
+      findPromoData?parseInt(data.freeTokenAmount)*2:parseInt(data.freeTokenAmount),
       address,
       "Crypto To Gold Coin",
-      promoCode?parseInt(data.gcAmount)*2:parseInt(data.gcAmount),
+      findPromoData?parseInt(data.gcAmount)*2:parseInt(data.gcAmount),
       recipt,
     ) 
     const reciptPayload={
@@ -1337,8 +1339,8 @@ export async function convertCryptoToGoldCoin(req, res) {
       paymentMethod:"GC Purchase",
       packageName:"GoldCoin Purchase",
       tokenQuantity:parseInt(data.freeTokenAmount),
-      goldCoinQuantity: promoCode?parseInt(data.gcAmount)*2:parseInt(data.gcAmount),
-      tokenQuantity:promoCode?parseInt(data.freeTokenAmount)*2:parseInt(data.freeTokenAmount),
+      goldCoinQuantity: findPromoData?parseInt(data.gcAmount)*2:parseInt(data.gcAmount),
+      tokenQuantity:findPromoData?parseInt(data.freeTokenAmount)*2:parseInt(data.freeTokenAmount),
       purcahsePrice: amt.toString(),
       Tax:0,
       firstName,
@@ -2038,7 +2040,7 @@ export async function applyPromoCode(req, res) {
   return res.status(404).send({ code:404,success: false, message: "Invalid promo code." });
 }
 
-    return res.send({ code:200,success: true, getPromo,  message: "promo code applied." });
+    return res.send({ code:200,success: true, getPromo,  message: "Promo code applied." });
 
 
   }
