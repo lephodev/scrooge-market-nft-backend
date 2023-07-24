@@ -66,7 +66,7 @@ export const sendInvoice = async (payload) => {
                   if (error) {
                     console.error(error);
                   } else {
-                    console.log('API called successfully. Returned data3', data.data);
+                    // console.log('API called successfully. Returned data3', data.data);
                   }
                 };
                 api.contactIdentifyPost(apiKey, teamId, contactDetails, callback);
@@ -94,7 +94,7 @@ export const sendInvoice = async (payload) => {
             if (error) {
               console.error(error);
             } else {
-              console.log('API called successfully. Returned data2', data.data);
+              // console.log('API called successfully. Returned data2', data.data);
             }
           };
           api.contactIdentifyPost(apiKey, teamId, contactDetails, callback);

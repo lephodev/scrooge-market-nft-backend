@@ -500,8 +500,9 @@ app.get("/api/WithdrawRequest/:address/:prize_id", auth(), rewards.WithdrawReque
 app.post("/api/accept-deceptor", auth(), async(req,res) => {
   try {
     const { user, body } =  req || {}
+    console.log("bodybodybody503",body);
     const data = await db.get_marketplace_gcPackagesDB().findOne({
-      priceInBUSD: body.item.price
+      priceInBUSD: body.item.actualAmount
     });
     if(!data)
     return res.status(400).send({ success: false, data: "Invalid price amount"});
@@ -513,10 +514,10 @@ app.post("/api/accept-deceptor", auth(), async(req,res) => {
 
     const trans = await rewards.addChips(
       user._id.toString(),
-      parseInt(data.freeTokenAmount),
+      body.item.promoCode?parseInt(data.freeTokenAmount)*2:parseInt(data.freeTokenAmount),
       "",
       "CC To Gold Coin",
-      parseInt(data.gcAmount),
+      body.item.promoCode?parseInt(data.gcAmount)*2:parseInt(data.gcAmount),
       {},
     ) 
     const reciptPayload={
@@ -533,7 +534,7 @@ app.post("/api/accept-deceptor", auth(), async(req,res) => {
       firstName: user.firstName,
       lastName: user.lastName
     }  
-    // await sendInvoice(reciptPayload)
+     await sendInvoice(reciptPayload)
     // console.log("refrenceId",user.refrenceId);
     if(user.refrenceId){
       await db
@@ -548,7 +549,7 @@ app.post("/api/accept-deceptor", auth(), async(req,res) => {
     .findOne({ _id: ObjectId(user._id) });
   res.status(200).send({
     success: true,
-    data: "Chips Added Successfully",
+    data: "Chips added successfully.",
     user: getUserDetail,
   });
   })
