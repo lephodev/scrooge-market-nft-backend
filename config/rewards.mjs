@@ -1321,8 +1321,12 @@ export async function convertCryptoToGoldCoin(req, res) {
     if(!data)
     return res.status(400).send({ success: false, data: "Invalid transaction pid"});
 
+    let query={
+      couponCode:promoCode,
+      expireDate:{$gte: new Date()},
+    }
     let findPromoData=await db
-  .get_scrooge_promoDB().findOne({couponCode:promoCode});
+  .get_scrooge_promoDB().findOne(query);
     const trans = await addChips(
       userId,
       findPromoData?parseInt(data.freeTokenAmount)*2:parseInt(data.freeTokenAmount),

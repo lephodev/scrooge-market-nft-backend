@@ -501,10 +501,14 @@ app.post("/api/accept-deceptor", auth(), async(req,res) => {
 
   try {
     const { user, body } =  req || {}
-    console.log("bodybodybody503",body);
-    let findPromoData=await db
-    .get_scrooge_promoDB().findOne({couponCode:body.item.promoCode});
-    console.log("findPromoData",findPromoData);
+    // console.log("bodybodybody503",body);
+    let query={
+      couponCode:body.item.promoCode,
+      expireDate:{$gte: new Date()},
+    }
+  //   let findPromoData=await db
+  // .get_scrooge_promoDB().findOne(query);
+  //   console.log("findPromoData",findPromoData);
     const data = await db.get_marketplace_gcPackagesDB().findOne({
       priceInBUSD: body.item.actualAmount
     });
@@ -516,8 +520,13 @@ app.post("/api/accept-deceptor", auth(), async(req,res) => {
       return res.status(400).send({ success: false, data: "transaction failed", error: response.transactionResponse?.errors?.error[0]?.errorText});
     }
 
+    let query={
+      couponCode:body.item.promoCode,
+      expireDate:{$gte: new Date()},
+    }
+   
     let findPromoData=await db
-  .get_scrooge_promoDB().findOne({couponCode:body.item.promoCode});
+  .get_scrooge_promoDB().findOne(query);
     const trans = await rewards.addChips(
       user._id.toString(),
       findPromoData?parseInt(data.freeTokenAmount)*2:parseInt(data.freeTokenAmount),
