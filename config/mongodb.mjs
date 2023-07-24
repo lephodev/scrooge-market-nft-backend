@@ -46,7 +46,9 @@ let _db_affiliates,
   _db_crypto_to_token,
   _db_withdraw_request,
   _db_admin_setting,
-  _db_affiliates_transaction
+  _db_affiliates_transaction,
+  _db_scrooge_promo
+
 
 
 export const connectToDB = async () => {
@@ -56,6 +58,7 @@ export const connectToDB = async () => {
     serverApi: ServerApiVersion.v1,
   });
   _db_scrooge_users = client.db(process.env.SCROOGE_DB).collection("users");
+  _db_scrooge_promo =client.db(process.env.SCROOGE_DB).collection("promos");
   _db_scrooge_spinGame = client.db(process.env.SCROOGE_DB).collection("spinGame");
   _db_scrooge_user_kycs = client.db(process.env.SCROOGE_DB).collection("userkycs");
   _db_scrooge_data = client.db("dev-markettt").collection("items");
@@ -147,6 +150,8 @@ export const connectToDB = async () => {
 };
 
 export const get_scrooge_usersDB = () => _db_scrooge_users;
+export const get_scrooge_promoDB = () => _db_scrooge_promo;
+
 export const get_scrooge_spinGameDB = () => _db_scrooge_spinGame;
 export const get_scrooge_user_kycs = () => _db_scrooge_user_kycs;
 export const get_scrooge_ticket_to_token = () => _db_ticket_to_token;
