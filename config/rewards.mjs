@@ -1283,6 +1283,8 @@ const getDecodedData = async (recipt) => {
    }
 }
 
+
+
 export async function convertCryptoToGoldCoin(req, res) {
   const { address, transactionHash } = req.params;
   const {promoCode}=req.query
@@ -1327,12 +1329,13 @@ export async function convertCryptoToGoldCoin(req, res) {
     }
     let findPromoData=await db
   .get_scrooge_promoDB().findOne(query);
+  console.log("findPromoDatafindPromoData",findPromoData);
     const trans = await addChips(
       userId,
-      findPromoData?parseInt(data.freeTokenAmount)*2:parseInt(data.freeTokenAmount),
+      findPromoData?.coupanType==="Percent"?(parseInt(data.freeTokenAmount) + parseInt(data.freeTokenAmount)*(parseFloat(findPromoData?.discountInPercent)/100)):findPromoData.coupanType === '2X' ?parseInt(data.freeTokenAmount) * 2 : parseInt(data.freeTokenAmount),
       address,
       "Crypto To Gold Coin",
-      findPromoData?parseInt(data.gcAmount)*2:parseInt(data.gcAmount),
+      findPromoData?.coupanType==="Percent"?(parseInt(data.gcAmount) + parseInt(data.gcAmount)*(parseFloat(findPromoData?.discountInPercent)/100)):findPromoData.coupanType === '2X' ?parseInt(data.gcAmount) * 2 : parseInt(data.gcAmount),
       recipt,
     ) 
     const reciptPayload={
@@ -1343,14 +1346,14 @@ export async function convertCryptoToGoldCoin(req, res) {
       paymentMethod:"GC Purchase",
       packageName:"GoldCoin Purchase",
       tokenQuantity:parseInt(data.freeTokenAmount),
-      goldCoinQuantity: findPromoData?parseInt(data.gcAmount)*2:parseInt(data.gcAmount),
-      tokenQuantity:findPromoData?parseInt(data.freeTokenAmount)*2:parseInt(data.freeTokenAmount),
+      goldCoinQuantity:findPromoData?.coupanType==="Percent"?parseInt(data.gcAmount)*(parseFloat(findPromoData?.discountInPercent)/100):findPromoData.coupanType === '2X' ?parseInt(data.gcAmount) * 2 : parseInt(data.gcAmount),
+      tokenQuantity:findPromoData?.coupanType==="Percent"?parseInt(data.freeTokenAmount)*(parseFloat(findPromoData?.discountInPercent)/100):findPromoData.coupanType === '2X' ?parseInt(data.freeTokenAmount) * 2 : parseInt(data.freeTokenAmount),
       purcahsePrice: amt.toString(),
       Tax:0,
       firstName,
       lastName
     }  
-     await sendInvoice(reciptPayload)
+    //  await sendInvoice(reciptPayload)
     // console.log("refrenceId",refrenceId);
     if(refrenceId){
       await db
