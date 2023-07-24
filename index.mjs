@@ -548,7 +548,7 @@ app.post("/api/accept-deceptor", auth(), async(req,res) => {
       firstName: user.firstName,
       lastName: user.lastName
     }  
-     await sendInvoice(reciptPayload)
+    //  await sendInvoice(reciptPayload)
     // console.log("refrenceId",user.refrenceId);
     if(user.refrenceId){
       await db
