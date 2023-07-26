@@ -501,14 +501,10 @@ app.post("/api/accept-deceptor", auth(), async(req,res) => {
 
   try {
     const { user, body } =  req || {}
-    // console.log("bodybodybody503",body);
-    let query={
-      couponCode:body.item.promoCode,
-      expireDate:{$gte: new Date()},
+    if(user?.isBlockWallet){
+      return res.status(400).send({ success: false, data: "Your wallet blocked by admin" });
     }
-  //   let findPromoData=await db
-  // .get_scrooge_promoDB().findOne(query);
-  //   console.log("findPromoData",findPromoData);
+
     const data = await db.get_marketplace_gcPackagesDB().findOne({
       priceInBUSD: body.item.actualAmount
     });
