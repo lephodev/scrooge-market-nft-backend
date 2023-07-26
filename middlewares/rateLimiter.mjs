@@ -1,10 +1,11 @@
-import rateLimit from 'express-rate-limit';
+import rateLimit from "express-rate-limit";
 
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 20,
-  skipSuccessfulRequests: true,
-  message: 'To many requests found',
+  windowMs: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
+  max: 4,
+  skipSuccessfulRequests: false,
+  message: { message: "To many requests found" },
+  statusCode: 429,
 });
 
 export default authLimiter;
