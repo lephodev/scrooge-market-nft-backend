@@ -585,6 +585,32 @@ app.post("/api/accept-deceptor", authLimiter, auth(), async (req, res) => {
       };
       await sendInvoice(reciptPayload);
       // console.log("refrenceId",user.refrenceId);
+      console.log("Body With CC ", body.item.promoCode);
+      if (body?.item?.promoCode) {
+        let payload = {
+          userId: user?._id,
+          claimedDate: new Date(),
+        };
+        console.log("promoCode CC", body.item.promoCode);
+        console.log("payload CC", payload);
+        let promoFind = await db
+          .get_scrooge_promoDB()
+          .findOne({ couponCode: body.item.promoCode.trim() });
+        console.log("promoFind With CC", promoFind);
+        let updatePromo = await db.get_scrooge_promoDB().findOneAndUpdate(
+          { couponCode: body.item.promoCode.trim() },
+          {
+            $push: { claimedUser: payload },
+          },
+          {
+            new: true,
+          }
+        );
+        console.log(
+          "updatePromoupdatePromoupdatePromo with Creadit card",
+          updatePromo
+        );
+      }
       if (user.refrenceId) {
         await db.get_scrooge_usersDB().findOneAndUpdate(
           { _id: ObjectId(user._id) },
