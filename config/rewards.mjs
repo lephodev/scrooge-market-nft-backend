@@ -1331,9 +1331,12 @@ export async function convertCryptoToGoldCoin(req, res) {
       };
       console.log("promoCode", promoCode);
       console.log("payload", payload);
-
+      let promoFind = await db
+        .get_scrooge_promoDB()
+        .findOne({ couponCode: promoCode.trim() });
+      console.log("promoFind", promoFind);
       let updatePromo = await db.get_scrooge_promoDB().findOneAndUpdate(
-        { couponCode: promoCode },
+        { couponCode: promoCode.trim() },
         {
           $push: { claimedUser: payload },
         },
