@@ -3,9 +3,9 @@ import * as db from "./config/mongodb.mjs";
 import passport from "passport";
 import auth from "./middlewares/auth.mjs";
 import jwtStrategy from "./config/passport.mjs";
-import cookieParser from 'cookie-parser';
+import cookieParser from "cookie-parser";
 
-import helmet from 'helmet';
+import helmet from "helmet";
 import * as rewards from "./config/rewards.mjs";
 import * as affiliate from "./config/affiliate.mjs";
 import * as useSDK from "./config/sdk.mjs";
@@ -27,6 +27,7 @@ import logger from "./config/logger.mjs";
 import createAnAcceptPaymentTransaction from "./utils/payment.mjs";
 import { sendInvoice } from "./utils/sendx_send_invoice.mjs";
 import { ObjectId } from "mongodb";
+import authLimiter from "./middlewares/rateLimiter.mjs";
 const app = express();
 // set security HTTP headers
 // app.use(
@@ -45,39 +46,40 @@ const PORT = process.env.PORT;
 app.use(
   cors({
     origin: [
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'http://localhost:3004',
-      'http://localhost:4242',
-      'https://scrooge.casino',
-      'https://poker.scrooge.casino',
-      'https://blackjack.scrooge.casino',
-      'https://slot.scrooge.casino',
-      'https://admin.scrooge.casino',
-      'https://market.scrooge.casino',
-      'https://roulette.scrooge.casino',
+      "http://localhost:3000",
+      "http://localhost:3001",
+      "http://localhost:3004",
+      "http://localhost:4242",
+      "https://scrooge.casino",
+      "https://poker.scrooge.casino",
+      "https://blackjack.scrooge.casino",
+      "https://slot.scrooge.casino",
+      "https://admin.scrooge.casino",
+      "https://market.scrooge.casino",
+      "https://roulette.scrooge.casino",
 
-      'https://dev.scrooge.casino',
-      'https://devpoker.scrooge.casino',
-      'https://devslot.scrooge.casino',
-      'https://devblackjack.scrooge.casino',
-      'https://devadmin.scrooge.casino',
-      'https://devmarket.scrooge.casino',
-      'https://devroulette.scrooge.casino',
+      "https://dev.scrooge.casino",
+      "https://devpoker.scrooge.casino",
+      "https://devslot.scrooge.casino",
+      "https://devblackjack.scrooge.casino",
+      "https://devadmin.scrooge.casino",
+      "https://devmarket.scrooge.casino",
+      "https://devroulette.scrooge.casino",
 
-      'https://beta.scrooge.casino',
-      'https://betapoker.scrooge.casino',
-      'https://betaslot.scrooge.casino',
-      'https://betablackjack.scrooge.casino',
-      'https://betaadmin.scrooge.casino',
-      'https://betamarket.scrooge.casino',
-      'https://betaroulette.scrooge.casino',
+      "https://beta.scrooge.casino",
+      "https://betapoker.scrooge.casino",
+      "https://betaslot.scrooge.casino",
+      "https://betablackjack.scrooge.casino",
+      "https://betaadmin.scrooge.casino",
+      "https://betamarket.scrooge.casino",
+      "https://betaroulette.scrooge.casino",
     ],
     credentials: true,
   })
 );
 app.use(json());
 app.use(cookieParser());
+// app.use("/api/accept-deceptor", authLimiter);
 
 passport.use("jwt", jwtStrategy);
 // app.use((req, _, next) => {
@@ -190,9 +192,9 @@ app.get("/api/sendEmail/:to/:subject/:body", auth(), async (req, res) => {
 
 // app.post("/api/getFreeTokens", auth(), async (req, res) => {
 //   useSDK.getFreeTokens(req, res);
-  // const resp = await useSDK.getFreeTokens(req).then((data) => {
-  //   res.send(data);
-  // });
+// const resp = await useSDK.getFreeTokens(req).then((data) => {
+//   res.send(data);
+// });
 // });
 
 app.get("/api/getItems/:type", auth(), async (req, res) => {
@@ -366,15 +368,11 @@ app.get("/api/claimDailyRewards/:user_id", auth(), async (req, res) => {
 app.get("/api/getDLNFTs/:address", auth(), useSDK.getDLNFTs);
 
 // Route to claim holder monthly Tokens
-app.get(
-  "/api/claimHolderTokens/:address",
-  auth(),
-  async (req, res) => {
-    const resp = await rewards.claimHolderTokens(req).then((data) => {
-      res.send(data);
-    });
-  }
-);
+app.get("/api/claimHolderTokens/:address", auth(), async (req, res) => {
+  const resp = await rewards.claimHolderTokens(req).then((data) => {
+    res.send(data);
+  });
+});
 
 //################################# Sharable Data #################################//
 // Route to get Sharable Messages
@@ -458,16 +456,18 @@ app.get(
 app.get(
   "/api/convertCryptoToGoldCoin/:address/:transactionHash",
   auth(),
-  (req, res) => { CryptoToGCQueue.push({ req, res}, (err, result) => {console.log("gc purchased converted.", err, result)})}
-);
-
-app.get(
-  "/api/coverttickettotoken/:ticketPrice",
-  auth(),
-  async (req, res) => {
-    TicketToTokenQueue.push({ req, res}, (err, result) => {console.log("ticket converted.", err, result)})
+  (req, res) => {
+    CryptoToGCQueue.push({ req, res }, (err, result) => {
+      console.log("gc purchased converted.", err, result);
+    });
   }
 );
+
+app.get("/api/coverttickettotoken/:ticketPrice", auth(), async (req, res) => {
+  TicketToTokenQueue.push({ req, res }, (err, result) => {
+    console.log("ticket converted.", err, result);
+  });
+});
 
 app.get("/api/gameResult", auth(), async (req, res) => {
   try {
@@ -482,96 +482,135 @@ app.get("/api/gameResult", auth(), async (req, res) => {
   }
 });
 
+app.post("/api/bitcartcc-notification", async (req, res) => {
+  console.log("payed on bitcart", {
+    query: req.query,
+    params: req.params,
+    body: req.body,
+  });
+  res.send({ success: true });
+});
 
-app.post("/api/bitcartcc-notification", async(req,res) => {
-  console.log("payed on bitcart", { query: req.query, params: req.params, body: req.body})
-  res.send({ success: true})
-})
+app.post("/api/approvely-webhook", async (req, res) => {
+  res.send({ success: true });
+});
 
+app.get(
+  "/api/WithdrawRequest/:address/:prize_id",
+  auth(),
+  rewards.WithdrawRequest
+);
 
-app.post("/api/approvely-webhook", async(req,res) => {
-  res.send({ success: true})
-})
-
-
-
-app.get("/api/WithdrawRequest/:address/:prize_id", auth(), rewards.WithdrawRequest);
-
-app.post("/api/accept-deceptor", auth(), async(req,res) => {
-
+app.post("/api/accept-deceptor", authLimiter, auth(), async (req, res) => {
+  console.log("hello console");
   try {
-    const { user, body } =  req || {}
-    if(user?.isBlockWallet){
-      return res.status(400).send({ success: false, data: "Your wallet blocked by admin" });
+    const { user, body } = req || {};
+    if (user?.isBlockWallet) {
+      return res
+        .status(400)
+        .send({ success: false, data: "Your wallet blocked by admin" });
     }
 
     const data = await db.get_marketplace_gcPackagesDB().findOne({
-      priceInBUSD: body.item.actualAmount
+      priceInBUSD: body.item.actualAmount,
     });
-    if(!data)
-    return res.status(400).send({ success: false, data: "Invalid price amount"});
-  createAnAcceptPaymentTransaction(body, user, async(response) => {
-    console.log("response", response.messages.resultCode);
-    if(response.messages.resultCode !== 'Ok' || response.transactionResponse?.errors){
-      return res.status(400).send({ success: false, data: "transaction failed", error: response.transactionResponse?.errors?.error[0]?.errorText});
-    }
+    if (!data)
+      return res
+        .status(400)
+        .send({ success: false, data: "Invalid price amount" });
+    createAnAcceptPaymentTransaction(body, user, async (response) => {
+      console.log("response", response.messages.resultCode);
+      if (
+        response.messages.resultCode !== "Ok" ||
+        response.transactionResponse?.errors
+      ) {
+        return res.status(400).send({
+          success: false,
+          data: "transaction failed",
+          error: response.transactionResponse?.errors?.error[0]?.errorText,
+        });
+      }
 
-    let query={
-      couponCode:body.item.promoCode,
-      expireDate:{$gte: new Date()},
-    }
-   
-    let findPromoData=await db
-  .get_scrooge_promoDB().findOne(query);
-    const trans = await rewards.addChips(
-      user._id.toString(),
-      findPromoData?.coupanType==="Percent"?parseInt(data.freeTokenAmount)*(parseFloat(findPromoData?.discountInPercent)/100):findPromoData?.coupanType === '2X' ?parseInt(data.freeTokenAmount) * 2 : parseInt(data.freeTokenAmount),      "",
-      "CC To Gold Coin",
-      findPromoData?.coupanType==="Percent"?(parseInt(data.gcAmount) + parseInt(data.gcAmount)*(parseFloat(findPromoData?.discountInPercent)/100)):findPromoData?.coupanType === '2X' ?parseInt(data.gcAmount) * 2 : parseInt(data.gcAmount),
-      {},
-    ) 
-    const reciptPayload={
-      username:user.username,
-      email:user.email,
-      walletAddress:"",
-      invoicDate:1,
-      paymentMethod:"GC Purchase",
-      packageName:"GoldCoin Purchase",
-      goldCoinQuantity:findPromoData?.coupanType==="Percent"?parseInt(data.gcAmount)*(parseFloat(findPromoData?.discountInPercent)/100):findPromoData?.coupanType === '2X' ?parseInt(data.gcAmount) * 2 : parseInt(data.gcAmount),
-      tokenQuantity:findPromoData?.coupanType==="Percent"?(parseInt(data.freeTokenAmount) + parseInt(data.freeTokenAmount)*(parseFloat(findPromoData?.discountInPercent)/100)):findPromoData?.coupanType === '2X' ?parseInt(data.freeTokenAmount) * 2 : parseInt(data.freeTokenAmount)    ,
-      purcahsePrice: body.item.price.toString(),
-      Tax:0,
-      firstName: user.firstName,
-      lastName: user.lastName
-    }  
-    await sendInvoice(reciptPayload)
-    // console.log("refrenceId",user.refrenceId);
-    if(user.refrenceId){
-      await db
-      .get_scrooge_usersDB()
-      .findOneAndUpdate(
-        { _id: ObjectId(user._id) },
-        { $inc: { totalBuy: parseInt(body.item.price),totalProfit:parseInt(body.item.price)} }
-      ); 
-    }
-    let getUserDetail = await db
-    .get_scrooge_usersDB()
-    .findOne({ _id: ObjectId(user._id) });
-  res.status(200).send({
-    success: true,
-    data: "Chips added successfully.",
-    user: getUserDetail,
-  });
-  })
-}catch (error) {
-  res
-    .status(500)
-    .send({ success: false, message: "Error in CC  purchase" });
-}
-})
+      let query = {
+        couponCode: body.item.promoCode,
+        expireDate: { $gte: new Date() },
+      };
+
+      let findPromoData = await db.get_scrooge_promoDB().findOne(query);
+      const trans = await rewards.addChips(
+        user._id.toString(),
+        findPromoData?.coupanType === "Percent"
+          ? parseInt(data.freeTokenAmount) *
+              (parseFloat(findPromoData?.discountInPercent) / 100)
+          : findPromoData?.coupanType === "2X"
+          ? parseInt(data.freeTokenAmount) * 2
+          : parseInt(data.freeTokenAmount),
+        "",
+        "CC To Gold Coin",
+        findPromoData?.coupanType === "Percent"
+          ? parseInt(data.gcAmount) +
+              parseInt(data.gcAmount) *
+                (parseFloat(findPromoData?.discountInPercent) / 100)
+          : findPromoData?.coupanType === "2X"
+          ? parseInt(data.gcAmount) * 2
+          : parseInt(data.gcAmount),
+        {}
+      );
+      const reciptPayload = {
+        username: user.username,
+        email: user.email,
+        walletAddress: "",
+        invoicDate: 1,
+        paymentMethod: "GC Purchase",
+        packageName: "GoldCoin Purchase",
+        goldCoinQuantity:
+          findPromoData?.coupanType === "Percent"
+            ? parseInt(data.gcAmount) *
+              (parseFloat(findPromoData?.discountInPercent) / 100)
+            : findPromoData?.coupanType === "2X"
+            ? parseInt(data.gcAmount) * 2
+            : parseInt(data.gcAmount),
+        tokenQuantity:
+          findPromoData?.coupanType === "Percent"
+            ? parseInt(data.freeTokenAmount) +
+              parseInt(data.freeTokenAmount) *
+                (parseFloat(findPromoData?.discountInPercent) / 100)
+            : findPromoData?.coupanType === "2X"
+            ? parseInt(data.freeTokenAmount) * 2
+            : parseInt(data.freeTokenAmount),
+        purcahsePrice: body.item.price.toString(),
+        Tax: 0,
+        firstName: user.firstName,
+        lastName: user.lastName,
+      };
+      await sendInvoice(reciptPayload);
+      // console.log("refrenceId",user.refrenceId);
+      if (user.refrenceId) {
+        await db.get_scrooge_usersDB().findOneAndUpdate(
+          { _id: ObjectId(user._id) },
+          {
+            $inc: {
+              totalBuy: parseInt(body.item.price),
+              totalProfit: parseInt(body.item.price),
+            },
+          }
+        );
+      }
+      let getUserDetail = await db
+        .get_scrooge_usersDB()
+        .findOne({ _id: ObjectId(user._id) });
+      res.status(200).send({
+        success: true,
+        data: "Chips added successfully.",
+        user: getUserDetail,
+      });
+    });
+  } catch (error) {
+    res.status(500).send({ success: false, message: "Error in CC  purchase" });
+  }
+});
 
 app.post("/api/applyPromoCode", auth(), rewards.applyPromoCode);
-
 
 app.listen(PORT, () => {
   console.log("Server is running.", PORT);
