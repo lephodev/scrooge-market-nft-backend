@@ -79,7 +79,7 @@ app.use(
 );
 app.use(json());
 app.use(cookieParser());
-app.use("/api/accept-deceptor", authLimiter);
+// app.use("/api/accept-deceptor", authLimiter);
 
 passport.use("jwt", jwtStrategy);
 // app.use((req, _, next) => {
@@ -501,7 +501,7 @@ app.get(
   rewards.WithdrawRequest
 );
 
-app.post("/api/accept-deceptor", auth(), async (req, res) => {
+app.post("/api/accept-deceptor", authLimiter, auth(), async (req, res) => {
   console.log("hello console");
   try {
     const { user, body } = req || {};
