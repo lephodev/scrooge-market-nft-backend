@@ -1,7 +1,7 @@
 import rateLimit from "express-rate-limit";
 
 const authLimiter = rateLimit({
-  windowMs: 2 * 60 * 1000, // 24 hours in milliseconds
+  windowMs: 5 * 60 * 1000, // 24 hours in milliseconds
   max: 4,
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false,
