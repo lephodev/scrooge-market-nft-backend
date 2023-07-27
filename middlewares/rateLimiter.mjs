@@ -4,7 +4,7 @@ import { getClientIp } from "request-ip";
 import { getIpAdress } from "./IpAddress.mjs";
 
 const MAX_REQUEST_LIMIT = 4;
-const MAX_REQUEST_WINDOW = 24 * 60 * 60; // Per 24 hours by IP
+const MAX_REQUEST_WINDOW = 5 * 60; // Per 24 hours by IP
 const TOO_MANY_REQUESTS_MESSAGE = "Too many requests found";
 const options = {
   duration: MAX_REQUEST_WINDOW,
