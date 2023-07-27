@@ -23,6 +23,7 @@
     "dotenv": "^16.0.3",
     "ethers": "^5.7.2",
     "express": "^4.17.1",
+    "express-rate-limit": "^6.8.0",
     "helmet": "^7.0.0",
     "http-status": "^1.6.2",
     "joi": "^17.9.2",
