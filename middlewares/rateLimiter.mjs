@@ -1,5 +1,8 @@
 import rateLimit from "express-rate-limit";
 import { RateLimiterMemory } from "rate-limiter-flexible";
+import { getClientIp } from "request-ip";
+import { getIpAdress } from "./IpAddress.mjs";
+
 // const authLimiter = rateLimit({
 //   windowMs: 5 * 60 * 1000, // 24 hours in milliseconds
 //   max: 4,
@@ -19,9 +22,11 @@ const options = {
 };
 const rateLimiter = new RateLimiterMemory(options);
 const authLimiter = (req, res, next) => {
-  console.log("limiter IP triggered", req.ip);
+  const ipadd = getClientIp(req);
+  const ipAddress = getIpAdress(ipadd);
+  console.log("limiter IP triggered", ipAddress);
   rateLimiter
-    .consume(req.ip)
+    .consume(ipAddress)
     .then(() => {
       next();
     })
