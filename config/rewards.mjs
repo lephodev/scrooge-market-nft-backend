@@ -63,6 +63,7 @@ export async function addChips(
         lastName,
         profile,
       },
+      address: _address,
       updatedTicket: user.ticket,
       prevGoldCoin: user.goldCoin,
       updatedGoldCoin: user.goldCoin + gc,
