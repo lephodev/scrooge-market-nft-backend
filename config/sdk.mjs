@@ -15,14 +15,14 @@ export const CasinoMarketplaceContractAddress =
   "0x91197754fCC899B543FebB5BE4dae193C75EF9d1";
 export const OGContractAddress = "0x9DfeE72aEa65dc7e375d50Ea2Bd90384313A165A";
 export const JRContractAddress = "0x2e9F79aF51dD1bb56Bbb1627FBe4Cc90aa8985Dd";
-export const DLContractAddress = "0xEe7c31b42e8bC3F2e04B5e1bfde84462fe1aA768";
+// export const DLContractAddress = "0xEe7c31b42e8bC3F2e04B5e1bfde84462fe1aA768";
 export const BurnContractAddress = "0x000000000000000000000000000000000000dEaD";
 
 //export const contractJR = await sdk.getContractFromAbi(JRContractAddress, JR_ABI);
-export const contractCasinoMarketplace = await sdk.getContract(
-  CasinoMarketplaceContractAddress
-);
-export const contract = await sdk.getContract(CasinoMarketplaceContractAddress);
+// export const contractCasinoMarketplace = await sdk.getContract(
+//   CasinoMarketplaceContractAddress
+// );
+// export const contract = await sdk.getContract(CasinoMarketplaceContractAddress);
 export const sdk_casino_nfts = ThirdwebSDK.fromPrivateKey(
   process.env.CASINO_NFTS_PRIVATE_KEY,
   "binance"
@@ -57,14 +57,14 @@ export const sdk_DL = ThirdwebSDK.fromPrivateKey(
   process.env.DL_WALLET_PRIVATE_KEY,
   "ethereum"
 );
-export const contractDL = await sdk_DL.getContract(DLContractAddress);
+// export const contractDL = await sdk_DL.getContract(DLContractAddress);
 export const sdk_DL_wallet = await sdk_DL.wallet.getAddress();
 
 export async function getDLNFTs(req, res) {
   const { address } = req.params;
-  const allNFTs = await contractDL.erc721.getAll(address);
-  console.log(allNFTs);
-  res.send({ allNFTs });
+  // const allNFTs = await contractDL.erc721.getAll(address);
+  // console.log(allNFTs);
+  // res.send({ allNFTs });
 }
 
 //functions
@@ -276,7 +276,8 @@ export async function getFreeTokens(req, res) {
                 .findOne({ _id: ObjectId(findUserAff?.refrenceId) });
               //  console.log("getUserData",getUserData);
 
-              const {_id,username,email,firstName,lastName,profile} = getUserData
+              const { _id, username, email, firstName, lastName, profile } =
+                getUserData;
 
               const transactionPayload = {
                 amount: parseInt(commission),
@@ -284,12 +285,17 @@ export async function getFreeTokens(req, res) {
                 prevWallet: getUserData?.wallet,
                 updatedWallet: getUserData?.wallet + commission,
                 userId: {
-                  _id,username,email,firstName,lastName,profile
+                  _id,
+                  username,
+                  email,
+                  firstName,
+                  lastName,
+                  profile,
                 },
                 updatedTicket: commission,
                 updatedGoldCoin: getUserData?.goldCoin,
                 prevGoldCoin: getUserData?.goldCoin,
-                prevTicket:getUserData?.ticket,
+                prevTicket: getUserData?.ticket,
                 createdAt: new Date(),
                 updatedAt: new Date(),
               };
@@ -325,7 +331,6 @@ export async function getFreeTokens(req, res) {
 
     GetUser.id = GetUser?._id;
     return res.status(200).send({ success: true, data: resp, user: GetUser });
- 
   } catch (error) {
     console.log("error", error);
   }
@@ -349,15 +354,20 @@ export async function getFreeTokens(req, res) {
 
 export async function getOGCurrentPrice() {
   let curr_price;
-  await axios.post('https://api.coinbrain.com/public/coin-info', {
-    "56":[OGContractAddress]
-})  .then((response) => {
-  console.log("response",response);
+  await axios
+    .post("https://api.coinbrain.com/public/coin-info", {
+      56: [OGContractAddress],
+    })
+    .then(
+      (response) => {
+        console.log("response", response);
 
-   curr_price = response.data[0].priceUsd;
-}, (error) => {
-  console.log(error);
-});
+        curr_price = response.data[0].priceUsd;
+      },
+      (error) => {
+        console.log(error);
+      }
+    );
   // await fetch(
   //   "https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/0x9DfeE72aEa65dc7e375d50Ea2Bd90384313A165A"
   // )
@@ -394,14 +404,13 @@ export async function getWalletDLBalance(req) {
   let balanceRaw, balance, resp;
   const address = req.params.address;
   if (address) {
-    balanceRaw = await contractDL.erc721.balance(address);
-    balance = parseInt(balanceRaw);
-
-    if (balance > 0) {
-      resp = balance.toString();
-    } else {
-      resp = "Not Enough Balance";
-    }
+    // balanceRaw = await contractDL.erc721.balance(address);
+    // balance = parseInt(balanceRaw);
+    // if (balance > 0) {
+    //   resp = balance.toString();
+    // } else {
+    //   resp = "Not Enough Balance";
+    // }
   }
   return resp;
 }
