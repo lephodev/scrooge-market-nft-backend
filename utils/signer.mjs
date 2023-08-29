@@ -1,12 +1,14 @@
 import { ethers } from "ethers";
 
 export const getSigner = async (record) => {
-  const { signerMessage, signerToken, address } = record;
+  const { signerToken, address } = record;
 
   try {
+    const messageToSign = "Please sign this message to verify ownership.";
+
     // Verify the signature and recover the wallet address
     const recoveredAddress = ethers.utils.verifyMessage(
-      "Your wallet",
+      messageToSign,
       signerToken
     );
 
