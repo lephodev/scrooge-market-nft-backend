@@ -368,11 +368,15 @@ app.get("/api/claimDailyRewards/:user_id", auth(), async (req, res) => {
 app.get("/api/getDLNFTs/:address", auth(), useSDK.getDLNFTs);
 
 // Route to claim holder monthly Tokens
-app.get("/api/claimHolderTokens/:address", auth(), async (req, res) => {
-  const resp = await rewards.claimHolderTokens(req).then((data) => {
-    res.send(data);
-  });
-});
+app.get(
+  "/api/claimHolderTokens/:address/:signerToken",
+  auth(),
+  async (req, res) => {
+    const resp = await rewards.claimHolderTokens(req).then((data) => {
+      res.send(data);
+    });
+  }
+);
 
 //################################# Sharable Data #################################//
 // Route to get Sharable Messages
