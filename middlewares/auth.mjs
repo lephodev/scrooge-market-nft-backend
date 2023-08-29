@@ -12,7 +12,7 @@ const verifyCallback =
       );
     }
     req.user = user;
-    console.log("user", user)
+    // console.log("user", user)
     if (requiredRights.length) {
       const userRights = roleRights.get(user.role);
       const hasRequiredRights = requiredRights.every((requiredRight) =>
@@ -28,10 +28,10 @@ const verifyCallback =
 
 const auth =
   (...requiredRights) =>
-  async (req, res, next) => { 
-    let decryptedToken = decryptPass(req.cookies['token']);
+  async (req, res, next) => {
+    let decryptedToken = decryptPass(req.cookies["token"]);
     req.headers.authEncrypted = req.headers.authorization;
-    req.headers.authorization=`Bearer ${decryptedToken}`
+    req.headers.authorization = `Bearer ${decryptedToken}`;
     return new Promise((resolve, reject) => {
       passport.authenticate(
         "jwt",
@@ -42,7 +42,7 @@ const auth =
       .then(() => next())
       .catch((err) => {
         console.log("erororororor", err);
-        res.status(400).send({message:"Please authenticate"})
+        res.status(400).send({ message: "Please authenticate" });
         // next(err);
       });
   };
