@@ -334,6 +334,27 @@ export async function claimDailyRewards(req) {
 // Route to claim holder monthly Tokens
 export async function claimHolderTokens(req) {
   let resp;
+  const user = req.user;
+  const address = req.params.address;
+  const balBigNUm = await useSDK.contractOG.call("balanceOf", [address]);
+  const bal = Number(ethers.utils.formatEther(balBigNUm));
+  if (user?.isBlockWallet) {
+    return (resp = { msg: "Your wallet blocked by admin.", code: 400 });
+  }
+
+  const res = await fetch(`https://api.coinbrain.com/public/coin-info`, {
+    method: "post",
+    body: JSON.stringify({
+      56: [process.env.OG_CONTRACT_ADDRESS],
+    }),
+  });
+  const data = await res.json();
+  const current_price = data[0].priceUsd;
+  let isClaimable = false,
+    prevmonth,
+    OGValue,
+    lastClaimDate;
+
   console.log("req.params", req.params);
   const isValid = await getSigner(req.params);
   console.log("datata", isValid);
@@ -343,6 +364,7 @@ export async function claimHolderTokens(req) {
 
   let query = {
     transactionType: "Monthly Reward Claim",
+    "userId._id": user._id,
   };
   const options = {
     sort: { _id: -1 },
@@ -352,6 +374,79 @@ export async function claimHolderTokens(req) {
   const getLastetMonthyTransaction = await db
     .get_scrooge_transactionDB()
     .findOne(query, options);
+  if (!getLastetMonthyTransaction) {
+    if (address && user._id && bal && current_price) {
+      let OGValueIn = (current_price * bal).toFixed(0);
+      if (OGValueIn < 50) {
+        return (resp = { msg: "You don't have enough OG coins.", code: 400 });
+      } else if (OGValueIn > 3000) {
+        OGValue = 3000;
+      } else {
+        OGValue = OGValueIn;
+      }
+      resp = { data: OGValue, code: 200 };
+      if (OGValue > 0) {
+        const qry = { address };
+        const sort = { claimDate: -1 };
+        const cursor = db
+          .get_marketplace_holder_claim_chips_transactionsDB()
+          .find(qry)
+          .sort(sort);
+        const arr = await cursor.toArray().then(async (data) => {
+          const today = new Date();
+          let nextmonth = new Date();
+          nextmonth.setDate(nextmonth.getDate() + 30);
+          if (typeof data[0] != "undefined") {
+            lastClaimDate = data[0].claimDate;
+            prevmonth = new Date();
+            prevmonth.setDate(prevmonth.getDate() - 30);
+          }
+          if (typeof lastClaimDate != "undefined") {
+            if (lastClaimDate <= prevmonth) {
+              isClaimable = true;
+            } else {
+              isClaimable = false;
+            }
+          } else {
+            isClaimable = true;
+          }
+          if (isClaimable) {
+            const queryCT = await db
+              .get_marketplace_holder_claim_chips_transactionsDB()
+              .insertOne({
+                address: address,
+                user_id: user._id.toString(),
+                qty: parseInt(OGValue),
+                claimDate: new Date(),
+                nextClaimDate: nextmonth,
+              })
+              .then(async (trans) => {
+                const chipsAdded = await addChips(
+                  user._id.toString(),
+                  parseInt(OGValue),
+                  address,
+                  "Monthly Reward Claim"
+                ).then((data) => {
+                  resp = { data: OGValue, code: 200 };
+                });
+              });
+          } else {
+            resp = {
+              msg: "ZERO! You are not allowed to claim yet.",
+              code: 400,
+            };
+          }
+        });
+      } else {
+        resp = {
+          msg: "ZERO! You do not hold enough Scrooge Coin crypto.",
+          code: 400,
+        };
+      }
+
+      return resp;
+    }
+  }
   const { createdAt } = getLastetMonthyTransaction;
   console.log("createdAt", createdAt);
   const currentDate = new Date(createdAt);
@@ -366,28 +461,10 @@ export async function claimHolderTokens(req) {
     return (resp = { msg: "You can cliam Only one in a month", code: 400 });
   }
 
-  const address = req.params.address;
-  const balBigNUm = await useSDK.contractOG.call("balanceOf", [address]);
-  const bal = Number(ethers.utils.formatEther(balBigNUm));
-  const user = req.user;
-  if (user?.isBlockWallet) {
-    return (resp = { msg: "Your wallet blocked by admin.", code: 400 });
-  }
   // const res = await fetch(
   //   `https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/${ogContractAddress}`
   // );
-  const res = await fetch(`https://api.coinbrain.com/public/coin-info`, {
-    method: "post",
-    body: JSON.stringify({
-      56: [process.env.OG_CONTRACT_ADDRESS],
-    }),
-  });
-  const data = await res.json();
-  const current_price = data[0].priceUsd;
-  let isClaimable = false,
-    prevmonth,
-    OGValue,
-    lastClaimDate;
+
   if (address && user._id && bal && current_price) {
     let OGValueIn = (current_price * bal).toFixed(0);
     if (OGValueIn < 50) {
