@@ -885,7 +885,7 @@ export async function redeemPrize(req, res) {
               const transactionPayload = {
                 amount: prize_price,
                 transactionType: "Approve Crypto Redeem",
-                prevWallet: getUserData?.wallet,
+                prevWallet: getUserData?.wallet + parseInt(prize_price),
                 updatedWallet: getUserData?.wallet,
                 userId: {
                   _id,
@@ -895,10 +895,10 @@ export async function redeemPrize(req, res) {
                   lastName,
                   profile,
                 },
-                updatedTicket: getUserData?.ticket,
+                // updatedTicket: getUserData?.ticket,
                 updatedGoldCoin: getUserData?.goldCoin,
                 prevGoldCoin: getUserData?.goldCoin,
-                prevTicket: getUserData?.ticket + parseInt(prize_price),
+                // prevTicket: getUserData?.ticket + parseInt(prize_price),
                 createdAt: new Date(),
                 updatedAt: new Date(),
               };
