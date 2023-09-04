@@ -1755,7 +1755,7 @@ export async function WithdrawRequest(req, res) {
   const address = req.params.address;
   const prize_id = req.params.prize_id;
   let user_id = req?.user?._id;
-  let ticket = req?.user?.ticket;
+  let token = req?.user?.wallet;
   try {
     if (req?.user?.isBlockWallet) {
       return res.send({
@@ -1774,14 +1774,14 @@ export async function WithdrawRequest(req, res) {
       .get_marketplace_prizesDB()
       .findOne({ _id: ObjectId(prize_id) });
 
-    if (ticket < prize?.price) {
+    if (token < prize?.price) {
       return res.send({ success: false, message: "Not Enough Tickets" });
     }
     await db
       .get_scrooge_usersDB()
       .findOneAndUpdate(
         { _id: ObjectId(user_id) },
-        { $inc: { ticket: -prize.price } }
+        { $inc: { wallet: -prize.price } }
       );
     let getUserData = await db
       .get_scrooge_usersDB()
@@ -1802,10 +1802,10 @@ export async function WithdrawRequest(req, res) {
         lastName,
         profile,
       },
-      updatedTicket: getUserData?.ticket,
+      // updatedTicket: getUserData?.ticket,
       updatedGoldCoin: getUserData?.goldCoin,
       prevGoldCoin: getUserData?.goldCoin,
-      prevTicket: getUserData?.ticket + parseInt(prize.price),
+      // prevTicket: getUserData?.ticket + parseInt(prize.price),
       createdAt: new Date(),
       updatedAt: new Date(),
     };
