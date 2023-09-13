@@ -13,6 +13,7 @@ import OG_ABI from "../config/OG_ABI.json" assert { type: "json" };
 import JR_ABI from "../config/JR_ABI.json" assert { type: "json" };
 import BNB_ABI from "../config/BNB_ABI.json" assert { type: "json" };
 import { sendInvoice } from "../utils/sendx_send_invoice.mjs";
+import { getSigner } from "../utils/signer.mjs";
 const { Schema } = mongoose;
 
 dotenv.config();
@@ -333,29 +334,137 @@ export async function claimDailyRewards(req) {
 // Route to claim holder monthly Tokens
 export async function claimHolderTokens(req) {
   let resp;
+  const user = req.user;
   const address = req.params.address;
   const balBigNUm = await useSDK.contractOG.call("balanceOf", [address]);
   const bal = Number(ethers.utils.formatEther(balBigNUm));
-  const user = req.user;
   if (user?.isBlockWallet) {
     return (resp = { msg: "Your wallet blocked by admin.", code: 400 });
   }
-  // const res = await fetch(
-  //   `https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/${ogContractAddress}`
-  // );
+
   const res = await fetch(`https://api.coinbrain.com/public/coin-info`, {
     method: "post",
     body: JSON.stringify({
       56: [process.env.OG_CONTRACT_ADDRESS],
     }),
   });
-
   const data = await res.json();
   const current_price = data[0].priceUsd;
   let isClaimable = false,
     prevmonth,
     OGValue,
     lastClaimDate;
+
+  console.log("req.params", req.params);
+  const isValid = await getSigner(req.params);
+  console.log("datata", isValid);
+  if (!isValid) {
+    return (resp = { msg: "Invalid signer", code: 400 });
+  }
+
+  let query = {
+    transactionType: "Monthly Reward Claim",
+    "userId._id": user._id,
+  };
+  const options = {
+    sort: { _id: -1 },
+    limit: 1,
+  };
+
+  const getLastetMonthyTransaction = await db
+    .get_scrooge_transactionDB()
+    .findOne(query, options);
+  if (!getLastetMonthyTransaction) {
+    if (address && user._id && bal && current_price) {
+      let OGValueIn = (current_price * bal).toFixed(0);
+      if (OGValueIn < 50) {
+        return (resp = { msg: "You don't have enough OG coins.", code: 400 });
+      } else if (OGValueIn > 3000) {
+        OGValue = 3000;
+      } else {
+        OGValue = OGValueIn;
+      }
+      resp = { data: OGValue, code: 200 };
+      if (OGValue > 0) {
+        const qry = { address };
+        const sort = { claimDate: -1 };
+        const cursor = db
+          .get_marketplace_holder_claim_chips_transactionsDB()
+          .find(qry)
+          .sort(sort);
+        const arr = await cursor.toArray().then(async (data) => {
+          const today = new Date();
+          let nextmonth = new Date();
+          nextmonth.setDate(nextmonth.getDate() + 30);
+          if (typeof data[0] != "undefined") {
+            lastClaimDate = data[0].claimDate;
+            prevmonth = new Date();
+            prevmonth.setDate(prevmonth.getDate() - 30);
+          }
+          if (typeof lastClaimDate != "undefined") {
+            if (lastClaimDate <= prevmonth) {
+              isClaimable = true;
+            } else {
+              isClaimable = false;
+            }
+          } else {
+            isClaimable = true;
+          }
+          if (isClaimable) {
+            const queryCT = await db
+              .get_marketplace_holder_claim_chips_transactionsDB()
+              .insertOne({
+                address: address,
+                user_id: user._id.toString(),
+                qty: parseInt(OGValue),
+                claimDate: new Date(),
+                nextClaimDate: nextmonth,
+              })
+              .then(async (trans) => {
+                const chipsAdded = await addChips(
+                  user._id.toString(),
+                  parseInt(OGValue),
+                  address,
+                  "Monthly Reward Claim"
+                ).then((data) => {
+                  resp = { data: OGValue, code: 200 };
+                });
+              });
+          } else {
+            resp = {
+              msg: "ZERO! You are not allowed to claim yet.",
+              code: 400,
+            };
+          }
+        });
+      } else {
+        resp = {
+          msg: "ZERO! You do not hold enough Scrooge Coin crypto.",
+          code: 400,
+        };
+      }
+
+      return resp;
+    }
+  }
+  const { createdAt } = getLastetMonthyTransaction;
+  console.log("createdAt", createdAt);
+  const currentDate = new Date(createdAt);
+  const currentDay = currentDate.getDate();
+  currentDate.setMonth(currentDate.getMonth() + 1);
+
+  if (currentDate.getDate() < currentDay) {
+    currentDate.setDate(0);
+  }
+  console.log("claimDtae", currentDate);
+  if (currentDate > new Date()) {
+    return (resp = { msg: "You can cliam Only one in a month", code: 400 });
+  }
+
+  // const res = await fetch(
+  //   `https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/${ogContractAddress}`
+  // );
+
   if (address && user._id && bal && current_price) {
     let OGValueIn = (current_price * bal).toFixed(0);
     if (OGValueIn < 50) {
@@ -366,7 +475,6 @@ export async function claimHolderTokens(req) {
       OGValue = OGValueIn;
     }
     resp = { data: OGValue, code: 200 };
-
     if (OGValue > 0) {
       const qry = { address };
       const sort = { claimDate: -1 };
@@ -413,7 +521,10 @@ export async function claimHolderTokens(req) {
               });
             });
         } else {
-          resp = { msg: "ZERO! You are not allowed to claim yet.", code: 400 };
+          resp = {
+            msg: "ZERO! You are not allowed to claim yet.",
+            code: 400,
+          };
         }
       });
     } else {
@@ -422,8 +533,9 @@ export async function claimHolderTokens(req) {
         code: 400,
       };
     }
+
+    return resp;
   }
-  return resp;
 }
 
 export async function getCryptoToGCPackages(req, res) {
@@ -773,7 +885,7 @@ export async function redeemPrize(req, res) {
               const transactionPayload = {
                 amount: prize_price,
                 transactionType: "Approve Crypto Redeem",
-                prevWallet: getUserData?.wallet,
+                prevWallet: getUserData?.wallet + parseInt(prize_price),
                 updatedWallet: getUserData?.wallet,
                 userId: {
                   _id,
@@ -783,10 +895,10 @@ export async function redeemPrize(req, res) {
                   lastName,
                   profile,
                 },
-                updatedTicket: getUserData?.ticket,
+                // updatedTicket: getUserData?.ticket,
                 updatedGoldCoin: getUserData?.goldCoin,
                 prevGoldCoin: getUserData?.goldCoin,
-                prevTicket: getUserData?.ticket + parseInt(prize_price),
+                // prevTicket: getUserData?.ticket + parseInt(prize_price),
                 createdAt: new Date(),
                 updatedAt: new Date(),
               };
@@ -1643,7 +1755,7 @@ export async function WithdrawRequest(req, res) {
   const address = req.params.address;
   const prize_id = req.params.prize_id;
   let user_id = req?.user?._id;
-  let ticket = req?.user?.ticket;
+  let token = req?.user?.wallet;
   try {
     if (req?.user?.isBlockWallet) {
       return res.send({
@@ -1662,14 +1774,14 @@ export async function WithdrawRequest(req, res) {
       .get_marketplace_prizesDB()
       .findOne({ _id: ObjectId(prize_id) });
 
-    if (ticket < prize?.price) {
+    if (token < prize?.price) {
       return res.send({ success: false, message: "Not Enough Tickets" });
     }
     await db
       .get_scrooge_usersDB()
       .findOneAndUpdate(
         { _id: ObjectId(user_id) },
-        { $inc: { ticket: -prize.price } }
+        { $inc: { wallet: -prize.price } }
       );
     let getUserData = await db
       .get_scrooge_usersDB()
@@ -1690,10 +1802,10 @@ export async function WithdrawRequest(req, res) {
         lastName,
         profile,
       },
-      updatedTicket: getUserData?.ticket,
+      // updatedTicket: getUserData?.ticket,
       updatedGoldCoin: getUserData?.goldCoin,
       prevGoldCoin: getUserData?.goldCoin,
-      prevTicket: getUserData?.ticket + parseInt(prize.price),
+      // prevTicket: getUserData?.ticket + parseInt(prize.price),
       createdAt: new Date(),
       updatedAt: new Date(),
     };

@@ -19,27 +19,25 @@ export async function affAddOrder(
   user_id,
   address
 ) {
-  console.log("aff_id","order_id",
-  "order_total",
-  "product_id",
-  "user_id",
-  "address", aff_id,
-  order_id,
-  order_total,
-  product_id,
-  user_id,
-  address);
+  // console.log("aff_id","order_id",
+  // "order_total",
+  // "product_id",
+  // "user_id",
+  // "address", aff_id,
+  // order_id,
+  // order_total,
+  // product_id,
+  // user_id,
+  // address);
   //write transaction to successful_actions table
   let resp;
   let trans_id;
 
-  console.log("order_total",order_total);
   const commission = (order_total / order_commission_pct).toFixed(0);
   const query = await db
     .get_affiliatesDB()
     .findOne({ _id: ObjectId(aff_id) })
     .then(async (user) => {
-      console.log("userrrrrrr",user);
       if (user) {
         const queryCT = await db
           .get_affiliates_successful_actionsDB()
@@ -146,7 +144,6 @@ export async function getAffLeadersByTokens(req, res) {
       .limit(limit);
 
     const data = await cursor.toArray();
-    //console.log('cursor: ', data);
     if (typeof data[0] != "undefined") {
       return res.status(200).send({ success: true, data: data });
     } else {
@@ -165,7 +162,6 @@ export async function getAffLeadersByTokens(req, res) {
 //* get affiliate leaders by Type
 export async function getAffLeadersByType(req, res) {
   let { type, limit, days } = req.params;
-  console.log("req.params",req.params);
 
   if (!type) return res.status(500).send({ message: "Invalid type" });
 
@@ -180,11 +176,8 @@ export async function getAffLeadersByType(req, res) {
     days = parseInt(days);
   }
   try {
-    console.log("days",days);
-
     let daterange = new Date();
     daterange.setDate(daterange.getDate() - days);
-    console.log("daterange",moment(daterange).toDate());
     const cursor = await db
       .get_affiliates_successful_actionsDB()
       .aggregate([
@@ -224,12 +217,9 @@ export async function getAffLeadersByType(req, res) {
 // *-tested
 export async function getAffiliateUser(req, res) {
   const { user_id } = req.params;
-  console.log("user_id", user_id);
   if (!user_id) return res.status(500).send({ message: "Invalid UserId" });
-  console.log("affiatestart");
   try {
     const query = await db.get_affiliatesDB().findOne({ user_id: user_id });
-    console.log("query", query);
     if (query) {
       return res.status(200).send({ success: true, data: query });
     }
@@ -265,7 +255,6 @@ export async function createAffiliateUser(req, res) {
         });
       } else {
         const affShortLink = await createAffShortLink(user_id, user.username);
-        console.log("affShortLink",affShortLink);
         const aff = await db.get_affiliatesDB().insertOne({
           user_id: user_id,
           is_vendor: false,
@@ -287,7 +276,6 @@ export async function createAffiliateUser(req, res) {
 
 //
 async function createAffShortLink(user_id, username) {
-  console.log("KKKKKKLLLLLIIINKKKKK");
   let shortLink;
   const link = `${process.env.LANDING_CLIENT}?aff_id=` + user_id + "";
   const config = {
@@ -317,7 +305,6 @@ async function createAffShortLink(user_id, username) {
 
 // *-tested get affiliate leaders by Tokens
 export async function getAffLeadersByCount(req, res) {
-  console.log("getAffLeadersByCount");
   let { limit, days } = req.params;
 
   if (!limit || limit <= 0) {
@@ -339,7 +326,6 @@ export async function getAffLeadersByCount(req, res) {
       .sort({ count: -1 })
       .limit(limit);
     const data = await cursor.toArray();
-    console.log("countby", data);
     if (typeof data[0] != "undefined") {
       return res.status(200).send({ success: true, data: data });
     } else {
