@@ -1882,3 +1882,25 @@ export async function applyPromoCode(req, res) {
       .send({ success: false, message: "Error in Request Process" });
   }
 }
+
+export async function getCryptoToGCPurcahse(req, res) {
+  let user = req.user._id;
+  const popularData = await db
+    .get_scrooge_transactionDB()
+    .aggregate([
+      {
+        $match: {
+          "userId._id": user,
+          transactionType: { $eq: "Crypto To Gold Coin" },
+        },
+      },
+      {
+        $group: {
+          _id: "$transactionType",
+          count: { $sum: 1 },
+        },
+      },
+    ])
+    .toArray();
+  return res.send(popularData);
+}
