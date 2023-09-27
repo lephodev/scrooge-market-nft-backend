@@ -844,17 +844,17 @@ export async function redeemPrize(req, res) {
 
         // Verify sdk wallet / contract has enough balance to disburse prize
         prize_token_qty = prize_token_qty - prize_token_qty * 0.01;
-        if (balance && balance >= prize_token_qty) {
+        if (true) {
           //sdk wallet has enough balance to allow prize redemption
           //check for redeem_action from prize record
           if (prize_redeem_action === "transfer") {
             //initiate transfer from sdk wallet to redeemer wallet
             try {
-              const transfer = await use_sdk.wallet.transfer(
-                address,
-                prize_token_qty,
-                prize_contract
-              );
+              // const transfer = await use_sdk.wallet.transfer(
+              //   address,
+              //   prize_token_qty,
+              //   prize_contract
+              // );
               await db
                 .get_db_withdraw_requestDB()
                 .findOneAndUpdate(
@@ -1124,6 +1124,7 @@ export async function redeemPrize(req, res) {
             //sdk wallet has enough balance to allow prize redemption
             //check for redeem_action from prize record
             if (prize_redeem_action === "transfer") {
+              // console.log("transfet");
               //initiate transfer from sdk wallet to redeemer wallet
               try {
                 // const transfer = await use_sdk.wallet.transfer(
@@ -1881,4 +1882,26 @@ export async function applyPromoCode(req, res) {
       .status(500)
       .send({ success: false, message: "Error in Request Process" });
   }
+}
+
+export async function getCryptoToGCPurcahse(req, res) {
+  let user = req.user._id;
+  const popularData = await db
+    .get_scrooge_transactionDB()
+    .aggregate([
+      {
+        $match: {
+          "userId._id": user,
+          transactionType: { $eq: "Crypto To Gold Coin" },
+        },
+      },
+      {
+        $group: {
+          _id: "$transactionType",
+          count: { $sum: 1 },
+        },
+      },
+    ])
+    .toArray();
+  return res.send(popularData);
 }
