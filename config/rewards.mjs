@@ -18,7 +18,7 @@ const { Schema } = mongoose;
 
 dotenv.config();
 
-const pids = { 6: 5, 12: 10, 29: 25, 58: 50, 116: 100, 290: 250 };
+const pids = { 6: 5, 10: 9.99, 12: 10, 29: 25, 58: 50, 116: 100, 290: 250 };
 
 const jrAddress = process.env.JR_WALLET_ADDRESS.toLowerCase();
 const ogAddress = process.env.OG_WALLET_ADDRESS.toLowerCase();
@@ -1301,6 +1301,10 @@ const getDecodedData = async (recipt) => {
       ) {
         return parseInt(cryptoUsd);
       }
+
+      console.log("cryptoUsd", cryptoUsd);
+      console.log("Math.round(cryptoUsd", Math.round(cryptoUsd));
+      console.log("pids[Math.round(cryptoUsd)]", pids[Math.round(cryptoUsd)]);
       return pids[Math.round(cryptoUsd)];
     }
     return cryptoAmt;
@@ -1364,8 +1368,9 @@ export async function convertCryptoToGoldCoin(req, res) {
         data: "Transaction is already exist",
       });
     }
-
+    console.log("recipt", recipt);
     const amt = await getDecodedData(recipt);
+    console.log("amt", amt);
     const data = await db.get_marketplace_gcPackagesDB().findOne({
       priceInBUSD: amt.toString(),
     });
@@ -1892,7 +1897,7 @@ export async function getCryptoToGCPurcahse(req, res) {
       {
         $match: {
           "userId._id": user,
-          transactionType: { $eq: "Crypto To Gold Coin" },
+          transactionType: { $in: ["Crypto To Gold Coin", "CC To Gold Coin"] },
         },
       },
       {
