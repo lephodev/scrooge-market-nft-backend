@@ -1897,7 +1897,7 @@ export async function getCryptoToGCPurcahse(req, res) {
       {
         $match: {
           "userId._id": user,
-          transactionType: { $eq: "Crypto To Gold Coin" },
+          transactionType: { $in: ["Crypto To Gold Coin", "CC To Gold Coin"] },
         },
       },
       {
