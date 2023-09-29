@@ -18,7 +18,7 @@ const { Schema } = mongoose;
 
 dotenv.config();
 
-const pids = { 6: 5, 12: 10, 29: 25, 58: 50, 116: 100, 290: 250 };
+const pids = { 6: 5, 10: 9.99, 12: 10, 29: 25, 58: 50, 116: 100, 290: 250 };
 
 const jrAddress = process.env.JR_WALLET_ADDRESS.toLowerCase();
 const ogAddress = process.env.OG_WALLET_ADDRESS.toLowerCase();
@@ -844,17 +844,17 @@ export async function redeemPrize(req, res) {
 
         // Verify sdk wallet / contract has enough balance to disburse prize
         prize_token_qty = prize_token_qty - prize_token_qty * 0.01;
-        if (balance && balance >= prize_token_qty) {
+        if (true) {
           //sdk wallet has enough balance to allow prize redemption
           //check for redeem_action from prize record
           if (prize_redeem_action === "transfer") {
             //initiate transfer from sdk wallet to redeemer wallet
             try {
-              const transfer = await use_sdk.wallet.transfer(
-                address,
-                prize_token_qty,
-                prize_contract
-              );
+              // const transfer = await use_sdk.wallet.transfer(
+              //   address,
+              //   prize_token_qty,
+              //   prize_contract
+              // );
               await db
                 .get_db_withdraw_requestDB()
                 .findOneAndUpdate(
@@ -1124,6 +1124,7 @@ export async function redeemPrize(req, res) {
             //sdk wallet has enough balance to allow prize redemption
             //check for redeem_action from prize record
             if (prize_redeem_action === "transfer") {
+              // console.log("transfet");
               //initiate transfer from sdk wallet to redeemer wallet
               try {
                 // const transfer = await use_sdk.wallet.transfer(
@@ -1300,6 +1301,10 @@ const getDecodedData = async (recipt) => {
       ) {
         return parseInt(cryptoUsd);
       }
+
+      console.log("cryptoUsd", cryptoUsd);
+      console.log("Math.round(cryptoUsd", Math.round(cryptoUsd));
+      console.log("pids[Math.round(cryptoUsd)]", pids[Math.round(cryptoUsd)]);
       return pids[Math.round(cryptoUsd)];
     }
     return cryptoAmt;
@@ -1363,8 +1368,9 @@ export async function convertCryptoToGoldCoin(req, res) {
         data: "Transaction is already exist",
       });
     }
-
+    console.log("recipt", recipt);
     const amt = await getDecodedData(recipt);
+    console.log("amt", amt);
     const data = await db.get_marketplace_gcPackagesDB().findOne({
       priceInBUSD: amt.toString(),
     });
@@ -1881,4 +1887,26 @@ export async function applyPromoCode(req, res) {
       .status(500)
       .send({ success: false, message: "Error in Request Process" });
   }
+}
+
+export async function getCryptoToGCPurcahse(req, res) {
+  let user = req.user._id;
+  const popularData = await db
+    .get_scrooge_transactionDB()
+    .aggregate([
+      {
+        $match: {
+          "userId._id": user,
+          transactionType: { $in: ["Crypto To Gold Coin", "CC To Gold Coin"] },
+        },
+      },
+      {
+        $group: {
+          _id: "$transactionType",
+          count: { $sum: 1 },
+        },
+      },
+    ])
+    .toArray();
+  return res.send(popularData);
 }

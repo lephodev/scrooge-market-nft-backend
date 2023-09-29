@@ -641,6 +641,7 @@ app.post("/api/accept-deceptor", authLimiter, auth(), async (req, res) => {
 });
 
 app.post("/api/applyPromoCode", auth(), rewards.applyPromoCode);
+app.get("/api/getCryptoToGCPurcahse", auth(), rewards.getCryptoToGCPurcahse);
 
 app.listen(PORT, () => {
   console.log("Server is running.", PORT);
