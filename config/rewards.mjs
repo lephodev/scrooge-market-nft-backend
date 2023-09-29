@@ -1290,7 +1290,7 @@ const getDecodedData = async (recipt) => {
         recipt.to.toLowerCase() ===
         "0x" + process.env.BUSD_WALLET_ADDRESS.toLowerCase()
       ) {
-        return parseInt(cryptoUsd);
+        return parseInt(Math.round(cryptoUsd));
       }
 
       return pids[Math.round(cryptoUsd)];
