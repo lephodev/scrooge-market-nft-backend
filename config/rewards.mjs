@@ -1242,6 +1242,8 @@ const getDecodedData = async (recipt) => {
   try {
     let iface, contractAddresss;
 
+    console.log("bnbContractAddress", bnbContractAddress);
+
     if (recipt.to.toLowerCase() === jrContractAddress) {
       //  console.log("JR ")
       iface = new ethers.utils.Interface(JR_ABI);
@@ -1269,13 +1271,21 @@ const getDecodedData = async (recipt) => {
       recipt.to.toLowerCase() ===
       "0x" + process.env.BUSD_WALLET_ADDRESS.toLowerCase()
     ) {
-      const res = await fetch(
-        `https://api.coingecko.com/api/v3/coins/binance-smart-chain/contract/${contractAddresss}`
-      );
+      // const res = await fetch(
+      //   `https://api.coinbrain.com/public/coin-info/${contractAddresss}`
+      // );
+      const res = await fetch(`https://api.coinbrain.com/public/coin-info`, {
+        method: "post",
+        body: JSON.stringify({
+          56: [contractAddresss],
+        }),
+      });
       const data = await res.json();
-      const current_price = data.market_data.current_price.usd;
-
+      const current_price = data[0].priceUsd;
       const cryptoUsd = cryptoAmt * current_price;
+      console.log("cryptoUsd1286", cryptoUsd);
+      console.log("Math.round(cryptoUsd", Math.round(cryptoUsd));
+      console.log("pids[Math.round(cryptoUsd)]", pids[Math.round(cryptoUsd)]);
       if (
         recipt.to.toLowerCase() ===
         "0x" + process.env.BUSD_WALLET_ADDRESS.toLowerCase()
