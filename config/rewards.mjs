@@ -1251,7 +1251,6 @@ const getDecodedData = async (recipt) => {
       iface = new ethers.utils.Interface(OG_ABI);
       contractAddresss = process.env.OG_CONTRACT_ADDRESS;
     } else {
-      //  console.log("BNB",process.env.BNB_CONTRACT_ADDRESS);
       iface = new ethers.utils.Interface(BNB_ABI);
       contractAddresss = process.env.BNB_CONTRACT_ADDRESS;
     }
@@ -1374,6 +1373,7 @@ export async function convertCryptoToGoldCoin(req, res) {
     const data = await db.get_marketplace_gcPackagesDB().findOne({
       priceInBUSD: amt.toString(),
     });
+    console.log("datadata--------", data);
     if (!data)
       return res
         .status(400)
