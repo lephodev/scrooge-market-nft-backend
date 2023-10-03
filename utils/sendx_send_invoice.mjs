@@ -3,24 +3,24 @@ import moment from "moment/moment.js";
 import axios from "axios";
 const apiKey = process.env.SENDEX_API_KEY; // {String}
 const teamId = process.env.SENDEX_TEAM_ID; // {String}
-const API_BASE_URL = 'https://api.sendx.io/v1';
+const API_BASE_URL = "https://api.sendx.io/v1";
 
 // export const sendInvoice = async (payload) => {
 //   try {
-    
-  // const {
-  //   email,
-  //   username,
-  //   tokenQuantity,
-  //   goldCoinQuantity,
-  //   walletAddress,
-  //   paymentMethod,
-  //   purcahsePrice,
-  //   packageName,
-  //   Tax,
-  //   firstName,
-  //   lastName
-  // } = payload;
+
+// const {
+//   email,
+//   username,
+//   tokenQuantity,
+//   goldCoinQuantity,
+//   walletAddress,
+//   paymentMethod,
+//   purcahsePrice,
+//   packageName,
+//   Tax,
+//   firstName,
+//   lastName
+// } = payload;
 
 //   // console.log("payloadpayloadpayload",payload);
 //   const api = new SendXRestApi.ContactApi();
@@ -52,18 +52,18 @@ const API_BASE_URL = 'https://api.sendx.io/v1';
 //             } else {
 //               if (data.status == 200) {
 //                 contactDetails.customFields = {
-                  // InvoiceDate: moment(new Date()).format('D MMMM  YYYY'),
-                  // PaymentMethod: paymentMethod,
-                  // Price: `${purcahsePrice}`,
-                  // PackageName: packageName,
-                  // GoldCoinQuantity: `${goldCoinQuantity}`,
-                  // TokenQuantity: `${tokenQuantity}`,
-                  // Total: `${purcahsePrice}`,
-                  // SubTotal: `${purcahsePrice}`,
-                  // Tax: `${tax}`,
-                  // GrandTotal: `${purcahsePrice}`,
-                  // WalletAddress: walletAddress,
-                  // UserName:username
+// InvoiceDate: moment(new Date()).format('D MMMM  YYYY'),
+// PaymentMethod: paymentMethod,
+// Price: `${purcahsePrice}`,
+// PackageName: packageName,
+// GoldCoinQuantity: `${goldCoinQuantity}`,
+// TokenQuantity: `${tokenQuantity}`,
+// Total: `${purcahsePrice}`,
+// SubTotal: `${purcahsePrice}`,
+// Tax: `${tax}`,
+// GrandTotal: `${purcahsePrice}`,
+// WalletAddress: walletAddress,
+// UserName:username
 //                 };
 //                 contactDetails.tags = ['Invoice'];
 //                 const callback = function (error, data, response) {
@@ -106,7 +106,7 @@ const API_BASE_URL = 'https://api.sendx.io/v1';
 //       }
 //     };
 //     api.contactIdentifyPost(apiKey, teamId, contactDetails, callback);
-    
+
 //   }
 //   else
 //   {
@@ -114,7 +114,7 @@ const API_BASE_URL = 'https://api.sendx.io/v1';
 //     contactDetails.email = email;
 //     contactDetails.firstName=firstName;
 //     contactDetails.lastName=lastName;
-   
+
 //     contactDetails.customFields = {
 //       InvoiceDate: moment(new Date()).format('D MMMM  YYYY'),
 //         PaymentMethod: paymentMethod,
@@ -159,78 +159,73 @@ export const sendInvoice = async (record) => {
     packageName,
     Tax,
     firstName,
-    lastName
-  }=record
- 
- try {
-     let tax=((purcahsePrice)*(Tax)/100);
-            const response = await axios({
-             method: 'post',
-             url: `https://app.sendx.io/api/v1/contact/identify?team_id=LjzMgKu2tRN5fqYuUgHM9N`,
-             headers: {
-               'Content-Type': 'application/json',
-               'api_key': apiKey
-             },
-             data: {
-               email,
-                 firstName: firstName,
-                 lastName:lastName,
-                 email: email,
-                 tags: [
-                   "Invoice"
-                 ],
-                 customFields: {
-                  InvoiceDate: moment(new Date()).format('D MMMM  YYYY'),
-                  PaymentMethod: paymentMethod,
-                  Price: `${purcahsePrice}`,
-                  PackageName: packageName,
-                  GoldCoinQuantity: `${goldCoinQuantity}`,
-                  TokenQuantity: `${tokenQuantity}`,
-                  Total: `${purcahsePrice}`,
-                  SubTotal: `${purcahsePrice}`,
-                  Tax: `${tax}`,
-                  GrandTotal: `${purcahsePrice}`,
-                  WalletAddress: walletAddress,
-                  UserName:username
-               }
-             }
-           });
-       
-          console.log('Contact identified:', response.data.data.email);
-           await trackEvent(email)
-           return response.data;
-         } catch (error) {
-           console.error('Error identifying contact:', error.message);
-           throw error;
-         }
-       }
-       
-       
-    async function trackEvent(email) {
-         try {
-           const response = await axios({
-             method: 'post',
-             url: `https://app.sendx.io/api/v1/contact/track?team_id=LjzMgKu2tRN5fqYuUgHM9N&email=${email}`,
-             headers: {
-               'Content-Type': 'application/json',
-               'api_key': apiKey
-             },
-             data: {
-               email,
-                 addTags: [
-                   "Invoice"
-                 ],
-                 removeTags: [
-                   "Invoice"
-                 ]
-             }
-           });
-       
-           console.log('Event tracked:', response.data);
-           console.count("Event tracked")
-           return response.data;
-         } catch (error) {
-           console.error('Error tracking event:', error.message);
-           throw error;
-         }
-       }
+    lastName,
+  } = record;
+
+  console.log("recordrecord", record);
+
+  try {
+    let tax = (purcahsePrice * Tax) / 100;
+    const response = await axios({
+      method: "post",
+      url: `https://app.sendx.io/api/v1/contact/identify?team_id=LjzMgKu2tRN5fqYuUgHM9N`,
+      headers: {
+        "Content-Type": "application/json",
+        api_key: apiKey,
+      },
+      data: {
+        email,
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        tags: ["Invoice"],
+        customFields: {
+          InvoiceDate: moment(new Date()).format("D MMMM  YYYY"),
+          PaymentMethod: paymentMethod,
+          Price: `${purcahsePrice}`,
+          PackageName: packageName,
+          GoldCoinQuantity: `${goldCoinQuantity}`,
+          TokenQuantity: `${tokenQuantity}`,
+          Total: `${purcahsePrice}`,
+          SubTotal: `${purcahsePrice}`,
+          Tax: `${tax}`,
+          GrandTotal: `${purcahsePrice}`,
+          WalletAddress: walletAddress,
+          UserName: username,
+        },
+      },
+    });
+
+    console.log("Contact identified:", response.data.data.email);
+    await trackEvent(email);
+    return response.data;
+  } catch (error) {
+    console.error("Error identifying contact:", error.message);
+    throw error;
+  }
+};
+
+async function trackEvent(email) {
+  try {
+    const response = await axios({
+      method: "post",
+      url: `https://app.sendx.io/api/v1/contact/track?team_id=LjzMgKu2tRN5fqYuUgHM9N&email=${email}`,
+      headers: {
+        "Content-Type": "application/json",
+        api_key: apiKey,
+      },
+      data: {
+        email,
+        addTags: ["Invoice"],
+        removeTags: ["Invoice"],
+      },
+    });
+
+    console.log("Event tracked:", response.data);
+    console.count("Event tracked");
+    return response.data;
+  } catch (error) {
+    console.error("Error tracking event:", error.message);
+    throw error;
+  }
+}
