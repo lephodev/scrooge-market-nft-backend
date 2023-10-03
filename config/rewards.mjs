@@ -1793,12 +1793,15 @@ export async function WithdrawRequest(req, res) {
     if (token < prize?.price) {
       return res.send({ success: false, message: "Not Enough Tickets" });
     }
-    await db
-      .get_scrooge_usersDB()
-      .findOneAndUpdate(
-        { _id: ObjectId(user_id) },
-        { $inc: { wallet: -prize.price } }
-      );
+    await db.get_scrooge_usersDB().findOneAndUpdate(
+      {
+        _id: ObjectId(user_id),
+        wallet: { $gte: prize.price }, // Ensure wallet is greater than or equal to the prize price
+      },
+      {
+        $inc: { wallet: -prize.price },
+      }
+    );
     let getUserData = await db
       .get_scrooge_usersDB()
       .findOne({ _id: ObjectId(user_id) });
