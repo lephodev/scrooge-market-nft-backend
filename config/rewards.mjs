@@ -1793,62 +1793,75 @@ export async function WithdrawRequest(req, res) {
     if (token < prize?.price) {
       return res.send({ success: false, message: "Not Enough Tickets" });
     }
-    await db.get_scrooge_usersDB().findOneAndUpdate(
-      {
-        _id: ObjectId(user_id),
-        wallet: { $gte: prize.price }, // Ensure wallet is greater than or equal to the prize price
-      },
-      {
-        $inc: { wallet: -prize.price },
-      }
-    );
-    let getUserData = await db
-      .get_scrooge_usersDB()
-      .findOne({ _id: ObjectId(user_id) });
-
-    const { _id, username, email, firstName, lastName, profile } = getUserData;
-
-    const transactionPayload = {
-      amount: -prize.price,
-      transactionType: "Crypto Redeem",
-      prevWallet: getUserData?.wallet,
-      updatedWallet: getUserData?.wallet,
-      userId: {
-        _id,
-        username,
-        email,
-        firstName,
-        lastName,
-        profile,
-      },
-      // updatedTicket: getUserData?.ticket,
-      updatedGoldCoin: getUserData?.goldCoin,
-      prevGoldCoin: getUserData?.goldCoin,
-      // prevTicket: getUserData?.ticket + parseInt(prize.price),
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    let trans_id;
-    const WithdrwaPayload = {
-      status: "pending",
-      address: address,
-      redeemId: ObjectId(prize_id),
-      userId: ObjectId(user_id),
-    };
-    await db.get_db_withdraw_requestDB().insertOne(WithdrwaPayload);
     await db
-      .get_scrooge_transactionDB()
-      .insertOne(transactionPayload)
-      .then((trans) => {
-        trans_id = trans.insertedId;
+      .get_scrooge_usersDB()
+      .findOneAndUpdate(
+        {
+          _id: ObjectId(user_id),
+          wallet: { $gte: prize.price }, // Ensure wallet is greater than or equal to the prize price
+        },
+        {
+          $inc: { wallet: -prize.price },
+        }
+      )
+      .then(async (updatedUser) => {
+        // Handle success, 'updatedUser' contains the updated document
+
+        let getUserData = await db
+          .get_scrooge_usersDB()
+          .findOne({ _id: ObjectId(user_id) });
+
+        const { _id, username, email, firstName, lastName, profile } =
+          getUserData;
+
+        const transactionPayload = {
+          amount: -prize.price,
+          transactionType: "Crypto Redeem",
+          prevWallet: getUserData?.wallet,
+          updatedWallet: getUserData?.wallet,
+          userId: {
+            _id,
+            username,
+            email,
+            firstName,
+            lastName,
+            profile,
+          },
+          // updatedTicket: getUserData?.ticket,
+          updatedGoldCoin: getUserData?.goldCoin,
+          prevGoldCoin: getUserData?.goldCoin,
+          // prevTicket: getUserData?.ticket + parseInt(prize.price),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        let trans_id;
+        const WithdrwaPayload = {
+          status: "pending",
+          address: address,
+          redeemId: ObjectId(prize_id),
+          userId: ObjectId(user_id),
+        };
+        await db.get_db_withdraw_requestDB().insertOne(WithdrwaPayload);
+        await db
+          .get_scrooge_transactionDB()
+          .insertOne(transactionPayload)
+          .then((trans) => {
+            trans_id = trans.insertedId;
+          })
+          .catch((e) => {
+            console.log("e", e);
+          });
+        return res.send({
+          success: true,
+          message:
+            "Your withdraw request send to admin please review in 24 hours",
+        });
+        console.log(updatedUser);
       })
-      .catch((e) => {
-        console.log("e", e);
+      .catch((err) => {
+        // Handle validation error or other errors
+        console.error(err);
       });
-    return res.send({
-      success: true,
-      message: "Your withdraw request send to admin please review in 24 hours",
-    });
   } catch (e) {
     console.log("outerCatch", e);
     return res
