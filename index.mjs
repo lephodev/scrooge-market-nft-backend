@@ -28,6 +28,8 @@ import createAnAcceptPaymentTransaction from "./utils/payment.mjs";
 import { sendInvoice } from "./utils/sendx_send_invoice.mjs";
 import { ObjectId } from "mongodb";
 import authLimiter from "./middlewares/rateLimiter.mjs";
+import Queue from "better-queue";
+
 const app = express();
 // set security HTTP headers
 // app.use(
@@ -473,7 +475,22 @@ app.get("/api/coverttickettotoken/:ticketPrice", auth(), async (req, res) => {
   });
 });
 
+var q = new Queue(async function (task, cb) {
+  if (task.type === "gameResult") {
+    await gameResult(task.req, task.res);
+  }
+  cb(null, 1);
+});
+
 app.get("/api/gameResult", auth(), async (req, res) => {
+  try {
+    q.push({ req, res, type: "gameResult" });
+  } catch (error) {
+    console.log("errr", error);
+  }
+});
+
+const gameResult = async (req, res) => {
   try {
     const { user } = req;
     if (!checkUserCanSpin(user?.lastSpinTime))
@@ -484,7 +501,7 @@ app.get("/api/gameResult", auth(), async (req, res) => {
   } catch (error) {
     return res.status(500).send({ msg: "Internal Server Error" });
   }
-});
+};
 
 app.post("/api/bitcartcc-notification", async (req, res) => {
   console.log("payed on bitcart", {
@@ -502,7 +519,7 @@ app.post("/api/approvely-webhook", async (req, res) => {
 app.get(
   "/api/WithdrawRequest/:address/:prize_id",
   auth(),
-  rewards.WithdrawRequest
+  rewards.createWithdraw
 );
 
 app.post("/api/accept-deceptor", authLimiter, auth(), async (req, res) => {
