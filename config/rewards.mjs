@@ -1,7 +1,7 @@
 import * as db from "./mongodb.mjs";
 import * as useSDK from "./sdk.mjs";
 import { ThirdwebSDK } from "@thirdweb-dev/sdk";
-import { BigNumber, ethers } from "ethers";
+import { BigNumber, ethers, logger } from "ethers";
 
 import * as email from "../email/email.mjs";
 import * as commons from "./commons.mjs";
@@ -14,6 +14,8 @@ import JR_ABI from "../config/JR_ABI.json" assert { type: "json" };
 import BNB_ABI from "../config/BNB_ABI.json" assert { type: "json" };
 import { sendInvoice } from "../utils/sendx_send_invoice.mjs";
 import { getSigner } from "../utils/signer.mjs";
+import Queue from "better-queue";
+
 const { Schema } = mongoose;
 
 dotenv.config();
@@ -1767,11 +1769,33 @@ export async function convertPrice(req, res) {
   return resp;
 }
 
+var q = new Queue(async function (task, cb) {
+  if (task.type === "WithdrawRequest") {
+    await WithdrawRequest(task.req, task.res);
+  }
+  cb(null, 1);
+});
+
+export const createWithdraw = async (req, res, next) => {
+  try {
+    q.push({ req, res, type: "WithdrawRequest" });
+  } catch (error) {
+    console.log("error", error);
+  }
+};
+
 export async function WithdrawRequest(req, res) {
   const address = req.params.address;
   const prize_id = req.params.prize_id;
-  let user_id = req?.user?._id;
-  let token = req?.user?.wallet;
+  let updtdUser = await db
+    .get_scrooge_usersDB()
+    .findOne({ _id: req?.user?._id });
+  console.log("updtdUser===>>>", updtdUser);
+  let user_id = updtdUser?._id;
+  let token = updtdUser?.wallet;
+
+  console.log("token--->>>", token);
+
   try {
     if (req?.user?.isBlockWallet) {
       return res.send({
@@ -1793,12 +1817,15 @@ export async function WithdrawRequest(req, res) {
     if (token < prize?.price) {
       return res.send({ success: false, message: "Not Enough Tickets" });
     }
-    await db
-      .get_scrooge_usersDB()
-      .findOneAndUpdate(
-        { _id: ObjectId(user_id) },
-        { $inc: { wallet: -prize.price } }
-      );
+    await db.get_scrooge_usersDB().findOneAndUpdate(
+      {
+        _id: ObjectId(user_id),
+        wallet: { $gte: prize.price }, // Ensure wallet is greater than or equal to the prize price
+      },
+      {
+        $inc: { wallet: -prize.price },
+      }
+    );
     let getUserData = await db
       .get_scrooge_usersDB()
       .findOne({ _id: ObjectId(user_id) });
