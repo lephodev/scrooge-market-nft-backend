@@ -1,7 +1,7 @@
 import * as db from "./mongodb.mjs";
 import * as useSDK from "./sdk.mjs";
 import { ThirdwebSDK } from "@thirdweb-dev/sdk";
-import { BigNumber, ethers } from "ethers";
+import { BigNumber, ethers, logger } from "ethers";
 
 import * as email from "../email/email.mjs";
 import * as commons from "./commons.mjs";
@@ -1787,8 +1787,15 @@ export const createWithdraw = async (req, res, next) => {
 export async function WithdrawRequest(req, res) {
   const address = req.params.address;
   const prize_id = req.params.prize_id;
-  let user_id = req?.user?._id;
-  let token = req?.user?.wallet;
+  let updtdUser = await db
+    .get_scrooge_usersDB()
+    .findOne({ _id: req?.user?._id });
+  console.log("updtdUser===>>>", updtdUser);
+  let user_id = updtdUser?._id;
+  let token = updtdUser?.wallet;
+
+  console.log("token--->>>", token);
+
   try {
     if (req?.user?.isBlockWallet) {
       return res.send({
