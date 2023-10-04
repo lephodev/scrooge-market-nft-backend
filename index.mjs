@@ -492,7 +492,8 @@ app.get("/api/gameResult", auth(), async (req, res) => {
 
 const gameResult = async (req, res) => {
   try {
-    const { user } = req;
+    let { user } = req;
+    user = await await db.get_scrooge_usersDB().findOne({ _id: user?._id });
     if (!checkUserCanSpin(user?.lastSpinTime))
       return res.status(400).send({ msg: "Not eleigible for Spin" });
     const resp1 = await rouletteSpin.gameResult(req, user._id);
