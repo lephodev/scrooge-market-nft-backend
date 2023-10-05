@@ -52,7 +52,8 @@ export async function addChips(
       chips: _qty,
       timestamp: new Date(),
     });
-    const { _id, username, email, firstName, lastName, profile } = user;
+    const { _id, username, email, firstName, lastName, profile, ipAddress } =
+      user;
     const transactionPayload = {
       amount: gc ? gc : _qty,
       transactionType: transactionType,
@@ -65,7 +66,9 @@ export async function addChips(
         firstName,
         lastName,
         profile,
+        ipAddress,
       },
+
       address: _address,
       updatedTicket: user.ticket,
       prevGoldCoin: user.goldCoin,
@@ -882,8 +885,15 @@ export async function redeemPrize(req, res) {
               let getUserData = await db
                 .get_scrooge_usersDB()
                 .findOne({ _id: ObjectId(user_id) });
-              const { _id, username, email, firstName, lastName, profile } =
-                getUserData;
+              const {
+                _id,
+                username,
+                email,
+                firstName,
+                lastName,
+                profile,
+                ipAddress,
+              } = getUserData;
               const transactionPayload = {
                 amount: prize_price,
                 transactionType: "Approve Crypto Redeem",
@@ -896,8 +906,10 @@ export async function redeemPrize(req, res) {
                   firstName,
                   lastName,
                   profile,
+                  ipAddress,
                 },
                 // updatedTicket: getUserData?.ticket,
+
                 updatedGoldCoin: getUserData?.goldCoin,
                 prevGoldCoin: getUserData?.goldCoin,
                 // prevTicket: getUserData?.ticket + parseInt(prize_price),
@@ -1063,8 +1075,15 @@ export async function redeemPrize(req, res) {
         let getUserData = await db
           .get_scrooge_usersDB()
           .findOne({ _id: ObjectId(user_id) });
-        const { _id, username, email, firstName, lastName, profile } =
-          getUserData;
+        const {
+          _id,
+          username,
+          email,
+          firstName,
+          lastName,
+          profile,
+          ipAddress,
+        } = getUserData;
 
         const transactionPayload = {
           amount: prize_price,
@@ -1078,7 +1097,9 @@ export async function redeemPrize(req, res) {
             firstName,
             lastName,
             profile,
+            ipAddress,
           },
+          ipAddress,
           updatedTicket: getUserData?.ticket + prize_price,
           updatedGoldCoin: getUserData?.goldCoin,
           prevGoldCoin: getUserData?.goldCoin,
@@ -1153,8 +1174,15 @@ export async function redeemPrize(req, res) {
                 let getUserData = await db
                   .get_scrooge_usersDB()
                   .findOne({ _id: ObjectId(user_id) });
-                const { _id, username, email, firstName, lastName, profile } =
-                  getUserData;
+                const {
+                  _id,
+                  username,
+                  email,
+                  firstName,
+                  lastName,
+                  profile,
+                  ipAddress,
+                } = getUserData;
 
                 const transactionPayload = {
                   amount: prize_price,
@@ -1168,7 +1196,9 @@ export async function redeemPrize(req, res) {
                     firstName,
                     lastName,
                     profile,
+                    ipAddress,
                   },
+
                   updatedTicket: getUserData?.ticket - prize_price,
                   updatedGoldCoin: getUserData?.goldCoin,
                   prevGoldCoin: getUserData?.goldCoin,
@@ -1540,7 +1570,9 @@ export async function convertCryptoToGoldCoin(req, res) {
           firstName: referUserFirstName,
           referUserLastName,
           profile: referUserProfile,
+          ipAddress: getUserData?.ipAddress,
         },
+
         updatedTicket: getUser?.value?.ticket + getTicketBonus,
         prevGoldCoin: getUser?.value?.goldCoin,
         updatedGoldCoin: getUser?.value?.goldCoin,
@@ -1622,8 +1654,15 @@ export async function convertCryptoToToken(req, res) {
               let getUserData = await db
                 .get_scrooge_usersDB()
                 .findOne({ _id: ObjectId(findUserAff?.refrenceId) });
-              const { _id, username, email, firstName, lastName, profile } =
-                getUserData;
+              const {
+                _id,
+                username,
+                email,
+                firstName,
+                lastName,
+                profile,
+                ipAddress,
+              } = getUserData;
 
               const transactionPayload = {
                 amount: parseInt(commission),
@@ -1637,7 +1676,9 @@ export async function convertCryptoToToken(req, res) {
                   firstName,
                   lastName,
                   profile,
+                  ipAddress,
                 },
+
                 updatedTicket: commission,
                 updatedGoldCoin: getUserData?.goldCoin,
                 prevGoldCoin: getUserData?.goldCoin,
@@ -1721,7 +1762,7 @@ export async function convertPrice(req, res) {
         .get_scrooge_usersDB()
         .findOne({ _id: ObjectId(userId) });
 
-      const { _id, username, email, firstName, lastName, profile } =
+      const { _id, username, email, firstName, lastName, profile, ipAddress } =
         getUserData;
 
       const transactionPayload = {
@@ -1736,6 +1777,7 @@ export async function convertPrice(req, res) {
           firstName,
           lastName,
           profile,
+          ipAddress,
         },
         updatedTicket: getUserData?.ticket,
         updatedGoldCoin: getUserData?.goldCoin,
@@ -1830,7 +1872,8 @@ export async function WithdrawRequest(req, res) {
       .get_scrooge_usersDB()
       .findOne({ _id: ObjectId(user_id) });
 
-    const { _id, username, email, firstName, lastName, profile } = getUserData;
+    const { _id, username, email, firstName, lastName, profile, ipAddress } =
+      getUserData;
 
     const transactionPayload = {
       amount: -prize.price,
@@ -1844,6 +1887,7 @@ export async function WithdrawRequest(req, res) {
         firstName,
         lastName,
         profile,
+        ipAddress,
       },
       // updatedTicket: getUserData?.ticket,
       updatedGoldCoin: getUserData?.goldCoin,
