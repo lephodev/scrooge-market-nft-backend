@@ -1991,3 +1991,100 @@ export async function getCryptoToGCPurcahse(req, res) {
     .toArray();
   return res.send(popularData);
 }
+
+export async function WithdrawRequestWithFiat(req, res) {
+  console.log("req,body", req.body);
+  const { redeemPrize, paymentType, cashAppid, email } = req.body || {};
+  let updtdUser = await db
+    .get_scrooge_usersDB()
+    .findOne({ _id: req?.user?._id });
+  console.log("updtdUser===>>>", updtdUser);
+  let user_id = updtdUser?._id;
+  let token = updtdUser?.wallet;
+  console.log("token--->>>", token);
+
+  const redeemToken = 100 * redeemPrize;
+
+  try {
+    if (req?.user?.isBlockWallet) {
+      return res.send({
+        success: false,
+        message: "Your wallet blocked by admin",
+      });
+    }
+
+    let getKycuser = await db
+      .get_scrooge_user_kycs()
+      .findOne({ userId: ObjectId(user_id) });
+    if (getKycuser?.status !== "accept") {
+      return res.send({ success: false, message: "Your kyc is not approved" });
+    }
+    if (token < redeemToken) {
+      return res.send({ success: false, message: "Not Enough Tokens" });
+    }
+
+    await db.get_scrooge_usersDB().findOneAndUpdate(
+      {
+        _id: ObjectId(user_id),
+        wallet: { $gte: redeemToken }, // Ensure wallet is greater than or equal to the prize price
+      },
+      {
+        $inc: { wallet: -redeemToken },
+      }
+    );
+    let getUserData = await db
+      .get_scrooge_usersDB()
+      .findOne({ _id: ObjectId(user_id) });
+
+    const { _id, username, email, firstName, lastName, profile, ipAddress } =
+      getUserData;
+
+    const transactionPayload = {
+      amount: -redeemToken,
+      transactionType: "Fiat Redeem",
+      prevWallet: getUserData?.wallet,
+      updatedWallet: getUserData?.wallet,
+      userId: {
+        _id,
+        username,
+        email,
+        firstName,
+        lastName,
+        profile,
+        ipAddress,
+      },
+      updatedGoldCoin: getUserData?.goldCoin,
+      prevGoldCoin: getUserData?.goldCoin,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    let trans_id;
+    const WithdrwaPayload = {
+      status: "pending",
+      redeemPrize,
+      paymentType,
+      cashAppid,
+      email,
+      userId: ObjectId(user_id),
+    };
+    await db.get_db_withdraw_requestDB().insertOne(WithdrwaPayload);
+    await db
+      .get_scrooge_transactionDB()
+      .insertOne(transactionPayload)
+      .then((trans) => {
+        trans_id = trans.insertedId;
+      })
+      .catch((e) => {
+        console.log("e", e);
+      });
+    return res.send({
+      success: true,
+      message: "Your withdraw request send to admin please review in 24 hours",
+    });
+  } catch (e) {
+    console.log("outerCatch", e);
+    return res
+      .status(500)
+      .send({ success: false, message: "Error in Request Process" });
+  }
+}

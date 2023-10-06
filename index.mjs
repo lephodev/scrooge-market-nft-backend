@@ -659,6 +659,11 @@ app.post("/api/accept-deceptor", authLimiter, auth(), async (req, res) => {
 });
 
 app.post("/api/applyPromoCode", auth(), rewards.applyPromoCode);
+app.post(
+  "/api/WithdrawRequestWithFiat",
+  auth(),
+  rewards.WithdrawRequestWithFiat
+);
 app.get("/api/getCryptoToGCPurcahse", auth(), rewards.getCryptoToGCPurcahse);
 
 app.listen(PORT, () => {
