@@ -1994,7 +1994,12 @@ export async function getCryptoToGCPurcahse(req, res) {
 
 export async function WithdrawRequestWithFiat(req, res) {
   console.log("req,body", req.body);
-  const { redeemPrize, paymentType, cashAppid, email } = req.body || {};
+  const {
+    redeemPrize,
+    paymentType,
+    cashAppid,
+    email: fiatEmail,
+  } = req.body || {};
   let updtdUser = await db
     .get_scrooge_usersDB()
     .findOne({ _id: req?.user?._id });
@@ -2064,7 +2069,7 @@ export async function WithdrawRequestWithFiat(req, res) {
       redeemPrize,
       paymentType,
       cashAppid,
-      email,
+      fiatEmail,
       userId: ObjectId(user_id),
     };
     await db.get_db_withdraw_requestDB().insertOne(WithdrwaPayload);
