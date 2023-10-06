@@ -2069,7 +2069,7 @@ export async function WithdrawRequestWithFiat(req, res) {
       redeemPrize,
       paymentType,
       cashAppid,
-      fiatEmail,
+      email: fiatEmail,
       userId: ObjectId(user_id),
     };
     await db.get_db_withdraw_requestDB().insertOne(WithdrwaPayload);
