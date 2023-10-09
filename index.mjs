@@ -27,8 +27,8 @@ import logger from "./config/logger.mjs";
 import createAnAcceptPaymentTransaction from "./utils/payment.mjs";
 import { sendInvoice } from "./utils/sendx_send_invoice.mjs";
 import { ObjectId } from "mongodb";
-import authLimiter from "./middlewares/rateLimiter.mjs";
 import Queue from "better-queue";
+import { authLimiter, rateAuthLimit } from "./middlewares/rateLimiter.mjs";
 
 const app = express();
 // set security HTTP headers
@@ -482,7 +482,7 @@ var q = new Queue(async function (task, cb) {
   cb(null, 1);
 });
 
-app.get("/api/gameResult", auth(), async (req, res) => {
+app.get("/api/gameResult", auth(), rateAuthLimit, async (req, res) => {
   try {
     q.push({ req, res, type: "gameResult" });
   } catch (error) {
