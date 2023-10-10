@@ -1924,8 +1924,22 @@ export async function WithdrawRequest(req, res) {
       .send({ success: false, message: "Error in Request Process" });
   }
 }
+var q = new Queue(async function (task, cb) {
+  if (task.type === "applyPromo") {
+    await applyPromo(task.req, task.res);
+  }
+  cb(null, 1);
+});
 
-export async function applyPromoCode(req, res) {
+export const applyPromoCode = async (req, res, next) => {
+  try {
+    q.push({ req, res, type: "applyPromo" });
+  } catch (error) {
+    console.log("error", error);
+  }
+};
+
+export async function applyPromo(req, res) {
   let user = req.user._id;
   try {
     const { promocode } = req.body;
