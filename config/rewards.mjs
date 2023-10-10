@@ -1811,7 +1811,7 @@ export async function convertPrice(req, res) {
   return resp;
 }
 
-var q = new Queue(async function (task, cb) {
+const WithdrawQ = new Queue(async function (task, cb) {
   console.log("abcccc141441");
   if (task.type === "WithdrawRequest") {
     await WithdrawRequest(task.req, task.res);
@@ -1822,7 +1822,7 @@ var q = new Queue(async function (task, cb) {
 export const createWithdraw = async (req, res, next) => {
   console.log("createWithdraw route");
   try {
-    q.push({ req, res, type: "WithdrawRequest" });
+    WithdrawQ.push({ req, res, type: "WithdrawRequest" });
   } catch (error) {
     console.log("error", error);
   }
@@ -1927,7 +1927,7 @@ export async function WithdrawRequest(req, res) {
       .send({ success: false, message: "Error in Request Process" });
   }
 }
-var q = new Queue(async function (task, cb) {
+const promoQue = new Queue(async function (task, cb) {
   if (task.type === "applyPromo") {
     await applyPromo(task.req, task.res);
   }
@@ -1936,7 +1936,7 @@ var q = new Queue(async function (task, cb) {
 
 export const applyPromoCode = async (req, res, next) => {
   try {
-    q.push({ req, res, type: "applyPromo" });
+    promoQue.push({ req, res, type: "applyPromo" });
   } catch (error) {
     console.log("error", error);
   }
