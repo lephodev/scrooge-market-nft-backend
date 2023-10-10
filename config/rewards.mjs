@@ -1827,6 +1827,7 @@ export const createWithdraw = async (req, res, next) => {
 };
 
 export async function WithdrawRequest(req, res) {
+  console.log("call withdrwa");
   const address = req.params.address;
   const prize_id = req.params.prize_id;
   let updtdUser = await db
