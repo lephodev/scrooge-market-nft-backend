@@ -1812,6 +1812,7 @@ export async function convertPrice(req, res) {
 }
 
 var q = new Queue(async function (task, cb) {
+  console.log("abcccc141441");
   if (task.type === "WithdrawRequest") {
     await WithdrawRequest(task.req, task.res);
   }
@@ -1819,6 +1820,7 @@ var q = new Queue(async function (task, cb) {
 });
 
 export const createWithdraw = async (req, res, next) => {
+  console.log("createWithdraw route");
   try {
     q.push({ req, res, type: "WithdrawRequest" });
   } catch (error) {
