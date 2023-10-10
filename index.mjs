@@ -658,7 +658,7 @@ app.post("/api/accept-deceptor", authLimiter, auth(), async (req, res) => {
   }
 });
 
-app.post("/api/applyPromoCode", auth(), rewards.applyPromoCode);
+app.post("/api/applyPromoCode", auth(), rateAuthLimit, rewards.applyPromoCode);
 app.post(
   "/api/WithdrawRequestWithFiat",
   auth(),
