@@ -45,10 +45,17 @@ export async function gameResult(req, userId) {
 export async function updateUserDataAndTransaction(req, responseData, user) {
   try {
     const { resultData, gameModelData } = responseData;
-    const {_id,username,email,firstName,lastName,profile} = user
+    const { _id, username, email, firstName, lastName, profile, ipAddress } =
+      user;
     const payload = {
-      userId:{
-        _id,username,email,firstName,lastName,profile
+      userId: {
+        _id,
+        username,
+        email,
+        firstName,
+        lastName,
+        profile,
+        ipAddress,
       },
       transactionType: "spin",
       status: "spin-win",

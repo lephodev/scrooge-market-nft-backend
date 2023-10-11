@@ -27,7 +27,9 @@ import logger from "./config/logger.mjs";
 import createAnAcceptPaymentTransaction from "./utils/payment.mjs";
 import { sendInvoice } from "./utils/sendx_send_invoice.mjs";
 import { ObjectId } from "mongodb";
-import authLimiter from "./middlewares/rateLimiter.mjs";
+import Queue from "better-queue";
+import { authLimiter, rateAuthLimit } from "./middlewares/rateLimiter.mjs";
+
 const app = express();
 // set security HTTP headers
 // app.use(
@@ -473,9 +475,25 @@ app.get("/api/coverttickettotoken/:ticketPrice", auth(), async (req, res) => {
   });
 });
 
-app.get("/api/gameResult", auth(), async (req, res) => {
+var q = new Queue(async function (task, cb) {
+  if (task.type === "gameResult") {
+    await gameResult(task.req, task.res);
+  }
+  cb(null, 1);
+});
+
+app.get("/api/gameResult", auth(), rateAuthLimit, async (req, res) => {
   try {
-    const { user } = req;
+    q.push({ req, res, type: "gameResult" });
+  } catch (error) {
+    console.log("errr", error);
+  }
+});
+
+const gameResult = async (req, res) => {
+  try {
+    let { user } = req;
+    user = await await db.get_scrooge_usersDB().findOne({ _id: user?._id });
     if (!checkUserCanSpin(user?.lastSpinTime))
       return res.status(400).send({ msg: "Not eleigible for Spin" });
     const resp1 = await rouletteSpin.gameResult(req, user._id);
@@ -484,7 +502,7 @@ app.get("/api/gameResult", auth(), async (req, res) => {
   } catch (error) {
     return res.status(500).send({ msg: "Internal Server Error" });
   }
-});
+};
 
 app.post("/api/bitcartcc-notification", async (req, res) => {
   console.log("payed on bitcart", {
@@ -502,7 +520,7 @@ app.post("/api/approvely-webhook", async (req, res) => {
 app.get(
   "/api/WithdrawRequest/:address/:prize_id",
   auth(),
-  rewards.WithdrawRequest
+  rewards.createWithdraw
 );
 
 app.post("/api/accept-deceptor", authLimiter, auth(), async (req, res) => {
@@ -641,6 +659,11 @@ app.post("/api/accept-deceptor", authLimiter, auth(), async (req, res) => {
 });
 
 app.post("/api/applyPromoCode", auth(), rewards.applyPromoCode);
+app.post(
+  "/api/WithdrawRequestWithFiat",
+  auth(),
+  rewards.WithdrawRequestWithFiat
+);
 app.get("/api/getCryptoToGCPurcahse", auth(), rewards.getCryptoToGCPurcahse);
 
 app.listen(PORT, () => {
