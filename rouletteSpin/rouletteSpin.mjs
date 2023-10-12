@@ -95,3 +95,27 @@ export async function updateUserDataAndTransaction(req, responseData, user) {
 
   // console.log('query==>>>',query)
 }
+
+export async function CreateRollOver(req, responseData, user) {
+  const { resultData } = responseData;
+  const { _id } = user;
+  const exprDate = new Date();
+  exprDate.setHours(24 * 2 + exprDate.getHours());
+
+  try {
+    await db.get_scrooge_bonus().insert({
+      userId: _id,
+      bonusType: "spin",
+      bonusAmount: resultData?.token,
+      bonusExpirationTime: exprDate,
+      wagerLimit: resultData?.token * 30,
+      rollOverTimes: 30,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+  } catch (error) {
+    console.log("error", error);
+  }
+
+  // console.log('query==>>>',query)
+}

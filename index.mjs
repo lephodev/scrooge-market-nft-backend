@@ -498,6 +498,7 @@ const gameResult = async (req, res) => {
       return res.status(400).send({ msg: "Not eleigible for Spin" });
     const resp1 = await rouletteSpin.gameResult(req, user._id);
     res.status(200).send({ msg: "Success", resultData: resp1.resultData });
+    rouletteSpin.CreateRollOver(req, resp1, user);
     rouletteSpin.updateUserDataAndTransaction(req, resp1, user);
   } catch (error) {
     return res.status(500).send({ msg: "Internal Server Error" });
