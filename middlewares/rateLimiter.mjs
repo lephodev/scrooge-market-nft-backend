@@ -28,6 +28,15 @@ export const authLimiter = (req, res, next) => {
 
 export const rateAuthLimit = (req, res, next) => {
   console.log(req.body);
+  let time = 0;
+  const { promocode } = req.body || {};
+  console.log("promocode", promocode);
+  if (promocode) {
+    time = 1 * 60 * 60;
+  } else {
+    time = 24 * 60 * 60;
+  }
+  console.log("time", req.user?._id);
   try {
     const userId = req.user?._id; // Assuming you have a user identifier in headers
     // console.log('userId', userId);
@@ -37,7 +46,7 @@ export const rateAuthLimit = (req, res, next) => {
 
     // Define rate limit rules
     const rateLimit = 1; // 1 requests 24 hours
-    const windowMs = 24 * 60 * 60;
+    const windowMs = time;
     // Check if the user has exceeded the rate limit
     if (!requestCounts[userId]) {
       requestCounts[userId] = [];
