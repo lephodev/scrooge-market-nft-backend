@@ -1811,7 +1811,8 @@ export async function convertPrice(req, res) {
   return resp;
 }
 
-var q = new Queue(async function (task, cb) {
+const WithdrawQ = new Queue(async function (task, cb) {
+  console.log("abcccc141441");
   if (task.type === "WithdrawRequest") {
     await WithdrawRequest(task.req, task.res);
   }
@@ -1819,14 +1820,16 @@ var q = new Queue(async function (task, cb) {
 });
 
 export const createWithdraw = async (req, res, next) => {
+  console.log("createWithdraw route");
   try {
-    q.push({ req, res, type: "WithdrawRequest" });
+    WithdrawQ.push({ req, res, type: "WithdrawRequest" });
   } catch (error) {
     console.log("error", error);
   }
 };
 
 export async function WithdrawRequest(req, res) {
+  console.log("call withdrwa");
   const address = req.params.address;
   const prize_id = req.params.prize_id;
   let updtdUser = await db
@@ -1855,6 +1858,7 @@ export async function WithdrawRequest(req, res) {
     const prize = await db
       .get_marketplace_prizesDB()
       .findOne({ _id: ObjectId(prize_id) });
+    // console.log("prize", prize);
 
     if (token < prize?.price) {
       return res.send({ success: false, message: "Not Enough Tickets" });
@@ -1862,10 +1866,10 @@ export async function WithdrawRequest(req, res) {
     await db.get_scrooge_usersDB().findOneAndUpdate(
       {
         _id: ObjectId(user_id),
-        wallet: { $gte: prize.price }, // Ensure wallet is greater than or equal to the prize price
+        wallet: { $gte: parseInt(prize.price) }, // Ensure wallet is greater than or equal to the prize price
       },
       {
-        $inc: { wallet: -prize.price },
+        $inc: { wallet: -parseInt(prize.price) },
       }
     );
     let getUserData = await db
@@ -1924,8 +1928,22 @@ export async function WithdrawRequest(req, res) {
       .send({ success: false, message: "Error in Request Process" });
   }
 }
+const promoQue = new Queue(async function (task, cb) {
+  if (task.type === "applyPromo") {
+    await applyPromo(task.req, task.res);
+  }
+  cb(null, 1);
+});
 
-export async function applyPromoCode(req, res) {
+export const applyPromoCode = async (req, res, next) => {
+  try {
+    promoQue.push({ req, res, type: "applyPromo" });
+  } catch (error) {
+    console.log("error", error);
+  }
+};
+
+export async function applyPromo(req, res) {
   let user = req.user._id;
   try {
     const { promocode } = req.body;
