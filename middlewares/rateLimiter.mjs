@@ -2,6 +2,7 @@ import rateLimit from "express-rate-limit";
 import { RateLimiterMemory } from "rate-limiter-flexible";
 import { getClientIp } from "request-ip";
 import { getIpAdress } from "./IpAddress.mjs";
+const requestCounts = {};
 
 const MAX_REQUEST_LIMIT = 4;
 const MAX_REQUEST_WINDOW = 24 * 60 * 60; // Per 24 hours by IP
