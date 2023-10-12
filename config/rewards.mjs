@@ -82,6 +82,24 @@ export async function addChips(
       .get_scrooge_transactionDB()
       .insertOne(transactionPayload);
 
+    // For RollOver
+
+    if (transactionType === "Monthly Reward Claim") {
+      const exprDate = new Date();
+      exprDate.setHours(24 * 2 + exprDate.getHours());
+
+      await db.get_scrooge_bonus().insert({
+        userId: ObjectId(_user_id),
+        bonusType: transactionType,
+        bonusAmount: _qty,
+        bonusExpirationTime: exprDate,
+        wagerLimit: _qty * 30,
+        rollOverTimes: 30,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+    }
+
     // const transPayload = {
     //   amount: _qty,
     //   transactionType: "Free Tokens",
