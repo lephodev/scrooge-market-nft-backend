@@ -87,6 +87,8 @@ export async function addChips(
     if (transactionType === "Monthly Reward Claim") {
       const exprDate = new Date();
       exprDate.setHours(24 * 2 + exprDate.getHours());
+      exprDate.setSeconds(0);
+      exprDate.setMilliseconds(0);
 
       await db.get_scrooge_bonus().insert({
         userId: ObjectId(_user_id),

@@ -101,6 +101,8 @@ export async function CreateRollOver(req, responseData, user) {
   const { _id } = user;
   const exprDate = new Date();
   exprDate.setHours(24 * 2 + exprDate.getHours());
+  exprDate.setSeconds(0);
+  exprDate.setMilliseconds(0);
 
   try {
     await db.get_scrooge_bonus().insert({
