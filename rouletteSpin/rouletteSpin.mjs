@@ -114,6 +114,7 @@ export async function CreateRollOver(req, responseData, user) {
       rollOverTimes: 30,
       createdAt: new Date(),
       updatedAt: new Date(),
+      isExpired: false,
     });
   } catch (error) {
     console.log("error", error);

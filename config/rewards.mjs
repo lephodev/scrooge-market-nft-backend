@@ -99,6 +99,7 @@ export async function addChips(
         rollOverTimes: 30,
         createdAt: new Date(),
         updatedAt: new Date(),
+        isExpired: false,
       });
     }
 
