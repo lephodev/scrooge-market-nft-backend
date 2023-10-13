@@ -33,7 +33,7 @@ export const rateAuthLimit = (req, res, next) => {
   const { promocode } = req.body || {};
   console.log("promocode", promocode);
   if (promocode) {
-    time = 1 * 60 * 60;
+    time = 10 * 1000;
   } else {
     time = 24 * 60 * 60;
   }
