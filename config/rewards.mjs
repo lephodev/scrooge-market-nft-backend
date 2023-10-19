@@ -20,7 +20,15 @@ const { Schema } = mongoose;
 
 dotenv.config();
 
-const pids = { 6: 5, 10: 9.99, 12: 10, 29: 25, 58: 50, 116: 100, 290: 250 };
+const pids = {
+  6: 5,
+  11.5884: 9.99,
+  12: 10,
+  29: 25,
+  58: 50,
+  116: 100,
+  290: 250,
+};
 
 const jrAddress = process.env.JR_WALLET_ADDRESS.toLowerCase();
 const ogAddress = process.env.OG_WALLET_ADDRESS.toLowerCase();
@@ -37,6 +45,7 @@ export async function addChips(
   gc = 0,
   recipt = {}
 ) {
+  console.log("_qty,", _qty);
   try {
     const { value: user } = await db.get_scrooge_usersDB().findOneAndUpdate(
       { _id: ObjectId(_user_id) },
@@ -1320,6 +1329,7 @@ const getDecodedData = async (recipt) => {
         : decoded && decoded.args["amount"]
         ? Number(ethers.utils.formatEther(decoded.args["amount"]))
         : Number(ethers.utils.formatEther(recipt.value));
+    console.log("cryptoAmtcryptoAmt===>>>", cryptoAmt);
     if (
       recipt.to.toLowerCase() ===
       "0x" + process.env.BUSD_WALLET_ADDRESS.toLowerCase()
