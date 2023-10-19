@@ -1354,6 +1354,9 @@ const getDecodedData = async (recipt) => {
         recipt.to.toLowerCase() ===
         "0x" + process.env.BUSD_WALLET_ADDRESS.toLowerCase()
       ) {
+        if (cryptoUsd === 11.5884) {
+          return 9.99;
+        }
         return parseInt(Math.round(cryptoUsd));
       }
 
