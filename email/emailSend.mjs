@@ -1,13 +1,41 @@
-import nodemailer from 'nodemailer';
-import * as db from '../config/mongodb.mjs';
+import nodemailer from "nodemailer";
+import { SUBMIT_REDEEM_REQUEST } from "./mailTemplate.mjs";
+console.log("process.env.SMTP_PASSWORD", process.env.SMTP_PASSWORD);
+const transport = nodemailer.createTransport({
+  service: "gmail",
+  host: "smtp.gmail.com",
+  port: process.env.NODEMAILER_PORT,
+  secure: false,
+  auth: {
+    user: process.env.SMTP_USERNAME,
+    pass: process.env.SMTP_PASSWORD,
+  },
+});
 
 let merch_coupon_code, email_subject, email_text, email_html;
 
-export async function sendemail(message, email_address, coupon_code=null) {
-    console.log("message",message);
-    console.log("Message sent: %s", email_address);
-    return true
-}
+// export async function sendemail(message, email_address, coupon_code=null) {
+//     console.log("message",message);
+//     console.log("Message sent: %s", email_address);
+//     return true
+// }
+
+export const sendemail = async (to, subject, text, html) => {
+  try {
+    const msg = { from: process.env.SMTP_USERNAME, to, subject, text, html };
+    await transport.sendMail(msg);
+  } catch (error) {
+    console.log("error", error);
+  }
+};
+
+export const SubmitRedeemRequestEmail = async (to, name, prize) => {
+  console.log("to, name", to, name);
+  let subject = "Submit Redeem Request";
+  const text = ``;
+  const html = SUBMIT_REDEEM_REQUEST(name, prize);
+  await sendemail(to, subject, text, html);
+};
 
 //     console.log("message",message,"email_address",email_address,"coupon_code",coupon_code);
 //     if (coupon_code) {
@@ -30,7 +58,7 @@ export async function sendemail(message, email_address, coupon_code=null) {
 //     // create reusable transporter object using the default SMTP transport
 //     let transporter = nodemailer.createTransport({
 //         host: "websultanate.com",
-//         port: 587,  
+//         port: 587,
 //         secure: false,
 //         auth: {
 //           user: 'jivan@websultanate.com',
@@ -40,9 +68,9 @@ export async function sendemail(message, email_address, coupon_code=null) {
 //             rejectUnauthorized: false,
 //           },
 //           debug: true,
-        
+
 //     });
-  
+
 //     // send mail with defined transport object
 //     let info = await transporter.sendMail({
 //       from: '"Scrooge 🎩" <notifications@scrooge.team>', // sender address
@@ -51,7 +79,7 @@ export async function sendemail(message, email_address, coupon_code=null) {
 //       text: email_text, // plain text body
 //       html: email_html
 //     });
-  
+
 //     console.log("Message sent: %s", email_address);
 //     return info.messageId;
 //   }
@@ -125,5 +153,5 @@ export async function sendemail(message, email_address, coupon_code=null) {
 //         </div>
 //     </body>
 // </html>`;
-  
+
 //   //main().catch(console.error);

@@ -12,7 +12,7 @@ import * as useSDK from "./config/sdk.mjs";
 import * as raffles from "./raffles/raffles.mjs";
 import * as rouletteSpin from "./rouletteSpin/rouletteSpin.mjs";
 import * as sharable from "./config/sharable_data.mjs";
-import * as email from "./email/email.mjs";
+// import * as email from "./email/email.mjs";
 import * as chatgpt from "./config/chatgpt.mjs";
 import * as common from "./config/commons.mjs";
 import * as utilities from "./config/utilities.mjs";
@@ -176,11 +176,11 @@ app.get(
 
 //################################# Email #################################//
 // Route to trigger email
-app.get("/api/sendEmail/:to/:subject/:body", auth(), async (req, res) => {
-  const resp = await email.sendemail(req).then((data) => {
-    res.send(data);
-  });
-});
+// app.get("/api/sendEmail/:to/:subject/:body", auth(), async (req, res) => {
+//   const resp = await email.sendemail(req).then((data) => {
+//     res.send(data);
+//   });
+// });
 
 //################################# Items #################################//
 // app.get(
