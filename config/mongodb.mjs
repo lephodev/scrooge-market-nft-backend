@@ -47,9 +47,8 @@ let _db_affiliates,
   _db_withdraw_request,
   _db_admin_setting,
   _db_affiliates_transaction,
-  _db_scrooge_promo
-
-
+  _db_scrooge_promo,
+  _db_scrooge_bonus;
 
 export const connectToDB = async () => {
   const client = await MongoClient.connect(uri, {
@@ -58,9 +57,15 @@ export const connectToDB = async () => {
     serverApi: ServerApiVersion.v1,
   });
   _db_scrooge_users = client.db(process.env.SCROOGE_DB).collection("users");
-  _db_scrooge_promo =client.db(process.env.SCROOGE_DB).collection("promos");
-  _db_scrooge_spinGame = client.db(process.env.SCROOGE_DB).collection("spinGame");
-  _db_scrooge_user_kycs = client.db(process.env.SCROOGE_DB).collection("userkycs");
+  _db_scrooge_promo = client.db(process.env.SCROOGE_DB).collection("promos");
+  _db_scrooge_bonus = client.db(process.env.SCROOGE_DB).collection("bonus");
+
+  _db_scrooge_spinGame = client
+    .db(process.env.SCROOGE_DB)
+    .collection("spinGame");
+  _db_scrooge_user_kycs = client
+    .db(process.env.SCROOGE_DB)
+    .collection("userkycs");
   _db_scrooge_data = client.db("dev-markettt").collection("items");
   _db_scrooge_social_share = client
     .db(process.env.SCROOGE_DB)
@@ -71,9 +76,7 @@ export const connectToDB = async () => {
   // _db_affiliates = client
   //   .db(process.env.AFFILIATES_DB)
   //   .collection("affiliates");
-  _db_affiliates = client
-    .db(process.env.SCROOGE_DB)
-    .collection("affiliates");
+  _db_affiliates = client.db(process.env.SCROOGE_DB).collection("affiliates");
   _db_affiliates_successful_actions = client
     .db(process.env.AFFILIATES_DB)
     .collection("successful-actions");
@@ -134,14 +137,14 @@ export const connectToDB = async () => {
   _db_sharing_messages = client
     .db(process.env.SHARING_DATA_DB)
     .collection("messages");
-    _db_withdraw_request=client
+  _db_withdraw_request = client
     .db(process.env.SCROOGE_DB)
     .collection("withdrawrequests");
-    _db_admin_setting=client
+  _db_admin_setting = client
     .db(process.env.SCROOGE_DB)
     .collection("adminsettings");
 
-    _db_affiliates_transaction=client
+  _db_affiliates_transaction = client
     .db(process.env.SCROOGE_DB)
     .collection("affiliatetransactions");
   //_db_sharing_responses = client.db("sharing-data").collection("responses");
@@ -151,6 +154,7 @@ export const connectToDB = async () => {
 
 export const get_scrooge_usersDB = () => _db_scrooge_users;
 export const get_scrooge_promoDB = () => _db_scrooge_promo;
+export const get_scrooge_bonus = () => _db_scrooge_bonus;
 
 export const get_scrooge_spinGameDB = () => _db_scrooge_spinGame;
 export const get_scrooge_user_kycs = () => _db_scrooge_user_kycs;
@@ -191,9 +195,8 @@ export const get_raffles_purchasesDB = () => _db_raffles_purchases;
 //export const get_sharing_hashtagsDB = () => _db_sharing_hashtags;
 export const get_sharing_messagesDB = () => _db_sharing_messages;
 export const get_db_withdraw_requestDB = () => _db_withdraw_request;
-export const get_db_admin_settingDB=()=>_db_admin_setting
-export const get_db_affiliates_transactionDB=()=>_db_affiliates_transaction
-
+export const get_db_admin_settingDB = () => _db_admin_setting;
+export const get_db_affiliates_transactionDB = () => _db_affiliates_transaction;
 
 //export const get_sharing_responsesDB = () => _db_sharing_responses;
 //export const get_sharing_twitterInfluencersDB = () => _db_sharing_twitterInfluencers;

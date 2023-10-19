@@ -20,7 +20,15 @@ const { Schema } = mongoose;
 
 dotenv.config();
 
-const pids = { 6: 5, 10: 9.99, 12: 10, 29: 25, 58: 50, 116: 100, 290: 250 };
+const pids = {
+  6: 5,
+  11.5884: 9.99,
+  12: 10,
+  29: 25,
+  58: 50,
+  116: 100,
+  290: 250,
+};
 
 const jrAddress = process.env.JR_WALLET_ADDRESS.toLowerCase();
 const ogAddress = process.env.OG_WALLET_ADDRESS.toLowerCase();
@@ -37,6 +45,7 @@ export async function addChips(
   gc = 0,
   recipt = {}
 ) {
+  console.log("_qty,", _qty);
   try {
     const { value: user } = await db.get_scrooge_usersDB().findOneAndUpdate(
       { _id: ObjectId(_user_id) },
@@ -81,6 +90,27 @@ export async function addChips(
     const trans_id = await db
       .get_scrooge_transactionDB()
       .insertOne(transactionPayload);
+
+    // For RollOver
+
+    if (transactionType === "Monthly Reward Claim") {
+      const exprDate = new Date();
+      exprDate.setHours(24 * 2 + exprDate.getHours());
+      exprDate.setSeconds(0);
+      exprDate.setMilliseconds(0);
+
+      await db.get_scrooge_bonus().insert({
+        userId: ObjectId(_user_id),
+        bonusType: transactionType,
+        bonusAmount: _qty,
+        bonusExpirationTime: exprDate,
+        wagerLimit: _qty * 30,
+        rollOverTimes: 30,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        isExpired: false,
+      });
+    }
 
     // const transPayload = {
     //   amount: _qty,
@@ -1299,6 +1329,8 @@ const getDecodedData = async (recipt) => {
         : decoded && decoded.args["amount"]
         ? Number(ethers.utils.formatEther(decoded.args["amount"]))
         : Number(ethers.utils.formatEther(recipt.value));
+    console.log("cryptoAmtcryptoAmt===>>>", cryptoAmt);
+    console.log("reciptrecipt", recipt);
     if (
       recipt.to.toLowerCase() ===
       "0x" + process.env.BUSD_WALLET_ADDRESS.toLowerCase()
@@ -1322,6 +1354,9 @@ const getDecodedData = async (recipt) => {
         recipt.to.toLowerCase() ===
         "0x" + process.env.BUSD_WALLET_ADDRESS.toLowerCase()
       ) {
+        if (cryptoUsd === 11.5884) {
+          return 9.99;
+        }
         return parseInt(Math.round(cryptoUsd));
       }
 
@@ -1346,6 +1381,9 @@ const getDecodedData = async (recipt) => {
       console.log("cryptoUsd", cryptoUsd);
       console.log("Math.round(cryptoUsd", Math.round(cryptoUsd));
       console.log("pids[Math.round(cryptoUsd)]", pids[Math.round(cryptoUsd)]);
+      if (cryptoUsd === 11.5884) {
+        return 9.99;
+      }
       return pids[Math.round(cryptoUsd)];
     }
     return cryptoAmt;

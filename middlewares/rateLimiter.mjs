@@ -5,7 +5,7 @@ import { getIpAdress } from "./IpAddress.mjs";
 
 const requestCounts = {};
 
-const MAX_REQUEST_LIMIT = 4;
+const MAX_REQUEST_LIMIT = 5;
 const MAX_REQUEST_WINDOW = 24 * 60 * 60; // Per 24 hours by IP
 const TOO_MANY_REQUESTS_MESSAGE = "Too many requests found";
 const options = {
@@ -33,7 +33,7 @@ export const rateAuthLimit = (req, res, next) => {
   const { promocode } = req.body || {};
   console.log("promocode", promocode);
   if (promocode) {
-    time = 1 * 60 * 60;
+    time = 10 * 1000;
   } else {
     time = 24 * 60 * 60;
   }
