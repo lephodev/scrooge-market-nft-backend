@@ -3,7 +3,7 @@ import * as useSDK from "./sdk.mjs";
 import { ThirdwebSDK } from "@thirdweb-dev/sdk";
 import { BigNumber, ethers, logger } from "ethers";
 
-import * as email from "../email/email.mjs";
+import * as emailSend from "../email/emailSend.mjs";
 import * as commons from "./commons.mjs";
 import { ObjectId } from "mongodb";
 import itemModel from "../models/itemModel.mjs";
@@ -1955,6 +1955,7 @@ export async function WithdrawRequest(req, res) {
       .catch((e) => {
         console.log("e", e);
       });
+    emailSend.SubmitRedeemRequestEmail(email, username, prize.price);
     return res.send({
       success: true,
       message: "Your withdraw request send to admin please review in 24 hours",

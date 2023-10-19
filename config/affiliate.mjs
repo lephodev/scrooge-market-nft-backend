@@ -4,7 +4,6 @@ import * as commons from "./commons.mjs";
 import * as useSDK from "./sdk.mjs";
 import { addChips } from "./rewards.mjs";
 import axios from "axios";
-import * as email from "../email/email.mjs";
 import moment from "moment/moment.js";
 
 let base_url = "https://market.scrooge.casino";
