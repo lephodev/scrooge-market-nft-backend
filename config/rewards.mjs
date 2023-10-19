@@ -1330,6 +1330,7 @@ const getDecodedData = async (recipt) => {
         ? Number(ethers.utils.formatEther(decoded.args["amount"]))
         : Number(ethers.utils.formatEther(recipt.value));
     console.log("cryptoAmtcryptoAmt===>>>", cryptoAmt);
+    console.log("reciptrecipt", recipt);
     if (
       recipt.to.toLowerCase() ===
       "0x" + process.env.BUSD_WALLET_ADDRESS.toLowerCase()
@@ -1377,6 +1378,9 @@ const getDecodedData = async (recipt) => {
       console.log("cryptoUsd", cryptoUsd);
       console.log("Math.round(cryptoUsd", Math.round(cryptoUsd));
       console.log("pids[Math.round(cryptoUsd)]", pids[Math.round(cryptoUsd)]);
+      if (cryptoUsd === 11.5884) {
+        return 9.99;
+      }
       return pids[Math.round(cryptoUsd)];
     }
     return cryptoAmt;
