@@ -12,7 +12,7 @@ import * as useSDK from "./config/sdk.mjs";
 import * as raffles from "./raffles/raffles.mjs";
 import * as rouletteSpin from "./rouletteSpin/rouletteSpin.mjs";
 import * as sharable from "./config/sharable_data.mjs";
-import * as email from "./email/email.mjs";
+// import * as email from "./email/email.mjs";
 import * as chatgpt from "./config/chatgpt.mjs";
 import * as common from "./config/commons.mjs";
 import * as utilities from "./config/utilities.mjs";
@@ -176,11 +176,11 @@ app.get(
 
 //################################# Email #################################//
 // Route to trigger email
-app.get("/api/sendEmail/:to/:subject/:body", auth(), async (req, res) => {
-  const resp = await email.sendemail(req).then((data) => {
-    res.send(data);
-  });
-});
+// app.get("/api/sendEmail/:to/:subject/:body", auth(), async (req, res) => {
+//   const resp = await email.sendemail(req).then((data) => {
+//     res.send(data);
+//   });
+// });
 
 //################################# Items #################################//
 // app.get(
@@ -237,7 +237,10 @@ app.get(
 );
 
 // Route to redeem prize
-app.get("/api/redeemPrize/:withdraw_id", /* auth(), */ rewards.redeemPrize);
+app.get(
+  "/api/redeemPrize/:withdraw_id/:transactionHash",
+  /* auth(), */ rewards.redeemPrize
+);
 
 //################################# Raffles #################################//
 // Route to get current raffles
@@ -577,7 +580,7 @@ app.post("/api/accept-deceptor", authLimiter, auth(), async (req, res) => {
           : findPromoData?.coupanType === "2X"
           ? parseInt(data.gcAmount) * 2
           : parseInt(data.gcAmount),
-        {}
+        response
       );
       const reciptPayload = {
         username: user.username,
@@ -645,6 +648,12 @@ app.post("/api/accept-deceptor", authLimiter, auth(), async (req, res) => {
           }
         );
       }
+      await db
+        .get_scrooge_usersDB()
+        .findOneAndUpdate(
+          { _id: ObjectId(user._id) },
+          { $set: { isGCPurchase: true } }
+        );
       let getUserDetail = await db
         .get_scrooge_usersDB()
         .findOne({ _id: ObjectId(user._id) });

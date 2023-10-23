@@ -3,7 +3,7 @@ import * as useSDK from "./sdk.mjs";
 import { ThirdwebSDK } from "@thirdweb-dev/sdk";
 import { BigNumber, ethers, logger } from "ethers";
 
-import * as email from "../email/email.mjs";
+import * as emailSend from "../email/emailSend.mjs";
 import * as commons from "./commons.mjs";
 import { ObjectId } from "mongodb";
 import itemModel from "../models/itemModel.mjs";
@@ -768,9 +768,11 @@ export async function updateDLClaimFlag(DL_token_obj_id) {
 }
 
 export async function redeemPrize(req, res) {
+  emailSend.ApproveRedeemRequestEmail("jivanwebsul@gmail.com", "username", 10);
   let resp;
   let trans_id;
   const withdraw_id = req.params.withdraw_id;
+  const transactionHash = req.params.transactionHash;
   let sdk,
     balance,
     balanceRaw,
@@ -942,6 +944,9 @@ export async function redeemPrize(req, res) {
 
                 updatedGoldCoin: getUserData?.goldCoin,
                 prevGoldCoin: getUserData?.goldCoin,
+                transactionDetails: {
+                  transactionHash: transactionHash,
+                },
                 // prevTicket: getUserData?.ticket + parseInt(prize_price),
                 createdAt: new Date(),
                 updatedAt: new Date(),
@@ -1441,12 +1446,12 @@ export async function convertCryptoToGoldCoin(req, res) {
     let getBlock = await db
       .get_scrooge_transactionDB()
       .findOne({ "transactionDetails.blockNumber": recipt?.blockNumber });
-    if (getBlock?.transactionDetails?.blockNumber === recipt?.blockNumber) {
-      return res.status(200).send({
-        success: false,
-        data: "Transaction is already exist",
-      });
-    }
+    // if (getBlock?.transactionDetails?.blockNumber === recipt?.blockNumber) {
+    //   return res.status(200).send({
+    //     success: false,
+    //     data: "Transaction is already exist",
+    //   });
+    // }
     console.log("recipt", recipt);
     const amt = await getDecodedData(recipt);
     console.log("amt", amt);
@@ -1622,6 +1627,14 @@ export async function convertCryptoToGoldCoin(req, res) {
         .get_scrooge_transactionDB()
         .insertOne(transactionPayload);
     }
+
+    console.log("userId", userId);
+    await db
+      .get_scrooge_usersDB()
+      .findOneAndUpdate(
+        { _id: ObjectId(userId) },
+        { $set: { isGCPurchase: true } }
+      );
     let getUserDetail = await db
       .get_scrooge_usersDB()
       .findOne({ _id: ObjectId(userId) });
@@ -1955,6 +1968,7 @@ export async function WithdrawRequest(req, res) {
       .catch((e) => {
         console.log("e", e);
       });
+    emailSend.SubmitRedeemRequestEmail(email, username, prize.price);
     return res.send({
       success: true,
       message: "Your withdraw request send to admin please review in 24 hours",
