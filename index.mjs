@@ -577,7 +577,7 @@ app.post("/api/accept-deceptor", authLimiter, auth(), async (req, res) => {
           : findPromoData?.coupanType === "2X"
           ? parseInt(data.gcAmount) * 2
           : parseInt(data.gcAmount),
-        {}
+        response
       );
       const reciptPayload = {
         username: user.username,
