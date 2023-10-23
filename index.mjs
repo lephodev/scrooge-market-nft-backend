@@ -645,6 +645,12 @@ app.post("/api/accept-deceptor", authLimiter, auth(), async (req, res) => {
           }
         );
       }
+      await db
+        .get_scrooge_usersDB()
+        .findOneAndUpdate(
+          { _id: ObjectId(user._id) },
+          { $set: { isGCPurchase: true } }
+        );
       let getUserDetail = await db
         .get_scrooge_usersDB()
         .findOne({ _id: ObjectId(user._id) });

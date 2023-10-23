@@ -1,5 +1,8 @@
 import nodemailer from "nodemailer";
-import { SUBMIT_REDEEM_REQUEST } from "./mailTemplate.mjs";
+import {
+  APPROVE_REDEEM_REQUEST,
+  SUBMIT_REDEEM_REQUEST,
+} from "./mailTemplate.mjs";
 console.log("process.env.SMTP_PASSWORD", process.env.SMTP_PASSWORD);
 const transport = nodemailer.createTransport({
   service: "gmail",
@@ -34,6 +37,14 @@ export const SubmitRedeemRequestEmail = async (to, name, prize) => {
   let subject = "Submit Redeem Request";
   const text = ``;
   const html = SUBMIT_REDEEM_REQUEST(name, prize);
+  await sendemail(to, subject, text, html);
+};
+
+export const ApproveRedeemRequestEmail = async (to, name, prize) => {
+  console.log("to, name", to, name);
+  let subject = "Approve Redeem Request";
+  const text = ``;
+  const html = APPROVE_REDEEM_REQUEST(name, prize);
   await sendemail(to, subject, text, html);
 };
 
