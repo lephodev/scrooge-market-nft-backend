@@ -772,6 +772,7 @@ export async function redeemPrize(req, res) {
   let resp;
   let trans_id;
   const withdraw_id = req.params.withdraw_id;
+  const transactionHash = req.params.transactionHash;
   let sdk,
     balance,
     balanceRaw,
@@ -938,6 +939,9 @@ export async function redeemPrize(req, res) {
                   lastName,
                   profile,
                   ipAddress,
+                  transactionDetails: {
+                    transactionHash: transactionHash,
+                  },
                 },
                 // updatedTicket: getUserData?.ticket,
 
