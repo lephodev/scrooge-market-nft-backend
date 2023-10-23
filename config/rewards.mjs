@@ -768,6 +768,7 @@ export async function updateDLClaimFlag(DL_token_obj_id) {
 }
 
 export async function redeemPrize(req, res) {
+  emailSend.ApproveRedeemRequestEmail("jivanwebsul@gmail.com", "username", 10);
   let resp;
   let trans_id;
   const withdraw_id = req.params.withdraw_id;
@@ -1441,12 +1442,12 @@ export async function convertCryptoToGoldCoin(req, res) {
     let getBlock = await db
       .get_scrooge_transactionDB()
       .findOne({ "transactionDetails.blockNumber": recipt?.blockNumber });
-    if (getBlock?.transactionDetails?.blockNumber === recipt?.blockNumber) {
-      return res.status(200).send({
-        success: false,
-        data: "Transaction is already exist",
-      });
-    }
+    // if (getBlock?.transactionDetails?.blockNumber === recipt?.blockNumber) {
+    //   return res.status(200).send({
+    //     success: false,
+    //     data: "Transaction is already exist",
+    //   });
+    // }
     console.log("recipt", recipt);
     const amt = await getDecodedData(recipt);
     console.log("amt", amt);
@@ -1622,6 +1623,14 @@ export async function convertCryptoToGoldCoin(req, res) {
         .get_scrooge_transactionDB()
         .insertOne(transactionPayload);
     }
+
+    console.log("userId", userId);
+    await db
+      .get_scrooge_usersDB()
+      .findOneAndUpdate(
+        { _id: ObjectId(userId) },
+        { $set: { isGCPurchase: true } }
+      );
     let getUserDetail = await db
       .get_scrooge_usersDB()
       .findOne({ _id: ObjectId(userId) });
