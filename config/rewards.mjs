@@ -939,14 +939,14 @@ export async function redeemPrize(req, res) {
                   lastName,
                   profile,
                   ipAddress,
-                  transactionDetails: {
-                    transactionHash: transactionHash,
-                  },
                 },
                 // updatedTicket: getUserData?.ticket,
 
                 updatedGoldCoin: getUserData?.goldCoin,
                 prevGoldCoin: getUserData?.goldCoin,
+                transactionDetails: {
+                  transactionHash: transactionHash,
+                },
                 // prevTicket: getUserData?.ticket + parseInt(prize_price),
                 createdAt: new Date(),
                 updatedAt: new Date(),
