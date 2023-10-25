@@ -78,7 +78,12 @@ export async function updateUserDataAndTransaction(req, responseData, user) {
             $set: {
               lastSpinTime: Date.now() + 86400000,
             },
-            $inc: { wallet: resultData?.token, goldCoin: resultData?.gc },
+            $inc: {
+              wallet: resultData?.token,
+              goldCoin: resultData?.gc,
+              dailySpinBonus: resultData?.token,
+              nonWithdrawableAmt: resultData?.token,
+            },
           }
         ),
         db.get_scrooge_spinGameDB().insert({
@@ -100,14 +105,14 @@ export async function CreateRollOver(req, responseData, user) {
   const { resultData } = responseData;
   const { _id } = user;
   const exprDate = new Date();
-  exprDate.setHours(24 * 2 + exprDate.getHours());
+  exprDate.setHours(24 + exprDate.getHours());
   exprDate.setSeconds(0);
   exprDate.setMilliseconds(0);
 
   try {
     await db.get_scrooge_bonus().insert({
       userId: _id,
-      bonusType: "spin",
+      bonusType: "daily",
       bonusAmount: resultData?.token,
       bonusExpirationTime: exprDate,
       wagerLimit: resultData?.token * 30,
