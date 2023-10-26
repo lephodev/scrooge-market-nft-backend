@@ -193,7 +193,7 @@ export const SUBMIT_REDEEM_REQUEST = (username, prize) => {
         `;
 };
 
-export const APPROVE_REDEEM_REQUEST = (username, prize) => {
+export const APPROVE_REDEEM_REQUEST = (username, hash, from) => {
   return `
     <!DOCTYPE html>
     <html lang="en">
@@ -286,8 +286,59 @@ export const APPROVE_REDEEM_REQUEST = (username, prize) => {
                     color: rgb(207, 207, 207);
                     font-family: 'Poppins', sans-serif;
                   ">
-                  The txn hash is (link the respective hash)
+                  The txn hash is ${hash}
                   </p>
+
+                  <p style="
+                font-size: 20px;
+                    color: rgb(207, 207, 207);
+                    font-family: 'Poppins', sans-serif;
+                  ">
+                  If you don’t already have Scrooge setup as a custom token in your wallet app, follow the below steps:
+                  </p>
+                  <p style="
+                font-size: 20px;
+                    color: rgb(207, 207, 207);
+                    font-family: 'Poppins', sans-serif;
+                  ">
+                  1.Switch to BNB chain
+                  </p>
+                  <p style="
+                  font-size: 20px;
+                      color: rgb(207, 207, 207);
+                      font-family: 'Poppins', sans-serif;
+                    ">
+                    2.Click Import Tokens
+
+                    </p>
+                    <p style="
+                    font-size: 20px;
+                        color: rgb(207, 207, 207);
+                        font-family: 'Poppins', sans-serif;
+                      ">
+                      3.Click Custom Token
+                      </p>
+                      <p style="
+                      font-size: 20px;
+                          color: rgb(207, 207, 207);
+                          font-family: 'Poppins', sans-serif;
+                        ">
+                        4.Enter the following contract address
+                        </p>
+                        <p style="
+                        font-size: 20px;
+                            color: rgb(207, 207, 207);
+                            font-family: 'Poppins', sans-serif;
+                          ">
+                          ${from}
+                          </p>
+                          <p style="
+                        font-size: 20px;
+                            color: rgb(207, 207, 207);
+                            font-family: 'Poppins', sans-serif;
+                          ">
+                          We hope you are enjoying your time in scrooge casino and we look forward to processing many more of your winning transactions. 
+                          </p>
             </div>
             <div style="
                 margin-top: 18px !important;
