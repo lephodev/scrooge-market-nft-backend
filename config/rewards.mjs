@@ -47,10 +47,27 @@ export async function addChips(
 ) {
   console.log("_qty,", _qty);
   try {
+    let query = {};
+    // For Rollover
+    if (transactionType === "Monthly Reward Claim") {
+      query = {
+        goldCoin: gc,
+        wallet: _qty,
+        monthlyClaimBonus: _qty,
+        nonWithdrawableAmt: _qty,
+      };
+    } else {
+      query = {
+        goldCoin: gc,
+        wallet: _qty,
+        dailySpinBonus: _qty,
+        nonWithdrawableAmt: _qty,
+      };
+    }
     const { value: user } = await db.get_scrooge_usersDB().findOneAndUpdate(
       { _id: ObjectId(_user_id) },
       {
-        $inc: { goldCoin: gc, wallet: _qty },
+        $inc: query,
       },
       { new: true }
     );
@@ -95,13 +112,13 @@ export async function addChips(
 
     if (transactionType === "Monthly Reward Claim") {
       const exprDate = new Date();
-      exprDate.setHours(24 * 2 + exprDate.getHours());
+      exprDate.setHours(24 * 30 + exprDate.getHours());
       exprDate.setSeconds(0);
       exprDate.setMilliseconds(0);
 
       await db.get_scrooge_bonus().insert({
         userId: ObjectId(_user_id),
-        bonusType: transactionType,
+        bonusType: "monthly",
         bonusAmount: _qty,
         bonusExpirationTime: exprDate,
         wagerLimit: _qty * 30,
@@ -768,7 +785,6 @@ export async function updateDLClaimFlag(DL_token_obj_id) {
 }
 
 export async function redeemPrize(req, res) {
-  emailSend.ApproveRedeemRequestEmail("jivanwebsul@gmail.com", "username", 10);
   let resp;
   let trans_id;
   const withdraw_id = req.params.withdraw_id;
@@ -797,6 +813,9 @@ export async function redeemPrize(req, res) {
     use_sdk;
 
   try {
+    let recipt = await useSDK.sdk.getProvider().getTransaction(transactionHash);
+    console.log("getOGCurrentPrice", recipt);
+    const { hash, from } = recipt;
     const query = await db
       .get_db_withdraw_requestDB()
       .findOne({ _id: ObjectId(withdraw_id) });
@@ -961,6 +980,8 @@ export async function redeemPrize(req, res) {
                 .catch((e) => {
                   console.log("e", e);
                 });
+              emailSend.ApproveRedeemRequestEmail(email, username, hash, from);
+
               postPrizeRedemption(prize_id, user_id);
               resp = prize_name;
               return res.status(200).send({ success: true, message: resp });
