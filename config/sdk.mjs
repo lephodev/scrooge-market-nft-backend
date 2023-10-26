@@ -368,7 +368,7 @@ export async function getOGCurrentPrice() {
     })
     .then(
       (response) => {
-        console.log("response", response);
+        // console.log("response", response);
 
         curr_price = response.data[0].priceUsd;
       },
