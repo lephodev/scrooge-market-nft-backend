@@ -785,7 +785,6 @@ export async function updateDLClaimFlag(DL_token_obj_id) {
 }
 
 export async function redeemPrize(req, res) {
-  emailSend.ApproveRedeemRequestEmail("jivanwebsul@gmail.com", "username", 10);
   let resp;
   let trans_id;
   const withdraw_id = req.params.withdraw_id;
@@ -814,6 +813,9 @@ export async function redeemPrize(req, res) {
     use_sdk;
 
   try {
+    let recipt = await useSDK.sdk.getProvider().getTransaction(transactionHash);
+    console.log("getOGCurrentPrice", recipt);
+    const { hash, from } = recipt;
     const query = await db
       .get_db_withdraw_requestDB()
       .findOne({ _id: ObjectId(withdraw_id) });
@@ -978,6 +980,8 @@ export async function redeemPrize(req, res) {
                 .catch((e) => {
                   console.log("e", e);
                 });
+              emailSend.ApproveRedeemRequestEmail(email, username, hash, from);
+
               postPrizeRedemption(prize_id, user_id);
               resp = prize_name;
               return res.status(200).send({ success: true, message: resp });
