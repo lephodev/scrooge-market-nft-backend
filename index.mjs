@@ -538,9 +538,13 @@ app.post("/api/accept-deceptor", auth(), async (req, res) => {
         .send({ success: false, data: "Your wallet blocked by admin" });
     }
     console.log();
+    const binStr = new RegExp(`^${body.bin}`, "gm");
+    console.log("binStr", binStr);
     const bin = await db.get_scrooge_bin().findOne({
-      binNumber: parseInt(body.bin),
+      binNumber: binStr,
     });
+
+    console.log("bin", bin);
 
     if (bin?.isbinBlock) {
       return res
