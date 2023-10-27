@@ -527,14 +527,25 @@ app.get(
   rewards.createWithdraw
 );
 
-app.post("/api/accept-deceptor", authLimiter, auth(), async (req, res) => {
+app.post("/api/accept-deceptor", auth(), async (req, res) => {
   console.log("hello console");
   try {
     const { user, body } = req || {};
+    console.log("body", body);
     if (user?.isBlockWallet) {
       return res
         .status(400)
         .send({ success: false, data: "Your wallet blocked by admin" });
+    }
+    console.log();
+    const bin = await db.get_scrooge_bin().findOne({
+      binNumber: parseInt(body.bin),
+    });
+
+    if (bin?.isbinBlock) {
+      return res
+        .status(500)
+        .send({ success: false, message: "Your card is block" });
     }
 
     const data = await db.get_marketplace_gcPackagesDB().findOne({
@@ -663,6 +674,7 @@ app.post("/api/accept-deceptor", authLimiter, auth(), async (req, res) => {
       });
     });
   } catch (error) {
+    console.log(error);
     res.status(500).send({ success: false, message: "Error in CC  purchase" });
   }
 });
