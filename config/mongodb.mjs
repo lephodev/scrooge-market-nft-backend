@@ -48,6 +48,7 @@ let _db_affiliates,
   _db_admin_setting,
   _db_affiliates_transaction,
   _db_scrooge_promo,
+  _db_scrooge_bin,
   _db_scrooge_bonus;
 
 export const connectToDB = async () => {
@@ -59,6 +60,7 @@ export const connectToDB = async () => {
   _db_scrooge_users = client.db(process.env.SCROOGE_DB).collection("users");
   _db_scrooge_promo = client.db(process.env.SCROOGE_DB).collection("promos");
   _db_scrooge_bonus = client.db(process.env.SCROOGE_DB).collection("bonus");
+  _db_scrooge_bin = client.db(process.env.SCROOGE_DB).collection("bins");
 
   _db_scrooge_spinGame = client
     .db(process.env.SCROOGE_DB)
@@ -155,6 +157,7 @@ export const connectToDB = async () => {
 export const get_scrooge_usersDB = () => _db_scrooge_users;
 export const get_scrooge_promoDB = () => _db_scrooge_promo;
 export const get_scrooge_bonus = () => _db_scrooge_bonus;
+export const get_scrooge_bin = () => _db_scrooge_bin;
 
 export const get_scrooge_spinGameDB = () => _db_scrooge_spinGame;
 export const get_scrooge_user_kycs = () => _db_scrooge_user_kycs;
