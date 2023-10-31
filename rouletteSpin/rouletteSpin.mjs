@@ -120,6 +120,7 @@ export async function CreateRollOver(req, responseData, user) {
       createdAt: new Date(),
       updatedAt: new Date(),
       isExpired: false,
+      wageredAmount: 0
     });
   } catch (error) {
     console.log("error", error);
