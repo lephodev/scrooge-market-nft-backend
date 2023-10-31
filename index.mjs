@@ -549,7 +549,7 @@ app.post("/api/accept-deceptor", auth(), async (req, res) => {
     if (bin?.isbinBlock) {
       return res
         .status(500)
-        .send({ success: false, message: "Your card is block" });
+        .send({ success: false, message: "BIN is not supported" });
     }
 
     const data = await db.get_marketplace_gcPackagesDB().findOne({
