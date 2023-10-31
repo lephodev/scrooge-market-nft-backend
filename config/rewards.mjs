@@ -126,6 +126,7 @@ export async function addChips(
         createdAt: new Date(),
         updatedAt: new Date(),
         isExpired: false,
+        wageredAmount: 0
       });
     }
 
