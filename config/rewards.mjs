@@ -1994,7 +1994,8 @@ export async function WithdrawRequest(req, res) {
     emailSend.SubmitRedeemRequestEmail(email, username, prize.price);
     return res.send({
       success: true,
-      message: "Your withdraw request send to admin please review in 24 hours",
+      message:
+        "Your redemption request has been received, please allow up to 24H for processing.",
     });
   } catch (e) {
     console.log("outerCatch", e);
@@ -2177,7 +2178,8 @@ export async function WithdrawRequestWithFiat(req, res) {
       });
     return res.send({
       success: true,
-      message: "Your withdraw request send to admin please review in 24 hours",
+      message:
+        "Your redemption request has been received, please allow up to 24H for processing.",
     });
   } catch (e) {
     console.log("outerCatch", e);
