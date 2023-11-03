@@ -126,7 +126,7 @@ export async function addChips(
         createdAt: new Date(),
         updatedAt: new Date(),
         isExpired: false,
-        wageredAmount: 0
+        wageredAmount: 0,
       });
     }
 
@@ -1910,9 +1910,10 @@ export async function WithdrawRequest(req, res) {
     .findOne({ _id: req?.user?._id });
   console.log("updtdUser===>>>", updtdUser);
   let user_id = updtdUser?._id;
-  let token = updtdUser?.wallet;
+  // let token = updtdUser?.wallet;
+  let totalwallet = updtdUser?.wallet - updtdUser?.nonWithdrawableAmt;
 
-  console.log("token--->>>", token);
+  // console.log("token--->>>", token);
 
   try {
     if (req?.user?.isBlockWallet) {
@@ -1933,8 +1934,8 @@ export async function WithdrawRequest(req, res) {
       .findOne({ _id: ObjectId(prize_id) });
     // console.log("prize", prize);
 
-    if (token < prize?.price) {
-      return res.send({ success: false, message: "Not Enough Tickets" });
+    if (totalwallet < prize?.price) {
+      return res.send({ success: false, message: "Not Enough Tokens" });
     }
     await db.get_scrooge_usersDB().findOneAndUpdate(
       {
@@ -1993,7 +1994,8 @@ export async function WithdrawRequest(req, res) {
     emailSend.SubmitRedeemRequestEmail(email, username, prize.price);
     return res.send({
       success: true,
-      message: "Your withdraw request send to admin please review in 24 hours",
+      message:
+        "Your redemption request has been received, please allow up to 24H for processing.",
     });
   } catch (e) {
     console.log("outerCatch", e);
@@ -2176,7 +2178,8 @@ export async function WithdrawRequestWithFiat(req, res) {
       });
     return res.send({
       success: true,
-      message: "Your withdraw request send to admin please review in 24 hours",
+      message:
+        "Your redemption request has been received, please allow up to 24H for processing.",
     });
   } catch (e) {
     console.log("outerCatch", e);
