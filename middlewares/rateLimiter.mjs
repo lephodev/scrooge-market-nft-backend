@@ -12,18 +12,32 @@ const options = {
   points: MAX_REQUEST_LIMIT,
 };
 const rateLimiter = new RateLimiterMemory(options);
-export const authLimiter = (req, res, next) => {
-  const ipadd = getClientIp(req);
-  const ipAddress = getIpAdress(ipadd);
-  console.log("limiter IP triggered", ipAddress);
-  rateLimiter
-    .consume(ipAddress)
-    .then(() => {
-      next();
-    })
-    .catch(() => {
-      res.status(429).json({ message: TOO_MANY_REQUESTS_MESSAGE });
-    });
+export const authLimiter = async (req, res, next) => {
+  const tranCount = db.get_scrooge_transactionDB().find({
+    "userId._id": ObjectId(req?.user?._id),
+    transactionType: "CC To Gold Coin",
+    createdAt: {
+      $gte: new Date(new Date().setHours(0, 0, 0, 0)),
+      $lt: new Date(new Date().setHours(23, 59, 59, 0)),
+    },
+  });
+  const dr = await tranCount.toArray();
+  if (dr?.length > MAX_REQUEST_LIMIT) {
+    return res.status(429).json({ message: TOO_MANY_REQUESTS_MESSAGE });
+  }
+  next();
+  // console.log('transaction count-->', dr)
+  // const ipadd = getClientIp(req)
+  // const ipAddress = getIpAdress(ipadd)
+  // console.log('limiter IP triggered', ipAddress)
+  // rateLimiter
+  //   .consume(ipAddress)
+  //   .then(() => {
+  //     //next()
+  //   })
+  //   .catch(() => {
+  //     res.status(429).json({ message: TOO_MANY_REQUESTS_MESSAGE })
+  //   })
 };
 
 export const rateAuthLimit = (req, res, next) => {

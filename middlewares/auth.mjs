@@ -3,7 +3,7 @@ import httpStatus from "http-status";
 import ApiError from "../utils/ApiError.mjs";
 import { roleRights } from "../config/roles.mjs";
 import { decryptPass } from "./decrypt.mjs";
-
+//import * as db from "../config/mongodb.mjs";
 const verifyCallback =
   (req, resolve, reject, requiredRights) => async (err, user, info) => {
     if (err || info || !user) {
@@ -29,6 +29,8 @@ const verifyCallback =
 const auth =
   (...requiredRights) =>
   async (req, res, next) => {
+    // req.user=await db.get_scrooge_usersDB().findOne({username:"abrar"})
+    // next()
     let decryptedToken = decryptPass(req.cookies["token"]);
     req.headers.authEncrypted = req.headers.authorization;
     req.headers.authorization = `Bearer ${decryptedToken}`;
