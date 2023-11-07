@@ -912,12 +912,15 @@ export async function redeemPrize(req, res) {
               //   prize_token_qty,
               //   prize_contract
               // );
-              await db
-                .get_db_withdraw_requestDB()
-                .findOneAndUpdate(
-                  { _id: ObjectId(withdraw_id) },
-                  { $set: { status: "Approved" } }
-                );
+              await db.get_db_withdraw_requestDB().findOneAndUpdate(
+                { _id: ObjectId(withdraw_id) },
+                {
+                  $set: {
+                    status: "Approved",
+                    transactionHash: transactionHash,
+                  },
+                }
+              );
               await db.get_scrooge_usersDB().findOneAndUpdate(
                 { _id: ObjectId(user_id) },
                 {
