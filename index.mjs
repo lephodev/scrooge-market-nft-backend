@@ -527,7 +527,7 @@ app.get(
   rewards.createWithdraw
 );
 
-app.post("/api/accept-deceptor", auth(),authLimiter, async (req, res) => {
+app.post("/api/accept-deceptor", auth(), authLimiter, async (req, res) => {
   console.log("hello console");
   try {
     const { user, body } = req || {};
@@ -675,6 +675,7 @@ app.post("/api/accept-deceptor", auth(),authLimiter, async (req, res) => {
         success: true,
         data: "Chips added successfully.",
         user: getUserDetail,
+        purchaseDetails: data,
       });
     });
   } catch (error) {
