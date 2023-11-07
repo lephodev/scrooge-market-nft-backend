@@ -1997,6 +1997,7 @@ export async function WithdrawRequest(req, res) {
     emailSend.SubmitRedeemRequestEmail(email, username, prize.price);
     return res.send({
       success: true,
+      prize,
       message:
         "Your redemption request has been received, please allow up to 24H for processing.",
     });
