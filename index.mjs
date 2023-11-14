@@ -527,7 +527,7 @@ app.get(
   rewards.createWithdraw
 );
 
-app.post("/api/accept-deceptor", auth(),authLimiter, async (req, res) => {
+app.post("/api/accept-deceptor", auth(), authLimiter, async (req, res) => {
   console.log("hello console");
   try {
     const { user, body } = req || {};
@@ -595,7 +595,13 @@ app.post("/api/accept-deceptor", auth(),authLimiter, async (req, res) => {
           : findPromoData?.coupanType === "2X"
           ? parseInt(data.gcAmount) * 2
           : parseInt(data.gcAmount),
-        response
+        response,
+        findPromoData?.coupanType === "Percent"
+          ? parseInt(data.freeTokenAmount) *
+              (parseFloat(findPromoData?.discountInPercent) / 100)
+          : findPromoData?.coupanType === "2X"
+          ? parseInt(data.freeTokenAmount)
+          : 0
       );
       const reciptPayload = {
         username: user.username,
@@ -675,6 +681,7 @@ app.post("/api/accept-deceptor", auth(),authLimiter, async (req, res) => {
         success: true,
         data: "Chips added successfully.",
         user: getUserDetail,
+        purchaseDetails: data,
       });
     });
   } catch (error) {
