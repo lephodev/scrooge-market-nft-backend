@@ -43,9 +43,11 @@ export async function addChips(
   _address,
   transactionType,
   gc = 0,
-  recipt = {}
+  recipt = {},
+  bonusToken
 ) {
   console.log("_qty,", _qty);
+  console.log("bonusTokenbonusToken", bonusToken);
   try {
     let query = {};
     // For Rollover
@@ -60,8 +62,9 @@ export async function addChips(
       query = {
         goldCoin: gc,
         wallet: _qty,
-        dailySpinBonus: _qty,
+        dailySpinBonus: _qty - bonusToken,
         nonWithdrawableAmt: _qty,
+        monthlyClaimBonus: bonusToken,
       };
     }
     const { value: user } = await db.get_scrooge_usersDB().findOneAndUpdate(
@@ -71,7 +74,25 @@ export async function addChips(
       },
       { new: true }
     );
+    if (bonusToken > 0) {
+      const exprDate = new Date();
+      exprDate.setHours(24 * 30 + exprDate.getHours());
+      exprDate.setSeconds(0);
+      exprDate.setMilliseconds(0);
 
+      await db.get_scrooge_bonus().insert({
+        userId: ObjectId(_user_id),
+        bonusType: "monthly",
+        bonusAmount: bonusToken,
+        bonusExpirationTime: exprDate,
+        wagerLimit: bonusToken * 10,
+        rollOverTimes: 10,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        isExpired: false,
+        wageredAmount: 0,
+      });
+    }
     await db.get_marketplace_chip_transactionsDB().insertOne({
       user_id: ObjectId(_user_id),
       address: _address,
@@ -912,12 +933,15 @@ export async function redeemPrize(req, res) {
               //   prize_token_qty,
               //   prize_contract
               // );
-              await db
-                .get_db_withdraw_requestDB()
-                .findOneAndUpdate(
-                  { _id: ObjectId(withdraw_id) },
-                  { $set: { status: "Approved" } }
-                );
+              await db.get_db_withdraw_requestDB().findOneAndUpdate(
+                { _id: ObjectId(withdraw_id) },
+                {
+                  $set: {
+                    status: "Approved",
+                    transactionHash: transactionHash,
+                  },
+                }
+              );
               await db.get_scrooge_usersDB().findOneAndUpdate(
                 { _id: ObjectId(user_id) },
                 {
@@ -1491,6 +1515,17 @@ export async function convertCryptoToGoldCoin(req, res) {
       expireDate: { $gte: new Date() },
     };
     let findPromoData = await db.get_scrooge_promoDB().findOne(query);
+    console.log("findPromoData", findPromoData);
+    console.log(
+      "findPromoData?.coupanType",
+      findPromoData?.coupanType,
+      findPromoData?.coupanType === "Percent"
+        ? parseInt(data.freeTokenAmount) *
+            (parseFloat(findPromoData?.discountInPercent) / 100)
+        : findPromoData?.coupanType === "2X"
+        ? parseInt(data.freeTokenAmount)
+        : 0
+    );
     const trans = await addChips(
       userId,
       findPromoData?.coupanType === "Percent"
@@ -1509,7 +1544,13 @@ export async function convertCryptoToGoldCoin(req, res) {
         : findPromoData?.coupanType === "2X"
         ? parseInt(data.gcAmount) * 2
         : parseInt(data.gcAmount),
-      recipt
+      recipt,
+      findPromoData?.coupanType === "Percent"
+        ? parseInt(data.freeTokenAmount) *
+            (parseFloat(findPromoData?.discountInPercent) / 100)
+        : findPromoData?.coupanType === "2X"
+        ? parseInt(data.freeTokenAmount)
+        : 0
     );
     const reciptPayload = {
       username: username,
@@ -1994,6 +2035,7 @@ export async function WithdrawRequest(req, res) {
     emailSend.SubmitRedeemRequestEmail(email, username, prize.price);
     return res.send({
       success: true,
+      prize,
       message:
         "Your redemption request has been received, please allow up to 24H for processing.",
     });
