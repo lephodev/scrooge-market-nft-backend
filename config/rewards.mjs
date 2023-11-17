@@ -91,6 +91,8 @@ export async function addChips(
         updatedAt: new Date(),
         isExpired: false,
         wageredAmount: 0,
+        subCategory: "Promo Bonus",
+        restAmount: bonusToken,
       });
     }
     await db.get_marketplace_chip_transactionsDB().insertOne({
@@ -148,6 +150,8 @@ export async function addChips(
         updatedAt: new Date(),
         isExpired: false,
         wageredAmount: 0,
+        subCategory: "Monthly",
+        restAmount: bonusToken,
       });
     }
 
