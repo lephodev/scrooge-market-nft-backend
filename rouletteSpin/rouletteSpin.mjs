@@ -120,7 +120,9 @@ export async function CreateRollOver(req, responseData, user) {
       createdAt: new Date(),
       updatedAt: new Date(),
       isExpired: false,
-      wageredAmount: 0
+      wageredAmount: 0,
+      subCategory: "Daily Spin",
+      restAmount: resultData?.token,
     });
   } catch (error) {
     console.log("error", error);
