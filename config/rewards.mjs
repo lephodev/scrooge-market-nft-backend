@@ -16,6 +16,7 @@ import { sendInvoice } from "../utils/sendx_send_invoice.mjs";
 import { getSigner } from "../utils/signer.mjs";
 import Queue from "better-queue";
 import createHostedPaymentPage from "authorize-net";
+import { getAnAcceptPaymentPage } from "../utils/payment.mjs";
 
 const { Schema } = mongoose;
 
@@ -2240,89 +2241,14 @@ export async function getFormToken(req, res) {
   // let user = req.user._id;
   console.log("useruseruseruser", req.body);
   try {
-    const hostedPaymentPageRequest = {
-      getHostedPaymentPageRequest: {
-        merchantAuthentication: {
-          name: "92WEDagC2em3",
-          transactionKey: "6zeP4H3386xWcKjA",
-        },
-        transactionRequest: {
-          transactionType: "authCaptureTransaction",
-          amount: "20.00",
-          profile: {
-            customerProfileId: "123456789",
-          },
-          customer: {
-            email: "ellen@mail.com",
-          },
-          billTo: {
-            firstName: "Ellen",
-            lastName: "Johnson",
-            company: "Souveniropolis",
-            address: "14 Main Street",
-            city: "Pecan Springs",
-            state: "TX",
-            zip: "44628",
-            country: "US",
-          },
-        },
-        hostedPaymentSettings: {
-          setting: [
-            {
-              settingName: "hostedPaymentReturnOptions",
-              settingValue:
-                '{"showReceipt": true, "url": "https://mysite.com/receipt", "urlText": "Continue", "cancelUrl": "https://mysite.com/cancel", "cancelUrlText": "Cancel"}',
-            },
-            {
-              settingName: "hostedPaymentButtonOptions",
-              settingValue: '{"text": "Pay"}',
-            },
-            {
-              settingName: "hostedPaymentStyleOptions",
-              settingValue: '{"bgColor": "blue"}',
-            },
-            {
-              settingName: "hostedPaymentPaymentOptions",
-              settingValue:
-                '{"cardCodeRequired": false, "showCreditCard": true, "showBankAccount": true}',
-            },
-            {
-              settingName: "hostedPaymentSecurityOptions",
-              settingValue: '{"captcha": false}',
-            },
-            {
-              settingName: "hostedPaymentShippingAddressOptions",
-              settingValue: '{"show": false, "required": false}',
-            },
-            {
-              settingName: "hostedPaymentBillingAddressOptions",
-              settingValue: '{"show": true, "required": false}',
-            },
-            {
-              settingName: "hostedPaymentCustomerOptions",
-              settingValue:
-                '{"showEmail": false, "requiredEmail": false, "addPaymentProfile": true}',
-            },
-            {
-              settingName: "hostedPaymentOrderOptions",
-              settingValue:
-                '{"show": true, "merchantName": "G and S Questions Inc."}',
-            },
-            {
-              settingName: "hostedPaymentIFrameCommunicatorUrl",
-              settingValue: '{"url": "https://mysite.com/special"}',
-            },
-          ],
-        },
-      },
-    };
-
-    const response = await createHostedPaymentPage(hostedPaymentPageRequest);
-
-    // Extract the form token from the response
-    const formToken = response.token;
-
-    res.json({ formToken });
+    getAnAcceptPaymentPage(req.body, async (response) => {
+      console.log("response", response);
+      return res.send({
+        code: 200,
+        success: true,
+        response,
+      });
+    });
   } catch (error) {
     console.error("errrtt", error);
     res.status(500).json({ error: "Internal Server Error" });
