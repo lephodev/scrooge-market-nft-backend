@@ -24,7 +24,7 @@ import cors from "cors";
 import { checkUserCanSpin } from "./rouletteSpin/rouletteUtils.mjs";
 import { CryptoToGCQueue, TicketToTokenQueue } from "./utils/Queues.mjs";
 import logger from "./config/logger.mjs";
-import createAnAcceptPaymentTransaction from "./utils/payment.mjs";
+import { createAnAcceptPaymentTransaction } from "./utils/payment.mjs";
 import { sendInvoice } from "./utils/sendx_send_invoice.mjs";
 import { ObjectId } from "mongodb";
 import Queue from "better-queue";
