@@ -210,8 +210,7 @@ export function getAnAcceptPaymentPage(body, callback) {
   transactionRequestType.setTransactionType(
     ApiContracts.TransactionTypeEnum.AUTHCAPTURETRANSACTION
   );
-  transactionRequestType.setAmount(20);
-
+  transactionRequestType.setAmount(70);
   var setting1 = new ApiContracts.SettingType();
   setting1.setSettingName("hostedPaymentButtonOptions");
   setting1.setSettingValue('{"text": "Pay"}');
