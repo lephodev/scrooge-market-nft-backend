@@ -697,6 +697,7 @@ app.post(
   rewards.WithdrawRequestWithFiat
 );
 app.get("/api/getCryptoToGCPurcahse", auth(), rewards.getCryptoToGCPurcahse);
+app.post("/api/getFormToken", rewards.getFormToken);
 
 app.listen(PORT, () => {
   console.log("Server is running.", PORT);

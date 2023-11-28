@@ -13,6 +13,7 @@
   "dependencies": {
     "@thirdweb-dev/react": "^3.6.9",
     "@thirdweb-dev/sdk": "^3.6.8",
+    "authorize-net": "^1.1.1",
     "authorizenet": "^1.0.8",
     "axios": "^1.2.2",
     "better-queue": "^3.8.12",
