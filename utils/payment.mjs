@@ -212,29 +212,36 @@ export function getAnAcceptPaymentPage(body, callback) {
     ApiContracts.TransactionTypeEnum.AUTHCAPTURETRANSACTION
   );
   transactionRequestType.setAmount(0.1);
+  transactionRequestType.setCustomer("jivan1234656565");
   var setting1 = new ApiContracts.SettingType();
   setting1.setSettingName("hostedPaymentButtonOptions");
-  setting1.setSettingValue(JSON.stringify({ text: "Payment" }));
+  setting1.setSettingValue('{"text": "Pay"}');
 
   var setting2 = new ApiContracts.SettingType();
   setting2.setSettingName("hostedPaymentOrderOptions");
-  setting2.setSettingValue(JSON.stringify({ show: false }));
+  setting2.setSettingValue('{"show": false}');
   // Add a new setting for hostedPaymentReturnOptions
   var setting3 = new ApiContracts.SettingType();
   setting3.setSettingName("hostedPaymentReturnOptions");
-  setting3.setSettingValue(JSON.stringify({ showReceipt: true }));
+  setting3.setSettingValue(
+    JSON.stringify({
+      showReceipt: true,
+    })
+  );
+  var setting4 = new ApiContracts.SettingType();
+  setting4.setSettingName("hostedPaymentIFrameCommunicatorUrl");
+  setting4.setSettingValue(JSON.stringify({ url: "https://scrooge.casino" }));
 
   var settingList = [];
   settingList.push(setting1);
   settingList.push(setting2);
   settingList.push(setting3); // Add the new setting to the list
+  settingList.push(setting4); // Add the new setting to the list
 
   var alist = new ApiContracts.ArrayOfSetting();
   alist.setSetting(settingList);
-  console.log("settingList", settingList);
 
   var getRequest = new ApiContracts.GetHostedPaymentPageRequest();
-
   getRequest.setMerchantAuthentication(merchantAuthenticationType);
   getRequest.setTransactionRequest(transactionRequestType);
   getRequest.setHostedPaymentSettings(alist);
