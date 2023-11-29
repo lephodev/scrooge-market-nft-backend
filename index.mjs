@@ -526,6 +526,11 @@ app.get(
   auth(),
   rewards.createWithdraw
 );
+app.get(
+  "/api/FastWithdrawRequest/:address/:amount",
+  auth(),
+  rewards.createFastWithdraw
+);
 
 app.post("/api/accept-deceptor", auth(), authLimiter, async (req, res) => {
   console.log("hello console");
