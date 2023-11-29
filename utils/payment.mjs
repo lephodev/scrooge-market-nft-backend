@@ -214,7 +214,7 @@ export function getAnAcceptPaymentPage(body, callback) {
   transactionRequestType.setAmount(0.1);
   var setting1 = new ApiContracts.SettingType();
   setting1.setSettingName("hostedPaymentButtonOptions");
-  setting1.setSettingValue(JSON.stringify({ text: "DDD" }));
+  setting1.setSettingValue(JSON.stringify({ text: "Payment" }));
 
   var setting2 = new ApiContracts.SettingType();
   setting2.setSettingName("hostedPaymentOrderOptions");
@@ -222,15 +222,7 @@ export function getAnAcceptPaymentPage(body, callback) {
   // Add a new setting for hostedPaymentReturnOptions
   var setting3 = new ApiContracts.SettingType();
   setting3.setSettingName("hostedPaymentReturnOptions");
-  setting3.setSettingValue(
-    JSON.stringify({
-      showReceipt: false,
-      url: "https://dev.scrooge.casino/",
-      urlText: "Continuejivan",
-      cancelUrl: "https://dev.scrooge.casino/",
-      cancelUrlText: "Cancel",
-    })
-  );
+  setting3.setSettingValue(JSON.stringify({ showReceipt: true }));
 
   var settingList = [];
   settingList.push(setting1);
