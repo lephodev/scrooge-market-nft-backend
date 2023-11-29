@@ -87,7 +87,7 @@ export const SUBMIT_REDEEM_REQUEST = (username, prize) => {
                 ">
                   We have received your redemption request of <br>
                   Token: ${prize} <br>
-                  USD: ${prize / 100} <br>
+                  USD: $ ${prize / 100} <br>
 
                   We will review the request and process it as quick as we can.  This process is typically completed inside 24H. Keep in mind, we do not process redemptions on weekends or holidays.
                   <br>
@@ -144,7 +144,7 @@ export const SUBMIT_REDEEM_REQUEST = (username, prize) => {
                     margin: 5px;
                   "><img src="https://scrooge-casino.s3.amazonaws.com/SignupAssets/icons8-twitter-144.png" alt="Logo" title="Logo" style="display: block" width="30" height="30" />
                 </a>
-                <a href="https://t.me/scroogecoingold" target="_blank" rel="noopener noreferrer" style="
+                <!-- <a href="https://t.me/scroogecoingold" target="_blank" rel="noopener noreferrer" style="
                     border-radius: 50%;
                     width: 30px;
                     height: 30px;
@@ -152,7 +152,7 @@ export const SUBMIT_REDEEM_REQUEST = (username, prize) => {
                     place-content: center;
                     margin: 5px;
                   "><img src="https://scrooge-casino.s3.amazonaws.com/SignupAssets/icons8-telegram-144.png" alt="Logo" title="Logo" style="display: block" width="30" height="30" />
-                </a>
+                </a> -->
                 <!-- <a href="https://discord.com/invite/scroogecoin" target="_blank" rel="noopener noreferrer" style="
                     border-radius: 50%;
                     width: 30px;
@@ -292,7 +292,7 @@ export const APPROVE_REDEEM_REQUEST = (username, hash, from) => {
                 ">
                 We are pleased to inform you that your redemption request of
                 <br> Token: ${prize} 
-                <br> USD: ${prize / 100} 
+                <br> USD: $ ${prize / 100}
                 <br> Has been processed.  The Scrooge cryptocurrency is now in your ${WalletAddress} The following is the successful transaction hash from the transfer: ${hash}
                 </p>
                 <p style="
@@ -400,7 +400,7 @@ export const APPROVE_REDEEM_REQUEST = (username, hash, from) => {
                     margin: 5px;
                   "><img src="https://scrooge-casino.s3.amazonaws.com/SignupAssets/icons8-twitter-144.png" alt="Logo" title="Logo" style="display: block" width="30" height="30" />
                 </a>
-                <a href="https://t.me/scroogecoingold" target="_blank" rel="noopener noreferrer" style="
+                <!-- <a href="https://t.me/scroogecoingold" target="_blank" rel="noopener noreferrer" style="
                     border-radius: 50%;
                     width: 30px;
                     height: 30px;
@@ -408,7 +408,7 @@ export const APPROVE_REDEEM_REQUEST = (username, hash, from) => {
                     place-content: center;
                     margin: 5px;
                   "><img src="https://scrooge-casino.s3.amazonaws.com/SignupAssets/icons8-telegram-144.png" alt="Logo" title="Logo" style="display: block" width="30" height="30" />
-                </a>
+                </a> -->
                 <!-- <a href="https://discord.com/invite/scroogecoin" target="_blank" rel="noopener noreferrer" style="
                     border-radius: 50%;
                     width: 30px;
