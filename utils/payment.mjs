@@ -212,7 +212,12 @@ export function getAnAcceptPaymentPage(body, callback) {
     ApiContracts.TransactionTypeEnum.AUTHCAPTURETRANSACTION
   );
   transactionRequestType.setAmount(0.1);
-  transactionRequestType.setCustomer("jivan1234656565");
+  transactionRequestType.setCustomer("jiab12432323");
+  transactionRequestType.setInvoiceNumber("jiab12432323");
+  transactionRequestType.setEmployeeId("34523342fgfgghfhfhg");
+  transactionRequestType.setRefTransId("vgfgsdgfsfds7656565");
+  transactionRequestType.setItemId("jggjhsge53554234432354");
+
   var setting1 = new ApiContracts.SettingType();
   setting1.setSettingName("hostedPaymentButtonOptions");
   setting1.setSettingValue('{"text": "Pay"}');
@@ -226,6 +231,10 @@ export function getAnAcceptPaymentPage(body, callback) {
   setting3.setSettingValue(
     JSON.stringify({
       showReceipt: true,
+      url: "https://scrooge.casino",
+      urlText: "Continue",
+      cancelUrl: "https://scrooge.casino",
+      cancelUrlText: "Cancel",
     })
   );
   var setting4 = new ApiContracts.SettingType();
