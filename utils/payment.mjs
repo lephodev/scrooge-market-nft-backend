@@ -202,6 +202,7 @@ export function getAnAcceptPaymentPage(body, callback) {
   var merchantAuthenticationType =
     new ApiContracts.MerchantAuthenticationType();
   merchantAuthenticationType.setName(process.env.AUTHORIZE_LOGIN_ID);
+
   merchantAuthenticationType.setTransactionKey(
     process.env.AUTHORIZE_TRANSACTION_KEY
   );
@@ -210,7 +211,10 @@ export function getAnAcceptPaymentPage(body, callback) {
   transactionRequestType.setTransactionType(
     ApiContracts.TransactionTypeEnum.AUTHCAPTURETRANSACTION
   );
-  transactionRequestType.setAmount(70);
+  transactionRequestType.setAmount(0.1);
+  transactionRequestType.setEmployeeId("34523342fgfgghfhfhg");
+  transactionRequestType.setRefTransId("vgfgsdgfsfds7656565");
+
   var setting1 = new ApiContracts.SettingType();
   setting1.setSettingName("hostedPaymentButtonOptions");
   setting1.setSettingValue('{"text": "Pay"}');
@@ -218,10 +222,27 @@ export function getAnAcceptPaymentPage(body, callback) {
   var setting2 = new ApiContracts.SettingType();
   setting2.setSettingName("hostedPaymentOrderOptions");
   setting2.setSettingValue('{"show": false}');
+  // Add a new setting for hostedPaymentReturnOptions
+  var setting3 = new ApiContracts.SettingType();
+  setting3.setSettingName("hostedPaymentReturnOptions");
+  setting3.setSettingValue(
+    JSON.stringify({
+      showReceipt: true,
+      url: "https://scrooge.casino",
+      urlText: "Continue",
+      cancelUrl: "https://scrooge.casino",
+      cancelUrlText: "Cancel",
+    })
+  );
+  var setting4 = new ApiContracts.SettingType();
+  setting4.setSettingName("hostedPaymentIFrameCommunicatorUrl");
+  setting4.setSettingValue(JSON.stringify({ url: "https://scrooge.casino" }));
 
   var settingList = [];
   settingList.push(setting1);
   settingList.push(setting2);
+  settingList.push(setting3); // Add the new setting to the list
+  settingList.push(setting4); // Add the new setting to the list
 
   var alist = new ApiContracts.ArrayOfSetting();
   alist.setSetting(settingList);
@@ -242,6 +263,7 @@ export function getAnAcceptPaymentPage(body, callback) {
     var apiResponse = ctrl.getResponse();
 
     var response = new ApiContracts.GetHostedPaymentPageResponse(apiResponse);
+    console.log("After API call");
 
     //pretty print response
     console.log(JSON.stringify(response, null, 2));

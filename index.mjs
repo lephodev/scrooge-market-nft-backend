@@ -518,6 +518,10 @@ app.post("/api/bitcartcc-notification", async (req, res) => {
 });
 
 app.post("/api/approvely-webhook", async (req, res) => {
+  console.log("webhook called", req);
+  const rawPayload = JSON.stringify(req.body);
+  console.log("rawPayload", rawPayload);
+
   res.send({ success: true });
 });
 
