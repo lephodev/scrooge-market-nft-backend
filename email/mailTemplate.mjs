@@ -65,7 +65,7 @@ export const SUBMIT_REDEEM_REQUEST = (username, prize) => {
                   font-weight: 500;
                   font-family: 'Poppins', sans-serif;
                 ">
-                Hello ${username},
+                Dear:${username}
               </h1>
               <h4 style="
                   color: rgb(255, 255, 255);
@@ -85,17 +85,7 @@ export const SUBMIT_REDEEM_REQUEST = (username, prize) => {
                   color: rgb(207, 207, 207);
                   font-family: 'Poppins', sans-serif;
                 ">
-                  We have received your redemption request of <br>
-                  Token: ${prize} <br>
-                  USD: $ ${prize / 100} <br>
-
-                  We will review the request and process it as quick as we can.  This process is typically completed inside 24H. Keep in mind, we do not process redemptions on weekends or holidays.
-                  <br>
-                  If this is your first time redeeming and you need some guidance, please <a href="https://market.scrooge.casino/static/media/SCROOGE%20Redemption%20Manual.60fd5a4a7bf48ee3a8e1.pdf" target="_blank">download</a> the instructional PDF here.
-                  <br>
-                  If you have any further questions regarding the process, feel free to reach out to us on Facebook Messenger.
-
-                <!-- We have received your redemption request for ${prize} Tokens, we will process this as soon as we can and send you an email upon completion.                 -->
+                We have received your redemption request for ${prize} Tokens, we will process this as soon as we can and send you an email upon completion.                
               </p>
             </div>
             <div style="
@@ -144,7 +134,7 @@ export const SUBMIT_REDEEM_REQUEST = (username, prize) => {
                     margin: 5px;
                   "><img src="https://scrooge-casino.s3.amazonaws.com/SignupAssets/icons8-twitter-144.png" alt="Logo" title="Logo" style="display: block" width="30" height="30" />
                 </a>
-                <!-- <a href="https://t.me/scroogecoingold" target="_blank" rel="noopener noreferrer" style="
+                <a href="https://t.me/scroogecoingold" target="_blank" rel="noopener noreferrer" style="
                     border-radius: 50%;
                     width: 30px;
                     height: 30px;
@@ -152,8 +142,8 @@ export const SUBMIT_REDEEM_REQUEST = (username, prize) => {
                     place-content: center;
                     margin: 5px;
                   "><img src="https://scrooge-casino.s3.amazonaws.com/SignupAssets/icons8-telegram-144.png" alt="Logo" title="Logo" style="display: block" width="30" height="30" />
-                </a> -->
-                <!-- <a href="https://discord.com/invite/scroogecoin" target="_blank" rel="noopener noreferrer" style="
+                </a>
+                <a href="https://discord.com/invite/scroogecoin" target="_blank" rel="noopener noreferrer" style="
                     border-radius: 50%;
                     width: 30px;
                     height: 30px;
@@ -169,7 +159,7 @@ export const SUBMIT_REDEEM_REQUEST = (username, prize) => {
                     display: grid;
                     place-content: center;
                     margin: 5px;
-                  "><img src="https://scrooge-casino.s3.amazonaws.com/SignupAssets/icons8-reddit-120.png" alt="Logo" title="Logo" style="display: block" width="30" height="30" /></a> -->
+                  "><img src="https://scrooge-casino.s3.amazonaws.com/SignupAssets/icons8-reddit-120.png" alt="Logo" title="Logo" style="display: block" width="30" height="30" /></a>
               </div>
               <h6 style="
                   font-size: 16px;
@@ -185,7 +175,7 @@ export const SUBMIT_REDEEM_REQUEST = (username, prize) => {
                   font-family: 'Poppins', sans-serif;
                 ">
                 Please send any feedback or bug reports to
-                <a href="mailto:info@scrooge.casino" style="color: #f9ff00; font-family: 'Poppins', sans-serif">info@scrooge.casino</a>
+                <a href="mailto:utilities@scroogegold.com" style="color: #f9ff00; font-family: 'Poppins', sans-serif">utilities@scroogegold.com</a>
               </p>
               <p style="
                   color: rgb(207, 207, 207);
@@ -270,7 +260,7 @@ export const APPROVE_REDEEM_REQUEST = (username, hash, from) => {
                   font-weight: 500;
                   font-family: 'Poppins', sans-serif;
                 ">
-                Hello ${username},
+                Dear:${username}
               </h1>
               <h4 style="
                   color: rgb(255, 255, 255);
@@ -290,17 +280,13 @@ export const APPROVE_REDEEM_REQUEST = (username, hash, from) => {
                   color: rgb(207, 207, 207);
                   font-family: 'Poppins', sans-serif;
                 ">
-                We are pleased to inform you that your redemption request of
-                <br> Token: ${prize} 
-                <br> USD: $ ${prize / 100}
-                <br> Has been processed.  The Scrooge cryptocurrency is now in your ${WalletAddress} The following is the successful transaction hash from the transfer: ${hash}
-                </p>
+                We have processed your recent redemption request and you should now see the coins inside your wallet.</p>
                 <p style="
                 font-size: 20px;
                     color: rgb(207, 207, 207);
                     font-family: 'Poppins', sans-serif;
                   ">
-                  You can search this on <a href="www.bscscan.com" target="_blank">www.bscscan.com</a>  to validate the transaction.
+                  The txn hash is ${hash}
                   </p>
 
                   <p style="
@@ -308,9 +294,9 @@ export const APPROVE_REDEEM_REQUEST = (username, hash, from) => {
                     color: rgb(207, 207, 207);
                     font-family: 'Poppins', sans-serif;
                   ">
-                  If this is your first time redeeming and you need some guidance, please <a href="https://market.scrooge.casino/static/media/SCROOGE%20Redemption%20Manual.60fd5a4a7bf48ee3a8e1.pdf" target="_blank">download</a> the instructional PDF here
+                  If you don’t already have Scrooge setup as a custom token in your wallet app, follow the below steps:
                   </p>
-                  <!-- <p style="
+                  <p style="
                 font-size: 20px;
                     color: rgb(207, 207, 207);
                     font-family: 'Poppins', sans-serif;
@@ -324,35 +310,35 @@ export const APPROVE_REDEEM_REQUEST = (username, hash, from) => {
                     ">
                     2.Click Import Tokens
 
-                  </p>
-                  <p style="
-                      font-size: 20px;
-                          color: rgb(207, 207, 207);
-                          font-family: 'Poppins', sans-serif;
+                    </p>
+                    <p style="
+                    font-size: 20px;
+                        color: rgb(207, 207, 207);
+                        font-family: 'Poppins', sans-serif;
                       ">
                       3.Click Custom Token
-                  </p>
-                  <p style="
+                      </p>
+                      <p style="
                       font-size: 20px;
                           color: rgb(207, 207, 207);
                           font-family: 'Poppins', sans-serif;
-                      ">
-                      4.Enter the following contract address
-                  </p>
-                  <p style="
-                      font-size: 20px;
-                          color: rgb(207, 207, 207);
-                          font-family: 'Poppins', sans-serif;
-                      ">
-                      ${from}
-                  </p> -->
-                  <p style="
-                  font-size: 20px;
-                      color: rgb(207, 207, 207);
-                      font-family: 'Poppins', sans-serif;
-                  ">
-                  If you have any further questions regarding the process, feel free to reach out to us on Facebook Messenger.
-                  </p>
+                        ">
+                        4.Enter the following contract address
+                        </p>
+                        <p style="
+                        font-size: 20px;
+                            color: rgb(207, 207, 207);
+                            font-family: 'Poppins', sans-serif;
+                          ">
+                          ${from}
+                          </p>
+                          <p style="
+                        font-size: 20px;
+                            color: rgb(207, 207, 207);
+                            font-family: 'Poppins', sans-serif;
+                          ">
+                          We hope you are enjoying your time in scrooge casino and we look forward to processing many more of your winning transactions. 
+                          </p>
             </div>
             <div style="
                 margin-top: 18px !important;
@@ -400,7 +386,7 @@ export const APPROVE_REDEEM_REQUEST = (username, hash, from) => {
                     margin: 5px;
                   "><img src="https://scrooge-casino.s3.amazonaws.com/SignupAssets/icons8-twitter-144.png" alt="Logo" title="Logo" style="display: block" width="30" height="30" />
                 </a>
-                <!-- <a href="https://t.me/scroogecoingold" target="_blank" rel="noopener noreferrer" style="
+                <a href="https://t.me/scroogecoingold" target="_blank" rel="noopener noreferrer" style="
                     border-radius: 50%;
                     width: 30px;
                     height: 30px;
@@ -408,8 +394,8 @@ export const APPROVE_REDEEM_REQUEST = (username, hash, from) => {
                     place-content: center;
                     margin: 5px;
                   "><img src="https://scrooge-casino.s3.amazonaws.com/SignupAssets/icons8-telegram-144.png" alt="Logo" title="Logo" style="display: block" width="30" height="30" />
-                </a> -->
-                <!-- <a href="https://discord.com/invite/scroogecoin" target="_blank" rel="noopener noreferrer" style="
+                </a>
+                <a href="https://discord.com/invite/scroogecoin" target="_blank" rel="noopener noreferrer" style="
                     border-radius: 50%;
                     width: 30px;
                     height: 30px;
@@ -425,7 +411,7 @@ export const APPROVE_REDEEM_REQUEST = (username, hash, from) => {
                     display: grid;
                     place-content: center;
                     margin: 5px;
-                  "><img src="https://scrooge-casino.s3.amazonaws.com/SignupAssets/icons8-reddit-120.png" alt="Logo" title="Logo" style="display: block" width="30" height="30" /></a> -->
+                  "><img src="https://scrooge-casino.s3.amazonaws.com/SignupAssets/icons8-reddit-120.png" alt="Logo" title="Logo" style="display: block" width="30" height="30" /></a>
               </div>
               <h6 style="
                   font-size: 16px;
@@ -441,7 +427,7 @@ export const APPROVE_REDEEM_REQUEST = (username, hash, from) => {
                   font-family: 'Poppins', sans-serif;
                 ">
                 Please send any feedback or bug reports to
-                <a href="mailto:info@scrooge.casino" style="color: #f9ff00; font-family: 'Poppins', sans-serif">info@scrooge.casino</a>
+                <a href="mailto:utilities@scroogegold.com" style="color: #f9ff00; font-family: 'Poppins', sans-serif">utilities@scroogegold.com</a>
               </p>
               <p style="
                   color: rgb(207, 207, 207);
