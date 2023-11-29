@@ -15,8 +15,6 @@ import BNB_ABI from "../config/BNB_ABI.json" assert { type: "json" };
 import { sendInvoice } from "../utils/sendx_send_invoice.mjs";
 import { getSigner } from "../utils/signer.mjs";
 import Queue from "better-queue";
-import createHostedPaymentPage from "authorize-net";
-import { getAnAcceptPaymentPage } from "../utils/payment.mjs";
 
 const { Schema } = mongoose;
 
@@ -2234,23 +2232,5 @@ export async function WithdrawRequestWithFiat(req, res) {
     return res
       .status(500)
       .send({ success: false, message: "Error in Request Process" });
-  }
-}
-
-export async function getFormToken(req, res) {
-  // let user = req.user._id;
-  console.log("useruseruseruser", req.body);
-  try {
-    getAnAcceptPaymentPage(req.body, async (response) => {
-      console.log("response", response);
-      return res.send({
-        code: 200,
-        success: true,
-        response,
-      });
-    });
-  } catch (error) {
-    console.error("errrtt", error);
-    res.status(500).json({ error: "Internal Server Error" });
   }
 }
