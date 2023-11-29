@@ -202,6 +202,7 @@ export function getAnAcceptPaymentPage(body, callback) {
   var merchantAuthenticationType =
     new ApiContracts.MerchantAuthenticationType();
   merchantAuthenticationType.setName(process.env.AUTHORIZE_LOGIN_ID);
+
   merchantAuthenticationType.setTransactionKey(
     process.env.AUTHORIZE_TRANSACTION_KEY
   );
@@ -210,23 +211,38 @@ export function getAnAcceptPaymentPage(body, callback) {
   transactionRequestType.setTransactionType(
     ApiContracts.TransactionTypeEnum.AUTHCAPTURETRANSACTION
   );
-  transactionRequestType.setAmount(70);
+  transactionRequestType.setAmount(0.1);
   var setting1 = new ApiContracts.SettingType();
   setting1.setSettingName("hostedPaymentButtonOptions");
-  setting1.setSettingValue('{"text": "Pay"}');
+  setting1.setSettingValue(JSON.stringify({ text: "DDD" }));
 
   var setting2 = new ApiContracts.SettingType();
   setting2.setSettingName("hostedPaymentOrderOptions");
-  setting2.setSettingValue('{"show": false}');
+  setting2.setSettingValue(JSON.stringify({ show: false }));
+  // Add a new setting for hostedPaymentReturnOptions
+  var setting3 = new ApiContracts.SettingType();
+  setting3.setSettingName("hostedPaymentReturnOptions");
+  setting3.setSettingValue(
+    JSON.stringify({
+      showReceipt: false,
+      url: "https://dev.scrooge.casino/",
+      urlText: "Continuejivan",
+      cancelUrl: "https://dev.scrooge.casino/",
+      cancelUrlText: "Cancel",
+    })
+  );
 
   var settingList = [];
   settingList.push(setting1);
   settingList.push(setting2);
+  settingList.push(setting3); // Add the new setting to the list
 
   var alist = new ApiContracts.ArrayOfSetting();
   alist.setSetting(settingList);
+  console.log("settingList", settingList);
 
   var getRequest = new ApiContracts.GetHostedPaymentPageRequest();
+
   getRequest.setMerchantAuthentication(merchantAuthenticationType);
   getRequest.setTransactionRequest(transactionRequestType);
   getRequest.setHostedPaymentSettings(alist);
@@ -242,6 +258,7 @@ export function getAnAcceptPaymentPage(body, callback) {
     var apiResponse = ctrl.getResponse();
 
     var response = new ApiContracts.GetHostedPaymentPageResponse(apiResponse);
+    console.log("After API call");
 
     //pretty print response
     console.log(JSON.stringify(response, null, 2));
