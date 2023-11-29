@@ -212,11 +212,8 @@ export function getAnAcceptPaymentPage(body, callback) {
     ApiContracts.TransactionTypeEnum.AUTHCAPTURETRANSACTION
   );
   transactionRequestType.setAmount(0.1);
-  transactionRequestType.setCustomer("jiab12432323");
-  transactionRequestType.setInvoiceNumber("jiab12432323");
   transactionRequestType.setEmployeeId("34523342fgfgghfhfhg");
   transactionRequestType.setRefTransId("vgfgsdgfsfds7656565");
-  transactionRequestType.setItemId("jggjhsge53554234432354");
 
   var setting1 = new ApiContracts.SettingType();
   setting1.setSettingName("hostedPaymentButtonOptions");
