@@ -310,7 +310,7 @@ export function getAnAcceptPaymentPage(body, user, callback) {
 }
 
 // call this function when webhook trigger to fetch transaction details and extract the email to find user with ewmail. and update user wallet iwt thw wmail
-export const getTransactionDetails = (body, callback) => {
+export const getTransactionDetails = (body) => {
   console.log("bodddyyyy", body);
   var merchantAuthenticationType =
     new ApiContracts.MerchantAuthenticationType();
@@ -369,7 +369,7 @@ export const getTransactionDetails = (body, callback) => {
       console.log("Null Response.");
     }
 
-    callback(response);
+    // callback(response);
   });
 };
 
