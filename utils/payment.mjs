@@ -20,6 +20,7 @@ export function createAnAcceptPaymentTransaction(body, user, callback) {
   var opaqueData = new ApiContracts.OpaqueDataType();
   opaqueData.setDataDescriptor(body.dataDescriptor);
   opaqueData.setDataValue(body.dataValue);
+  console.log("opaqueData", opaqueData);
 
   var paymentType = new ApiContracts.PaymentType();
   paymentType.setOpaqueData(opaqueData);
@@ -32,6 +33,7 @@ export function createAnAcceptPaymentTransaction(body, user, callback) {
   billTo.setFirstName(user.firstName);
   billTo.setLastName(user.lastName);
   billTo.setEmail(user.email);
+  // billTo.setZip(78722);
 
   var customer = new ApiContracts.CustomerDataType();
   customer.setEmail(user.email);
@@ -106,7 +108,7 @@ export function createAnAcceptPaymentTransaction(body, user, callback) {
     var response = new ApiContracts.CreateTransactionResponse(apiResponse);
 
     //pretty print response
-    console.log(JSON.stringify(response, null, 2));
+    console.log("respo", JSON.stringify(response, null, 2));
 
     if (response != null) {
       if (
@@ -214,6 +216,12 @@ export function getAnAcceptPaymentPage(body, callback) {
   transactionRequestType.setAmount(0.1);
   transactionRequestType.setEmployeeId("34523342fgfgghfhfhg");
   transactionRequestType.setRefTransId("vgfgsdgfsfds7656565");
+  const customerProfileIdType = new ApiContracts.CustomerProfileIdType();
+  customerProfileIdType.setCustomerProfileId("123456");
+  const customerType = new ApiContracts.CustomerType();
+  customerType.setEmail("rizwan@yopmail.com");
+  transactionRequestType.setCustomer(customerType);
+  transactionRequestType.setProfile(customerProfileIdType);
 
   var setting1 = new ApiContracts.SettingType();
   setting1.setSettingName("hostedPaymentButtonOptions");
