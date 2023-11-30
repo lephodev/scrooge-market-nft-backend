@@ -201,7 +201,7 @@ export function createAnAcceptPaymentTransaction(body, user, callback) {
 }
 
 export function getAnAcceptPaymentPage(body, user, callback) {
-  console.log("user", user);
+  console.log("user", user, body);
   var merchantAuthenticationType =
     new ApiContracts.MerchantAuthenticationType();
   merchantAuthenticationType.setName(process.env.AUTHORIZE_LOGIN_ID);
@@ -214,7 +214,7 @@ export function getAnAcceptPaymentPage(body, user, callback) {
   transactionRequestType.setTransactionType(
     ApiContracts.TransactionTypeEnum.AUTHCAPTURETRANSACTION
   );
-  transactionRequestType.setAmount(0.1);
+  transactionRequestType.setAmount(parseInt(body?.amount));
   transactionRequestType.setEmployeeId("34523342fgfgghfhfhg");
   transactionRequestType.setRefTransId("vgfgsdgfsfds7656565");
   const customerProfileIdType = new ApiContracts.CustomerProfileIdType();
