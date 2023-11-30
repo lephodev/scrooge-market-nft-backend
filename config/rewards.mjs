@@ -49,7 +49,16 @@ export async function addChips(
   bonusToken
 ) {
   console.log("_qty,", _qty);
-  console.log("bonusTokenbonusToken", bonusToken);
+  console.log(
+    "bonusTokenbonusToken",
+    _user_id,
+    _qty,
+    _address,
+    transactionType,
+    (gc = 0),
+    (recipt = {}),
+    bonusToken
+  );
   try {
     let query = {};
     // For Rollover
