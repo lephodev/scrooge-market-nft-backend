@@ -1936,12 +1936,11 @@ const WithdrawQ = new Queue(async function (task, cb) {
   if (task.type === "WithdrawRequest") {
     await WithdrawRequest(task.req, task.res);
   }
-  if(task.type === "FastWithdrawRequest"){
+  if (task.type === "FastWithdrawRequest") {
     await FastWithdrawRequest(task.req, task.res);
   }
   cb(null, 1);
 });
-
 
 export const createWithdraw = async (req, res, next) => {
   console.log("createWithdraw route");
@@ -2085,18 +2084,21 @@ export async function FastWithdrawRequest(req, res) {
         message: "Your wallet blocked by admin",
       });
     }
-  if(amount <= 5000 ||  amount>=50000){
-    return res.send({ success: false, message: "You can only request withdraw amount between 5000 and 50000" });
-  }
-  const res = await fetch(`https://api.coinbrain.com/public/coin-info`, {
-    method: "post",
-    body: JSON.stringify({
-      56: [process.env.OG_CONTRACT_ADDRESS],
-    }),
-  });
-  const data = await res.json();
-  const current_price = data[0].priceUsd;
-  const totalScrooge=(amount * 100)/current_price;
+    if (amount <= 5000 || amount >= 50000) {
+      return res.send({
+        success: false,
+        message: "You can only request withdraw amount between 5000 and 50000",
+      });
+    }
+    const res = await fetch(`https://api.coinbrain.com/public/coin-info`, {
+      method: "post",
+      body: JSON.stringify({
+        56: [process.env.OG_CONTRACT_ADDRESS],
+      }),
+    });
+    const data = await res.json();
+    const current_price = data[0].priceUsd;
+    const totalScrooge = (amount * 100) / current_price;
     let getKycuser = await db
       .get_scrooge_user_kycs()
       .findOne({ userId: ObjectId(user_id) });
@@ -2168,7 +2170,7 @@ export async function FastWithdrawRequest(req, res) {
     emailSend.SubmitRedeemRequestEmail(email, username, totalScrooge);
     return res.send({
       success: true,
-      prize:totalScrooge,
+      prize: totalScrooge,
       message:
         "Your redemption request has been received, please allow up to 24H for processing.",
     });
@@ -2366,9 +2368,10 @@ export async function WithdrawRequestWithFiat(req, res) {
 
 export async function getFormToken(req, res) {
   // let user = req.user._id;
+  const { user } = req || {};
   console.log("useruseruseruser", req.body);
   try {
-    getAnAcceptPaymentPage(req.body, async (response) => {
+    getAnAcceptPaymentPage(req.body, user, async (response) => {
       console.log("response", response);
       return res.send({
         code: 200,

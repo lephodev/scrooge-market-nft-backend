@@ -24,7 +24,10 @@ import cors from "cors";
 import { checkUserCanSpin } from "./rouletteSpin/rouletteUtils.mjs";
 import { CryptoToGCQueue, TicketToTokenQueue } from "./utils/Queues.mjs";
 import logger from "./config/logger.mjs";
-import { createAnAcceptPaymentTransaction } from "./utils/payment.mjs";
+import {
+  createAnAcceptPaymentTransaction,
+  getTransactionDetails,
+} from "./utils/payment.mjs";
 import { sendInvoice } from "./utils/sendx_send_invoice.mjs";
 import { ObjectId } from "mongodb";
 import Queue from "better-queue";
@@ -518,9 +521,9 @@ app.post("/api/bitcartcc-notification", async (req, res) => {
 });
 
 app.post("/api/approvely-webhook", async (req, res) => {
-  console.log("webhook called", req);
   const rawPayload = JSON.stringify(req.body);
   console.log("rawPayload", rawPayload);
+  getTransactionDetails(rawPayload);
 
   res.send({ success: true });
 });
@@ -706,7 +709,7 @@ app.post(
   rewards.WithdrawRequestWithFiat
 );
 app.get("/api/getCryptoToGCPurcahse", auth(), rewards.getCryptoToGCPurcahse);
-app.post("/api/getFormToken", rewards.getFormToken);
+app.post("/api/getFormToken", auth(), rewards.getFormToken);
 
 app.listen(PORT, () => {
   console.log("Server is running.", PORT);
