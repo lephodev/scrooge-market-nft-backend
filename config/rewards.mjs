@@ -48,17 +48,6 @@ export async function addChips(
   recipt = {},
   bonusToken
 ) {
-  console.log("_qty,", _qty);
-  console.log(
-    "bonusTokenbonusToken",
-    _user_id,
-    _qty,
-    _address,
-    transactionType,
-    (gc = 0),
-    (recipt = {}),
-    bonusToken
-  );
   try {
     let query = {};
     // For Rollover
@@ -78,6 +67,7 @@ export async function addChips(
         monthlyClaimBonus: bonusToken,
       };
     }
+    console.log("query", query);
     const { value: user } = await db.get_scrooge_usersDB().findOneAndUpdate(
       { _id: ObjectId(_user_id) },
       {
