@@ -311,7 +311,7 @@ export function getAnAcceptPaymentPage(body, user, callback) {
 
 // call this function when webhook trigger to fetch transaction details and extract the email to find user with ewmail. and update user wallet iwt thw wmail
 export const getTransactionDetails = (body) => {
-  console.log("bodddyyyy", body);
+  console.log("bodddyyyy", body.payload);
   var merchantAuthenticationType =
     new ApiContracts.MerchantAuthenticationType();
   merchantAuthenticationType.setName(process.env.AUTHORIZE_LOGIN_ID);
@@ -322,7 +322,7 @@ export const getTransactionDetails = (body) => {
 
   var getRequest = new ApiContracts.GetTransactionDetailsRequest();
   getRequest.setMerchantAuthentication(merchantAuthenticationType);
-  getRequest.setTransId(body.transactionId);
+  getRequest.setTransId(body?.payload?.id);
 
   console.log(JSON.stringify(getRequest.getJSON(), null, 2));
 
