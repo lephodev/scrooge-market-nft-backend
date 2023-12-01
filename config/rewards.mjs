@@ -1937,6 +1937,7 @@ const WithdrawQ = new Queue(async function (task, cb) {
     await WithdrawRequest(task.req, task.res);
   }
   if(task.type === "FastWithdrawRequest"){
+    console.log("response--->",task.res)
     await FastWithdrawRequest(task.req, task.res);
   }
   cb(null, 1);
@@ -2064,7 +2065,7 @@ export async function WithdrawRequest(req, res) {
   }
 }
 export async function FastWithdrawRequest(req, res) {
-  console.log("call withdrwa");
+  console.log("call withdrwa",req,res);
   const address = req.params.address;
   const amount = Number(req.params.amount);
 
@@ -2088,13 +2089,13 @@ export async function FastWithdrawRequest(req, res) {
   if(amount <= 5000 ||  amount>=50000){
     return res.send({ success: false, message: "You can only request withdraw amount between 5000 and 50000" });
   }
-  const res = await fetch(`https://api.coinbrain.com/public/coin-info`, {
+  const resp = await fetch(`https://api.coinbrain.com/public/coin-info`, {
     method: "post",
     body: JSON.stringify({
       56: [process.env.OG_CONTRACT_ADDRESS],
     }),
   });
-  const data = await res.json();
+  const data = await resp.json();
   const current_price = data[0].priceUsd;
   const totalScrooge=(amount * 100)/current_price;
     let getKycuser = await db
