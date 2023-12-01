@@ -523,8 +523,9 @@ app.post("/api/bitcartcc-notification", async (req, res) => {
 
 app.post("/api/approvely-webhook", async (req, res) => {
   const rawPayload = JSON.stringify(req.body);
+  console.log("rawPayload", rawPayload);
   getTransactionDetails(rawPayload, async (response) => {
-    // console.log("response528", response.transaction.settleAmount);
+    console.log("response528", response);
     const amount = response?.transaction?.settleAmount;
     const email = response?.transaction?.customer?.email;
     // console.log("email", email);
