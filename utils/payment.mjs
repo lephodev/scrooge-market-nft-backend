@@ -201,7 +201,6 @@ export function createAnAcceptPaymentTransaction(body, user, callback) {
 }
 
 export function getAnAcceptPaymentPage(body, user, callback) {
-  console.log("user", user, body);
   var merchantAuthenticationType =
     new ApiContracts.MerchantAuthenticationType();
   merchantAuthenticationType.setName(process.env.AUTHORIZE_LOGIN_ID);
@@ -214,12 +213,14 @@ export function getAnAcceptPaymentPage(body, user, callback) {
   transactionRequestType.setTransactionType(
     ApiContracts.TransactionTypeEnum.AUTHCAPTURETRANSACTION
   );
+
   transactionRequestType.setAmount(parseFloat(body?.amount));
-  transactionRequestType.setEmployeeId("34523342fgfgghfhfhg");
-  transactionRequestType.setRefTransId("vgfgsdgfsfds7656565");
+
   const customerProfileIdType = new ApiContracts.CustomerProfileIdType();
   const customerType = new ApiContracts.CustomerType();
+
   customerType.setEmail(user.email); // set from  user middle ware email
+
   transactionRequestType.setCustomer(customerType);
   transactionRequestType.setProfile(customerProfileIdType);
 
@@ -230,7 +231,9 @@ export function getAnAcceptPaymentPage(body, user, callback) {
   var setting2 = new ApiContracts.SettingType();
   setting2.setSettingName("hostedPaymentOrderOptions");
   setting2.setSettingValue('{"show": false}');
+
   // Add a new setting for hostedPaymentReturnOptions
+
   var setting3 = new ApiContracts.SettingType();
   setting3.setSettingName("hostedPaymentReturnOptions");
   setting3.setSettingValue(
@@ -242,6 +245,7 @@ export function getAnAcceptPaymentPage(body, user, callback) {
       cancelUrlText: "Cancel",
     })
   );
+
   var setting4 = new ApiContracts.SettingType();
   setting4.setSettingName("hostedPaymentIFrameCommunicatorUrl");
   setting4.setSettingValue(JSON.stringify({ url: "https://scrooge.casino" }));
@@ -260,8 +264,6 @@ export function getAnAcceptPaymentPage(body, user, callback) {
   getRequest.setTransactionRequest(transactionRequestType);
   getRequest.setHostedPaymentSettings(alist);
 
-  //console.log(JSON.stringify(getRequest.getJSON(), null, 2));
-
   var ctrl = new ApiControllers.GetHostedPaymentPageController(
     getRequest.getJSON()
   );
@@ -271,27 +273,12 @@ export function getAnAcceptPaymentPage(body, user, callback) {
     var apiResponse = ctrl.getResponse();
 
     var response = new ApiContracts.GetHostedPaymentPageResponse(apiResponse);
-    console.log("After API call");
-
-    //pretty print response
-    console.log(JSON.stringify(response, null, 2));
-    ctrl.setEnvironment("https://api.authorize.net/xml/v1/request.api");
-
-    // ctrl.execute(function () {
-    //   var apiResponse = ctrl.getResponse();
-
-    //   var response = new ApiContracts.CreateTransactionResponse(apiResponse);
-
-    //   //pretty print response
-    //   console.log(JSON.stringify(response, null, 2));
 
     if (response != null) {
       if (
         response.getMessages().getResultCode() ==
         ApiContracts.MessageTypeEnum.OK
       ) {
-        console.log("Hosted payment page token :");
-        console.log(response.getToken());
       } else {
         //console.log('Result Code: ' + response.getMessages().getResultCode());
         console.log(
@@ -311,9 +298,7 @@ export function getAnAcceptPaymentPage(body, user, callback) {
 
 // call this function when webhook trigger to fetch transaction details and extract the email to find user with ewmail. and update user wallet iwt thw wmail
 export const getTransactionDetails = (body, callback) => {
-  console.log("bodddyyyy", typeof body, JSON.parse(body), body);
-  let d = JSON.parse(body);
-  console.log("body", d.payload);
+  let details = JSON.parse(body);
   var merchantAuthenticationType =
     new ApiContracts.MerchantAuthenticationType();
   merchantAuthenticationType.setName(process.env.AUTHORIZE_LOGIN_ID);
@@ -324,7 +309,7 @@ export const getTransactionDetails = (body, callback) => {
 
   var getRequest = new ApiContracts.GetTransactionDetailsRequest();
   getRequest.setMerchantAuthentication(merchantAuthenticationType);
-  getRequest.setTransId(JSON.parse(d?.payload?.id));
+  getRequest.setTransId(JSON.parse(details?.payload?.id));
 
   console.log(JSON.stringify(getRequest.getJSON(), null, 2));
 
@@ -338,8 +323,6 @@ export const getTransactionDetails = (body, callback) => {
     var apiResponse = ctrl.getResponse();
 
     var response = new ApiContracts.GetTransactionDetailsResponse(apiResponse);
-
-    console.log(JSON.stringify(response, null, 2));
 
     if (response != null) {
       if (
@@ -374,13 +357,3 @@ export const getTransactionDetails = (body, callback) => {
     callback(response);
   });
 };
-
-// if (require.main === module) {
-//   getAnAcceptPaymentPage(function () {
-//     console.log("getAnAcceptPaymentPage call complete.");
-//   });
-// }
-
-// getTransactionDetails({ transactionId: "120144628046" }, (response) => {
-//   console.log("error in getTransaction", response);
-// });
