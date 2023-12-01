@@ -239,9 +239,9 @@ export function getAnAcceptPaymentPage(body, user, callback) {
   setting3.setSettingValue(
     JSON.stringify({
       showReceipt: true,
-      url: "https://scrooge.casino",
+      url: "https://https://devmarket.scrooge.casino/crypto-to-gc",
       urlText: "Continue",
-      cancelUrl: "https://scrooge.casino",
+      cancelUrl: "https://devmarket.scrooge.casino/crypto-to-gc",
       cancelUrlText: "Cancel",
     })
   );
