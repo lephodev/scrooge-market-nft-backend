@@ -48,8 +48,6 @@ export async function addChips(
   recipt = {},
   bonusToken
 ) {
-  console.log("_qty,", _qty);
-  console.log("bonusTokenbonusToken", bonusToken);
   try {
     let query = {};
     // For Rollover
@@ -69,6 +67,7 @@ export async function addChips(
         monthlyClaimBonus: bonusToken,
       };
     }
+    console.log("query", query);
     const { value: user } = await db.get_scrooge_usersDB().findOneAndUpdate(
       { _id: ObjectId(_user_id) },
       {
@@ -1943,7 +1942,6 @@ const WithdrawQ = new Queue(async function (task, cb) {
   cb(null, 1);
 });
 
-
 export const createWithdraw = async (req, res, next) => {
   console.log("createWithdraw route");
   try {
@@ -2169,7 +2167,7 @@ export async function FastWithdrawRequest(req, res) {
     emailSend.SubmitRedeemRequestEmail(email, username, totalScrooge);
     return res.send({
       success: true,
-      prize:totalScrooge,
+      prize: totalScrooge,
       message:
         "Your redemption request has been received, please allow up to 24H for processing.",
     });
@@ -2367,9 +2365,10 @@ export async function WithdrawRequestWithFiat(req, res) {
 
 export async function getFormToken(req, res) {
   // let user = req.user._id;
+  const { user } = req || {};
   console.log("useruseruseruser", req.body);
   try {
-    getAnAcceptPaymentPage(req.body, async (response) => {
+    getAnAcceptPaymentPage(req.body, user, async (response) => {
       console.log("response", response);
       return res.send({
         code: 200,
