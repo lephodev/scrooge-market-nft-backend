@@ -1936,7 +1936,6 @@ const WithdrawQ = new Queue(async function (task, cb) {
     await WithdrawRequest(task.req, task.res);
   }
   if(task.type === "FastWithdrawRequest"){
-    console.log("response--->",task.res)
     await FastWithdrawRequest(task.req, task.res);
   }
   cb(null, 1);
@@ -1951,7 +1950,7 @@ export const createWithdraw = async (req, res, next) => {
   }
 };
 export const createFastWithdraw = async (req, res, next) => {
-  console.log("createWithdraw route");
+  console.log("createfastWithdraw route");
   try {
     WithdrawQ.push({ req, res, type: "FastWithdrawRequest" });
   } catch (error) {
@@ -2063,7 +2062,7 @@ export async function WithdrawRequest(req, res) {
   }
 }
 export async function FastWithdrawRequest(req, res) {
-  console.log("call withdrwa",req,res);
+  console.log("call fast withdrwa",);
   const address = req.params.address;
   const amount = Number(req.params.amount);
 
@@ -2084,7 +2083,7 @@ export async function FastWithdrawRequest(req, res) {
         message: "Your wallet blocked by admin",
       });
     }
-  if(amount <= 5000 ||  amount>=50000){
+  if(amount < 5000 ||  amount>50000){
     return res.send({ success: false, message: "You can only request withdraw amount between 5000 and 50000" });
   }
   const resp = await fetch(`https://api.coinbrain.com/public/coin-info`, {
