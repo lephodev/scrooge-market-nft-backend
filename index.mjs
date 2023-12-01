@@ -521,7 +521,7 @@ app.post("/api/bitcartcc-notification", async (req, res) => {
   res.send({ success: true });
 });
 
-app.post("/api/approvely-webhook", async (req, res) => {
+app.post("/api/authorize-webhook", async (req, res) => {
   const rawPayload = JSON.stringify(req.body);
   console.log("rawPayload", rawPayload);
   getTransactionDetails(rawPayload, async (response) => {
