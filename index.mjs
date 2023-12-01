@@ -524,10 +524,10 @@ app.post("/api/bitcartcc-notification", async (req, res) => {
 app.post("/api/approvely-webhook", async (req, res) => {
   const rawPayload = JSON.stringify(req.body);
   getTransactionDetails(rawPayload, async (response) => {
-    console.log("response528", response.transaction.settleAmount);
+    // console.log("response528", response.transaction.settleAmount);
     const amount = response.transaction.settleAmount;
     const email = response.transaction.customer.email;
-    console.log("email", email);
+    // console.log("email", email);
     if (
       response.messages.resultCode !== "Ok" ||
       response.transactionResponse?.errors
@@ -540,16 +540,16 @@ app.post("/api/approvely-webhook", async (req, res) => {
     }
     const getUser = await db.get_scrooge_usersDB().findOne({ email: email });
     const data = await db.get_marketplace_gcPackagesDB().findOne({
-      priceInBUSD: amount.toString(),
+      priceInBUSD: amount?.toString(),
     });
     console.log("data", data);
     console.log("getUser", parseInt(data?.gcAmount));
     const trans = await rewards.addChips(
-      getUser._id.toString(),
-      parseInt(data.freeTokenAmount),
+      getUser?._id?.toString(),
+      parseInt(data?.freeTokenAmount),
       "",
       "CC To Gold Coin",
-      parseInt(data.gcAmount),
+      parseInt(data?.gcAmount),
       response,
       0
     );
