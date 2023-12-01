@@ -543,7 +543,7 @@ app.post("/api/approvely-webhook", async (req, res) => {
       priceInBUSD: amount.toString(),
     });
     console.log("data", data);
-    console.log("getUser", parseInt(data.gcAmount));
+    console.log("getUser", parseInt(data?.gcAmount));
     const trans = await rewards.addChips(
       getUser._id.toString(),
       parseInt(data.freeTokenAmount),

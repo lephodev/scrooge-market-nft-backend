@@ -214,7 +214,7 @@ export function getAnAcceptPaymentPage(body, user, callback) {
   transactionRequestType.setTransactionType(
     ApiContracts.TransactionTypeEnum.AUTHCAPTURETRANSACTION
   );
-  transactionRequestType.setAmount(parseInt(body?.amount));
+  transactionRequestType.setAmount(parseFloat(body?.amount));
   transactionRequestType.setEmployeeId("34523342fgfgghfhfhg");
   transactionRequestType.setRefTransId("vgfgsdgfsfds7656565");
   const customerProfileIdType = new ApiContracts.CustomerProfileIdType();
