@@ -102,80 +102,82 @@ export async function addChips(
       chips: _qty,
       timestamp: new Date(),
     });
-    const { _id, username, email, firstName, lastName, profile, ipAddress } =
-      user;
-    const transactionPayload = {
-      amount: gc ? gc : _qty,
-      transactionType: transactionType,
-      prevWallet: user.wallet,
-      updatedWallet: user.wallet + _qty,
-      userId: {
-        _id,
-        username,
-        email,
-        firstName,
-        lastName,
-        profile,
-        ipAddress,
-      },
+    if (user) {
+      const { _id, username, email, firstName, lastName, profile, ipAddress } =
+        user;
+      const transactionPayload = {
+        amount: gc ? gc : _qty,
+        transactionType: transactionType,
+        prevWallet: user.wallet,
+        updatedWallet: user.wallet + _qty,
+        userId: {
+          _id,
+          username,
+          email,
+          firstName,
+          lastName,
+          profile,
+          ipAddress,
+        },
 
-      address: _address,
-      updatedTicket: user.ticket,
-      prevGoldCoin: user.goldCoin,
-      updatedGoldCoin: user.goldCoin + gc,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      transactionDetails: recipt,
-      prevTicket: user.ticket,
-    };
-    const trans_id = await db
-      .get_scrooge_transactionDB()
-      .insertOne(transactionPayload);
-
-    // For RollOver
-
-    if (transactionType === "Monthly Reward Claim") {
-      const exprDate = new Date();
-      exprDate.setHours(24 * 30 + exprDate.getHours());
-      exprDate.setSeconds(0);
-      exprDate.setMilliseconds(0);
-
-      await db.get_scrooge_bonus().insert({
-        userId: ObjectId(_user_id),
-        bonusType: "monthly",
-        bonusAmount: _qty,
-        bonusExpirationTime: exprDate,
-        wagerLimit: _qty * 30,
-        rollOverTimes: 30,
+        address: _address,
+        updatedTicket: user.ticket,
+        prevGoldCoin: user.goldCoin,
+        updatedGoldCoin: user.goldCoin + gc,
         createdAt: new Date(),
         updatedAt: new Date(),
-        isExpired: false,
-        wageredAmount: 0,
-        subCategory: "Monthly",
-        restAmount: bonusToken,
-      });
+        transactionDetails: recipt,
+        prevTicket: user.ticket,
+      };
+      const trans_id = await db
+        .get_scrooge_transactionDB()
+        .insertOne(transactionPayload);
+
+      // For RollOver
+
+      if (transactionType === "Monthly Reward Claim") {
+        const exprDate = new Date();
+        exprDate.setHours(24 * 30 + exprDate.getHours());
+        exprDate.setSeconds(0);
+        exprDate.setMilliseconds(0);
+
+        await db.get_scrooge_bonus().insert({
+          userId: ObjectId(_user_id),
+          bonusType: "monthly",
+          bonusAmount: _qty,
+          bonusExpirationTime: exprDate,
+          wagerLimit: _qty * 30,
+          rollOverTimes: 30,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          isExpired: false,
+          wageredAmount: 0,
+          subCategory: "Monthly",
+          restAmount: bonusToken,
+        });
+      }
+
+      // const transPayload = {
+      //   amount: _qty,
+      //   transactionType: "Free Tokens",
+      //   prevWallet: getUserData?.wallet + _qty,
+      //   updatedWallet: getUserData?.wallet + _qty,
+      //   userId: ObjectId(_user_id),
+      //   updatedTicket: getUserData?.ticket,
+      //   prevGoldCoin: getUserData?.goldCoin,
+      //   updatedGoldCoin: getUserData?.goldCoin,
+      //   createdAt: new Date(),
+      //   updatedAt: new Date(),
+      //   prevTicket: getUserData?.ticket,
+
+      // };
+      // await db
+      //   .get_scrooge_transactionDB()
+      //   .insertOne(transPayload)
+      //   .then((trans) => {
+      //     trans_id = trans.insertedId;
+      //   });
     }
-
-    // const transPayload = {
-    //   amount: _qty,
-    //   transactionType: "Free Tokens",
-    //   prevWallet: getUserData?.wallet + _qty,
-    //   updatedWallet: getUserData?.wallet + _qty,
-    //   userId: ObjectId(_user_id),
-    //   updatedTicket: getUserData?.ticket,
-    //   prevGoldCoin: getUserData?.goldCoin,
-    //   updatedGoldCoin: getUserData?.goldCoin,
-    //   createdAt: new Date(),
-    //   updatedAt: new Date(),
-    //   prevTicket: getUserData?.ticket,
-
-    // };
-    // await db
-    //   .get_scrooge_transactionDB()
-    //   .insertOne(transPayload)
-    //   .then((trans) => {
-    //     trans_id = trans.insertedId;
-    //   });
     return { code: 200, message: " token buy success" };
   } catch (error) {
     console.log("errrr", error);
