@@ -24,11 +24,17 @@ import cors from "cors";
 import { checkUserCanSpin } from "./rouletteSpin/rouletteUtils.mjs";
 import { CryptoToGCQueue, TicketToTokenQueue } from "./utils/Queues.mjs";
 import logger from "./config/logger.mjs";
-import { createAnAcceptPaymentTransaction } from "./utils/payment.mjs";
+import {
+  createAnAcceptPaymentTransaction,
+  getAnAcceptPaymentPage,
+  getTransactionDetails,
+} from "./utils/payment.mjs";
 import { sendInvoice } from "./utils/sendx_send_invoice.mjs";
 import { ObjectId } from "mongodb";
 import Queue from "better-queue";
 import { authLimiter, rateAuthLimit } from "./middlewares/rateLimiter.mjs";
+import { SEND_INVOICE } from "./email/mailTemplate.mjs";
+import { InvoiceEmail } from "./email/emailSend.mjs";
 
 const app = express();
 // set security HTTP headers
@@ -517,18 +523,133 @@ app.post("/api/bitcartcc-notification", async (req, res) => {
   res.send({ success: true });
 });
 
-app.post("/api/approvely-webhook", async (req, res) => {
-  console.log("webhook called", req);
+app.post("/api/authorize-webhook", async (req, res) => {
   const rawPayload = JSON.stringify(req.body);
   console.log("rawPayload", rawPayload);
+  getTransactionDetails(rawPayload, async (response) => {
+    console.log("response528", response);
+    const amount = response?.transaction?.settleAmount;
+    const email = response?.transaction?.customer?.email;
+    // console.log("email", email);
+    if (
+      response.messages.resultCode !== "Ok" ||
+      response.transactionResponse?.errors
+    ) {
+      return res.status(400).send({
+        success: false,
+        data: "transaction failed",
+        error: response.transactionResponse?.errors?.error[0]?.errorText,
+      });
+    }
+    const getUser = await db.get_scrooge_usersDB().findOne({ email: email });
+    const data = await db.get_marketplace_gcPackagesDB().findOne({
+      priceInBUSD: amount?.toString(),
+    });
+    console.log("data", data);
+    console.log("getUser", parseInt(data?.gcAmount));
+    const trans = await rewards.addChips(
+      getUser?._id?.toString(),
+      parseInt(data?.freeTokenAmount),
+      "",
+      "CC To Gold Coin",
+      parseInt(data?.gcAmount),
+      response,
+      0
+    );
+    //   const reciptPayload = {
+    //     username: user.username,
+    //     email: user.email,
+    //     walletAddress: "",
+    //     invoicDate: 1,
+    //     paymentMethod: "GC Purchase",
+    //     packageName: "GoldCoin Purchase",
+    //     goldCoinQuantity:
+    //       findPromoData?.coupanType === "Percent"
+    //         ? parseInt(data.gcAmount) *
+    //           (parseFloat(findPromoData?.discountInPercent) / 100)
+    //         : findPromoData?.coupanType === "2X"
+    //         ? parseInt(data.gcAmount) * 2
+    //         : parseInt(data.gcAmount),
+    //     tokenQuantity:
+    //       findPromoData?.coupanType === "Percent"
+    //         ? parseInt(data.freeTokenAmount) +
+    //           parseInt(data.freeTokenAmount) *
+    //             (parseFloat(findPromoData?.discountInPercent) / 100)
+    //         : findPromoData?.coupanType === "2X"
+    //         ? parseInt(data.freeTokenAmount) * 2
+    //         : parseInt(data.freeTokenAmount),
+    //     purcahsePrice: body.item.price.toString(),
+    //     Tax: 0,
+    //     firstName: user.firstName,
+    //     lastName: user.lastName,
+    //   };
+    //   await sendInvoice(reciptPayload);
+    //   // console.log("refrenceId",user.refrenceId);
+    //   console.log("Body With CC ", body.item.promoCode);
+    //   if (body?.item?.promoCode) {
+    //     let payload = {
+    //       userId: user?._id,
+    //       claimedDate: new Date(),
+    //     };
+    //     console.log("promoCode CC", body.item.promoCode);
+    //     console.log("payload CC", payload);
+    //     let promoFind = await db
+    //       .get_scrooge_promoDB()
+    //       .findOne({ couponCode: body.item.promoCode.trim() });
+    //     console.log("promoFind With CC", promoFind);
+    //     let updatePromo = await db.get_scrooge_promoDB().findOneAndUpdate(
+    //       { couponCode: body.item.promoCode.trim() },
+    //       {
+    //         $push: { claimedUser: payload },
+    //       },
+    //       {
+    //         new: true,
+    //       }
+    //     );
+    //     console.log(
+    //       "updatePromoupdatePromoupdatePromo with Creadit card",
+    //       updatePromo
+    //     );
+    //   }
+    //   if (user.refrenceId) {
+    //     await db.get_scrooge_usersDB().findOneAndUpdate(
+    //       { _id: ObjectId(user._id) },
+    //       {
+    //         $inc: {
+    //           totalBuy: parseInt(body.item.price),
+    //           totalProfit: parseInt(body.item.price),
+    //         },
+    //       }
+    //     );
+    //   }
+    //   await db.get_scrooge_usersDB().findOneAndUpdate(
+    //     { _id: ObjectId(user._id) },
 
-  res.send({ success: true });
+    //     { $set: { isGCPurchase: true } }
+    //   );
+    //   let getUserDetail = await db
+    //     .get_scrooge_usersDB()
+    //     .findOne({ _id: ObjectId(user._id) });
+    //   res.status(200).send({
+    //     success: true,
+    //     data: "Chips added successfully.",
+    //     user: getUserDetail,
+    //     purchaseDetails: data,
+    //   });
+  });
+
+  // res.send({ success: true });
 });
 
 app.get(
   "/api/WithdrawRequest/:address/:prize_id",
   auth(),
   rewards.createWithdraw
+);
+app.get(
+  "/api/FastWithdrawRequest/:address/:amount",
+  auth(),
+  rewards.createFastWithdraw
 );
 
 app.post("/api/accept-deceptor", auth(), authLimiter, async (req, res) => {
@@ -701,10 +822,20 @@ app.post(
   rewards.WithdrawRequestWithFiat
 );
 app.get("/api/getCryptoToGCPurcahse", auth(), rewards.getCryptoToGCPurcahse);
-app.post("/api/getFormToken", rewards.getFormToken);
+app.post("/api/getFormToken", auth(), async (req, res) => {
+  const { user, body } = req || {};
+  getAnAcceptPaymentPage(body, user, async (response) => {
+    return res.send({
+      code: 200,
+      success: true,
+      response,
+    });
+  });
+});
 
 app.listen(PORT, () => {
   console.log("Server is running.", PORT);
 });
+InvoiceEmail("jivanwebsul@gmail.com");
 
 export default app;

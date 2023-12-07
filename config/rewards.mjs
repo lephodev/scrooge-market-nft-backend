@@ -48,8 +48,6 @@ export async function addChips(
   recipt = {},
   bonusToken
 ) {
-  console.log("_qty,", _qty);
-  console.log("bonusTokenbonusToken", bonusToken);
   try {
     let query = {};
     // For Rollover
@@ -69,6 +67,7 @@ export async function addChips(
         monthlyClaimBonus: bonusToken,
       };
     }
+    console.log("query", query);
     const { value: user } = await db.get_scrooge_usersDB().findOneAndUpdate(
       { _id: ObjectId(_user_id) },
       {
@@ -1498,12 +1497,12 @@ export async function convertCryptoToGoldCoin(req, res) {
     let getBlock = await db
       .get_scrooge_transactionDB()
       .findOne({ "transactionDetails.blockNumber": recipt?.blockNumber });
-    // if (getBlock?.transactionDetails?.blockNumber === recipt?.blockNumber) {
-    //   return res.status(200).send({
-    //     success: false,
-    //     data: "Transaction is already exist",
-    //   });
-    // }
+    if (getBlock?.transactionDetails?.blockNumber === recipt?.blockNumber) {
+      return res.status(200).send({
+        success: false,
+        data: "Transaction is already exist",
+      });
+    }
     console.log("recipt", recipt);
     const amt = await getDecodedData(recipt);
     console.log("amt", amt);
@@ -1936,6 +1935,9 @@ const WithdrawQ = new Queue(async function (task, cb) {
   if (task.type === "WithdrawRequest") {
     await WithdrawRequest(task.req, task.res);
   }
+  if (task.type === "FastWithdrawRequest") {
+    await FastWithdrawRequest(task.req, task.res);
+  }
   cb(null, 1);
 });
 
@@ -1947,7 +1949,14 @@ export const createWithdraw = async (req, res, next) => {
     console.log("error", error);
   }
 };
-
+export const createFastWithdraw = async (req, res, next) => {
+  console.log("createfastWithdraw route");
+  try {
+    WithdrawQ.push({ req, res, type: "FastWithdrawRequest" });
+  } catch (error) {
+    console.log("error", error);
+  }
+};
 export async function WithdrawRequest(req, res) {
   console.log("call withdrwa");
   const address = req.params.address;
@@ -2042,6 +2051,125 @@ export async function WithdrawRequest(req, res) {
     return res.send({
       success: true,
       prize,
+      message:
+        "Your redemption request has been received, please allow up to 24H for processing.",
+    });
+  } catch (e) {
+    console.log("outerCatch", e);
+    return res
+      .status(500)
+      .send({ success: false, message: "Error in Request Process" });
+  }
+}
+export async function FastWithdrawRequest(req, res) {
+  console.log("call fast withdrwa");
+  const address = req.params.address;
+  const amount = Number(req.params.amount);
+
+  let updtdUser = await db
+    .get_scrooge_usersDB()
+    .findOne({ _id: req?.user?._id });
+  console.log("updtdUser===>>>", updtdUser);
+  let user_id = updtdUser?._id;
+  // let token = updtdUser?.wallet;
+  let totalwallet = updtdUser?.wallet - updtdUser?.nonWithdrawableAmt;
+
+  // console.log("token--->>>", token);
+
+  try {
+    if (req?.user?.isBlockWallet) {
+      return res.send({
+        success: false,
+        message: "Your wallet blocked by admin",
+      });
+    }
+    if (amount < 5000 || amount > 50000) {
+      return res.send({
+        success: false,
+        message: "You can only request withdraw amount between 5000 and 50000",
+      });
+    }
+    const resp = await fetch(`https://api.coinbrain.com/public/coin-info`, {
+      method: "post",
+      body: JSON.stringify({
+        56: [process.env.OG_CONTRACT_ADDRESS],
+      }),
+    });
+    const data = await resp.json();
+    const current_price = data[0].priceUsd;
+    const totalScrooge = (amount * 100) / current_price;
+    let getKycuser = await db
+      .get_scrooge_user_kycs()
+      .findOne({ userId: ObjectId(user_id) });
+    if (getKycuser?.status !== "accept") {
+      return res.send({ success: false, message: "Your kyc is not approved" });
+    }
+    // const prize = await db
+    //   .get_marketplace_prizesDB()
+    //   .findOne({ _id: ObjectId(prize_id) });
+    // // console.log("prize", prize);
+
+    if (totalwallet < amount) {
+      return res.send({ success: false, message: "Not Enough Tokens" });
+    }
+    await db.get_scrooge_usersDB().findOneAndUpdate(
+      {
+        _id: ObjectId(user_id),
+        wallet: { $gte: parseInt(amount) }, // Ensure wallet is greater than or equal to the prize price
+      },
+      {
+        $inc: { wallet: -parseInt(amount) },
+      }
+    );
+    let getUserData = await db
+      .get_scrooge_usersDB()
+      .findOne({ _id: ObjectId(user_id) });
+
+    const { _id, username, email, firstName, lastName, profile, ipAddress } =
+      getUserData;
+
+    const transactionPayload = {
+      amount: -totalScrooge,
+      transactionType: "Crypto Redeem",
+      prevWallet: getUserData?.wallet,
+      updatedWallet: getUserData?.wallet,
+      userId: {
+        _id,
+        username,
+        email,
+        firstName,
+        lastName,
+        profile,
+        ipAddress,
+      },
+      // updatedTicket: getUserData?.ticket,
+      updatedGoldCoin: getUserData?.goldCoin,
+      prevGoldCoin: getUserData?.goldCoin,
+      // prevTicket: getUserData?.ticket + parseInt(prize.price),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    let trans_id;
+    const WithdrwaPayload = {
+      status: "pending",
+      address: address,
+      redeemPrize: totalScrooge,
+      userId: ObjectId(user_id),
+    };
+    await db.get_db_withdraw_requestDB().insertOne(WithdrwaPayload);
+    await db
+      .get_scrooge_transactionDB()
+      .insertOne(transactionPayload)
+      .then((trans) => {
+        trans_id = trans.insertedId;
+      })
+      .catch((e) => {
+        console.log("e", e);
+      });
+    emailSend.SubmitRedeemRequestEmail(email, username, totalScrooge);
+    return res.send({
+      success: true,
+      prize: totalScrooge,
       message:
         "Your redemption request has been received, please allow up to 24H for processing.",
     });
@@ -2239,9 +2367,10 @@ export async function WithdrawRequestWithFiat(req, res) {
 
 export async function getFormToken(req, res) {
   // let user = req.user._id;
+  const { user } = req || {};
   console.log("useruseruseruser", req.body);
   try {
-    getAnAcceptPaymentPage(req.body, async (response) => {
+    getAnAcceptPaymentPage(req.body, user, async (response) => {
       console.log("response", response);
       return res.send({
         code: 200,

@@ -20,6 +20,7 @@ export function createAnAcceptPaymentTransaction(body, user, callback) {
   var opaqueData = new ApiContracts.OpaqueDataType();
   opaqueData.setDataDescriptor(body.dataDescriptor);
   opaqueData.setDataValue(body.dataValue);
+  console.log("opaqueData", opaqueData);
 
   var paymentType = new ApiContracts.PaymentType();
   paymentType.setOpaqueData(opaqueData);
@@ -32,6 +33,7 @@ export function createAnAcceptPaymentTransaction(body, user, callback) {
   billTo.setFirstName(user.firstName);
   billTo.setLastName(user.lastName);
   billTo.setEmail(user.email);
+  // billTo.setZip(78722);
 
   var customer = new ApiContracts.CustomerDataType();
   customer.setEmail(user.email);
@@ -106,7 +108,7 @@ export function createAnAcceptPaymentTransaction(body, user, callback) {
     var response = new ApiContracts.CreateTransactionResponse(apiResponse);
 
     //pretty print response
-    console.log(JSON.stringify(response, null, 2));
+    console.log("respo", JSON.stringify(response, null, 2));
 
     if (response != null) {
       if (
@@ -198,7 +200,7 @@ export function createAnAcceptPaymentTransaction(body, user, callback) {
   });
 }
 
-export function getAnAcceptPaymentPage(body, callback) {
+export function getAnAcceptPaymentPage(body, user, callback) {
   var merchantAuthenticationType =
     new ApiContracts.MerchantAuthenticationType();
   merchantAuthenticationType.setName(process.env.AUTHORIZE_LOGIN_ID);
@@ -211,35 +213,56 @@ export function getAnAcceptPaymentPage(body, callback) {
   transactionRequestType.setTransactionType(
     ApiContracts.TransactionTypeEnum.AUTHCAPTURETRANSACTION
   );
-  transactionRequestType.setAmount(0.1);
+
+  transactionRequestType.setAmount(parseFloat(body?.amount));
+
+  const customerProfileIdType = new ApiContracts.CustomerProfileIdType();
+  const customerType = new ApiContracts.CustomerType();
+
+  customerType.setEmail(user.email); // set from  user middle ware email
+
+  transactionRequestType.setCustomer(customerType);
+  transactionRequestType.setProfile(customerProfileIdType);
+
   var setting1 = new ApiContracts.SettingType();
   setting1.setSettingName("hostedPaymentButtonOptions");
-  setting1.setSettingValue(JSON.stringify({ text: "Payment" }));
+  setting1.setSettingValue('{"text": "Pay"}');
 
   var setting2 = new ApiContracts.SettingType();
   setting2.setSettingName("hostedPaymentOrderOptions");
-  setting2.setSettingValue(JSON.stringify({ show: false }));
+  setting2.setSettingValue('{"show": false}');
+
   // Add a new setting for hostedPaymentReturnOptions
+
   var setting3 = new ApiContracts.SettingType();
   setting3.setSettingName("hostedPaymentReturnOptions");
-  setting3.setSettingValue(JSON.stringify({ showReceipt: true }));
+  setting3.setSettingValue(
+    JSON.stringify({
+      showReceipt: true,
+      url: "https://devmarket.scrooge.casino/crypto-to-gc",
+      urlText: "Continue",
+      cancelUrl: "https://devmarket.scrooge.casino/crypto-to-gc",
+      cancelUrlText: "Cancel",
+    })
+  );
+
+  var setting4 = new ApiContracts.SettingType();
+  setting4.setSettingName("hostedPaymentIFrameCommunicatorUrl");
+  setting4.setSettingValue(JSON.stringify({ url: "https://scrooge.casino" }));
 
   var settingList = [];
   settingList.push(setting1);
   settingList.push(setting2);
   settingList.push(setting3); // Add the new setting to the list
+  settingList.push(setting4); // Add the new setting to the list
 
   var alist = new ApiContracts.ArrayOfSetting();
   alist.setSetting(settingList);
-  console.log("settingList", settingList);
 
   var getRequest = new ApiContracts.GetHostedPaymentPageRequest();
-
   getRequest.setMerchantAuthentication(merchantAuthenticationType);
   getRequest.setTransactionRequest(transactionRequestType);
   getRequest.setHostedPaymentSettings(alist);
-
-  //console.log(JSON.stringify(getRequest.getJSON(), null, 2));
 
   var ctrl = new ApiControllers.GetHostedPaymentPageController(
     getRequest.getJSON()
@@ -250,27 +273,12 @@ export function getAnAcceptPaymentPage(body, callback) {
     var apiResponse = ctrl.getResponse();
 
     var response = new ApiContracts.GetHostedPaymentPageResponse(apiResponse);
-    console.log("After API call");
-
-    //pretty print response
-    console.log(JSON.stringify(response, null, 2));
-    ctrl.setEnvironment("https://api.authorize.net/xml/v1/request.api");
-
-    // ctrl.execute(function () {
-    //   var apiResponse = ctrl.getResponse();
-
-    //   var response = new ApiContracts.CreateTransactionResponse(apiResponse);
-
-    //   //pretty print response
-    //   console.log(JSON.stringify(response, null, 2));
 
     if (response != null) {
       if (
         response.getMessages().getResultCode() ==
         ApiContracts.MessageTypeEnum.OK
       ) {
-        console.log("Hosted payment page token :");
-        console.log(response.getToken());
       } else {
         //console.log('Result Code: ' + response.getMessages().getResultCode());
         console.log(
@@ -288,8 +296,64 @@ export function getAnAcceptPaymentPage(body, callback) {
   });
 }
 
-// if (require.main === module) {
-//   getAnAcceptPaymentPage(function () {
-//     console.log("getAnAcceptPaymentPage call complete.");
-//   });
-// }
+// call this function when webhook trigger to fetch transaction details and extract the email to find user with ewmail. and update user wallet iwt thw wmail
+export const getTransactionDetails = (body, callback) => {
+  let details = JSON.parse(body);
+  var merchantAuthenticationType =
+    new ApiContracts.MerchantAuthenticationType();
+  merchantAuthenticationType.setName(process.env.AUTHORIZE_LOGIN_ID);
+
+  merchantAuthenticationType.setTransactionKey(
+    process.env.AUTHORIZE_TRANSACTION_KEY
+  );
+
+  var getRequest = new ApiContracts.GetTransactionDetailsRequest();
+  getRequest.setMerchantAuthentication(merchantAuthenticationType);
+  getRequest.setTransId(JSON.parse(details?.payload?.id));
+
+  console.log(JSON.stringify(getRequest.getJSON(), null, 2));
+
+  var ctrl = new ApiControllers.GetTransactionDetailsController(
+    getRequest.getJSON()
+  );
+
+  ctrl.setEnvironment("https://api.authorize.net/xml/v1/request.api");
+
+  ctrl.execute(function () {
+    var apiResponse = ctrl.getResponse();
+
+    var response = new ApiContracts.GetTransactionDetailsResponse(apiResponse);
+
+    if (response != null) {
+      if (
+        response.getMessages().getResultCode() ==
+        ApiContracts.MessageTypeEnum.OK
+      ) {
+        console.log(
+          "Transaction Id : " + response.getTransaction().getTransId()
+        );
+        console.log(
+          "Transaction Type : " + response.getTransaction().getTransactionType()
+        );
+        console.log(
+          "Message Code : " + response.getMessages().getMessage()[0].getCode()
+        );
+        console.log(
+          "Message Text : " + response.getMessages().getMessage()[0].getText()
+        );
+      } else {
+        console.log("Result Code: " + response.getMessages().getResultCode());
+        console.log(
+          "Error Code: " + response.getMessages().getMessage()[0].getCode()
+        );
+        console.log(
+          "Error message: " + response.getMessages().getMessage()[0].getText()
+        );
+      }
+    } else {
+      console.log("Null Response.");
+    }
+
+    callback(response);
+  });
+};
