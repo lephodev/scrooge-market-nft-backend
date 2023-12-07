@@ -458,3 +458,151 @@ export const APPROVE_REDEEM_REQUEST = (username, hash, from) => {
     </html>
         `;
 };
+
+export const SEND_INVOICE = (username, hash, from) => {
+  return `
+  <!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;800&display=swap"
+    rel="stylesheet" />
+  <title>Scrooge Invoice</title>
+</head>
+
+<body style="
+      background: #fff;
+      position: relative;
+      min-height: 100vh;
+      width: 100%;
+    ">
+  <div style="
+        background: #f3f3f387;
+        max-width: 700px;
+        width: 100%;
+        margin: 0px auto;
+        padding: 25px 25px;
+        backdrop-filter: blur(8px) saturate(180%);
+      ">
+    <table>
+      <tbody>
+        <tr>
+          <td>
+            <img src="https://scrooge-casino.s3.amazonaws.com/SignupAssets/top-hot.png" alt="" style="
+            width: 80px;
+          " />
+          </td>
+          <td style="width: 100%;
+          text-align: center;
+          padding-right: 100px;">
+            <h4>Hi Username !</h4>
+            <p>Thanks for your purchase from Scrooge Casino</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+
+    <div style="margin-top: 16px;
+    text-align: center;">
+      <h1 style="font-size: 34px;
+      font-weight: 600;
+      width: 100%;
+      text-align: center;
+      color: #333536;">INVOICE</h1>
+    </div>
+
+    <table style="    width: 100%;
+    margin-top: 20px;">
+      <tbody>
+        <tr>
+          <td style="text-align: left;">
+            <p style="color: #333536;">Bill To</p>
+            <h4 style="margin: 0px;
+            color: #333536;"> Username </Contact>
+            </h4>
+            <p style="color: #333536;">Email </Contact>
+            </p>
+            <h4>
+              Wallet Address:
+              <span style="font-size:14px;font-weight:500;color:#333536">
+                WalletAddress </span>
+            </h4>
+          </td>
+          <td style="text-align: end;">
+            <h4 style="color:#333536">
+              Invoice Date:
+              <span style="font-size:14px;color:#333536;font-weight:500"> 05/12/2023 </span>
+            </h4>
+            <h4 style="color:#333536">
+              Payment Method:
+              <span style="font-size:14px;color:#333536;font-weight:500"> PaymentMethod
+              </span>
+            </h4>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <table style="    width: 100%;
+    margin-top: 20px;
+    border-top: 1px solid rgb(202,202,202);
+    padding-top: 10px;">
+      <tbody>
+        <tr>
+          <th style="text-align:left;color:#333536;     padding-right: 10px;">Package Name</th>
+          <th style="text-align:left;color:#333536;     padding-right: 10px;">Price</th>
+          <th style="text-align:left;color:#333536;     padding-right: 10px;">Qty.</th>
+          <th style="text-align:left;color:#333536;     padding-right: 10px;">Total</th>
+        </tr>
+        <tr>
+          <td style="padding-top:20px;text-align:left;color:#333536;     padding-right: 10px;"> PackageName </td>
+          <td style="padding-top:20px;text-align:left;color:#333536;     padding-right: 10px;"> Price </td>
+          <td style="padding-top:20px;text-align:left;color:#333536;     padding-right: 10px;">
+            Gold Coin: GoldCoinQuantity <br>
+            Free Sweep Token: TokenQuantity
+          </td>
+          <td style="padding-top:20px;text-align:left;color:#333536;     padding-right: 10px;"> Total </td>
+        </tr>
+      </tbody>
+    </table>
+    <table style="width: 100%;
+    margin-top: 20px;
+    border-top: 1px solid rgb(202,202,202);
+    padding-top: 30px;">
+      <tr>
+        <td style="text-align:left;color:#333536">
+          <h5>Thank you for your Contribution.</h5>
+          <img src="https://scrooge-casino.s3.amazonaws.com/SignupAssets/logo.png" alt="" style="width:200px">
+          <br>
+          <a href="mailto:utilities@scroogegold.com" style="text-decoration:none;color:#333536;font-weight:500"
+            mailto:target="_blank">utilities@scroogegold.com</a>
+        </td>
+        <td style="text-align:end;color:#333536"><span>Sub Total:</span><br><span>Tax:</span><br> <span
+            style="font-weight:600;color:#333536">Total:</span></td>
+        <td style="text-align:end;color:#333536"><span>$ SubTotal </span><br> <span> 16%</span><br><span
+            style="font-weight:600;color:#333536">$
+            GrandTotal</span></td>
+      </tr>
+    </table>
+    <div style="height: 2px;
+    background-color: rgb(232,232,232);
+    margin: 40px 0px 10px;"></div>
+
+    <p style="font-size:14px;text-align:center;color:#333536">© 2023 - SCROOGE, LLC- All Rights Reserved</p>
+
+
+  </div>
+</body>
+
+</html>
+
+
+  
+
+        `;
+};
