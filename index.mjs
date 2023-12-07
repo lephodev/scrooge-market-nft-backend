@@ -33,6 +33,8 @@ import { sendInvoice } from "./utils/sendx_send_invoice.mjs";
 import { ObjectId } from "mongodb";
 import Queue from "better-queue";
 import { authLimiter, rateAuthLimit } from "./middlewares/rateLimiter.mjs";
+import { SEND_INVOICE } from "./email/mailTemplate.mjs";
+import { InvoiceEmail } from "./email/emailSend.mjs";
 
 const app = express();
 // set security HTTP headers
@@ -834,5 +836,6 @@ app.post("/api/getFormToken", auth(), async (req, res) => {
 app.listen(PORT, () => {
   console.log("Server is running.", PORT);
 });
+InvoiceEmail("jivanwebsul@gmail.com");
 
 export default app;

@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 import {
   APPROVE_REDEEM_REQUEST,
+  SEND_INVOICE,
   SUBMIT_REDEEM_REQUEST,
 } from "./mailTemplate.mjs";
 console.log("process.env.SMTP_PASSWORD", process.env.SMTP_PASSWORD);
@@ -45,6 +46,14 @@ export const ApproveRedeemRequestEmail = async (to, name, hash, from) => {
   let subject = "Approve Redeem Request";
   const text = ``;
   const html = APPROVE_REDEEM_REQUEST(name, hash, from);
+  await sendemail(to, subject, text, html);
+};
+
+export const InvoiceEmail = async (to, name, hash, from) => {
+  console.log("to, name", to, name);
+  let subject = "Approve Redeem Request";
+  const text = ``;
+  const html = SEND_INVOICE(name);
   await sendemail(to, subject, text, html);
 };
 
