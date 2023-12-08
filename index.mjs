@@ -559,7 +559,8 @@ app.post("/api/authorize-webhook", async (req, res) => {
           .find({
             "transactionDetails.transaction.transId":
               response?.transaction?.transId,
-          });
+          })
+          .toArray();
         console.log("findTransactionIfExist", findTransactionIfExist);
         if (!findTransactionIfExist) {
           const trans = await rewards.addChips(
