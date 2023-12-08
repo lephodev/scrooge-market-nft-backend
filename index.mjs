@@ -553,20 +553,30 @@ app.post("/api/authorize-webhook", async (req, res) => {
           parseInt(data?.freeTokenAmount),
           typeof parseInt(data?.freeTokenAmount)
         );
-        const trans = await rewards.addChips(
-          getUser?._id?.toString(),
-          parseInt(data?.freeTokenAmount),
-          "",
-          "CC To Gold Coin",
-          parseInt(data?.gcAmount),
-          response,
-          0
-        );
-        await db.get_scrooge_usersDB().findOneAndUpdate(
-          { email: email },
 
-          { $set: { isGCPurchase: true } }
-        );
+        const findTransactionIfExist = await db
+          .get_scrooge_transactionDB()
+          .find({
+            "transactionDetails.transaction.transId":
+              response?.transaction?.transId,
+          });
+        console.log("findTransactionIfExist", findTransactionIfExist);
+        if (!findTransactionIfExist) {
+          const trans = await rewards.addChips(
+            getUser?._id?.toString(),
+            parseInt(data?.freeTokenAmount),
+            "",
+            "CC To Gold Coin",
+            parseInt(data?.gcAmount),
+            response,
+            0
+          );
+          await db.get_scrooge_usersDB().findOneAndUpdate(
+            { email: email },
+
+            { $set: { isGCPurchase: true } }
+          );
+        }
       }
     }
   });
