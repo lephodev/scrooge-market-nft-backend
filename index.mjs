@@ -546,96 +546,18 @@ app.post("/api/authorize-webhook", async (req, res) => {
       priceInBUSD: amount?.toString(),
     });
     console.log("data", data);
-    console.log("getUser", parseInt(data?.gcAmount));
-    const trans = await rewards.addChips(
-      getUser?._id?.toString(),
-      parseInt(data?.freeTokenAmount),
-      "",
-      "CC To Gold Coin",
-      parseInt(data?.gcAmount),
-      response,
-      0
-    );
-    //   const reciptPayload = {
-    //     username: user.username,
-    //     email: user.email,
-    //     walletAddress: "",
-    //     invoicDate: 1,
-    //     paymentMethod: "GC Purchase",
-    //     packageName: "GoldCoin Purchase",
-    //     goldCoinQuantity:
-    //       findPromoData?.coupanType === "Percent"
-    //         ? parseInt(data.gcAmount) *
-    //           (parseFloat(findPromoData?.discountInPercent) / 100)
-    //         : findPromoData?.coupanType === "2X"
-    //         ? parseInt(data.gcAmount) * 2
-    //         : parseInt(data.gcAmount),
-    //     tokenQuantity:
-    //       findPromoData?.coupanType === "Percent"
-    //         ? parseInt(data.freeTokenAmount) +
-    //           parseInt(data.freeTokenAmount) *
-    //             (parseFloat(findPromoData?.discountInPercent) / 100)
-    //         : findPromoData?.coupanType === "2X"
-    //         ? parseInt(data.freeTokenAmount) * 2
-    //         : parseInt(data.freeTokenAmount),
-    //     purcahsePrice: body.item.price.toString(),
-    //     Tax: 0,
-    //     firstName: user.firstName,
-    //     lastName: user.lastName,
-    //   };
-    //   await sendInvoice(reciptPayload);
-    //   // console.log("refrenceId",user.refrenceId);
-    //   console.log("Body With CC ", body.item.promoCode);
-    //   if (body?.item?.promoCode) {
-    //     let payload = {
-    //       userId: user?._id,
-    //       claimedDate: new Date(),
-    //     };
-    //     console.log("promoCode CC", body.item.promoCode);
-    //     console.log("payload CC", payload);
-    //     let promoFind = await db
-    //       .get_scrooge_promoDB()
-    //       .findOne({ couponCode: body.item.promoCode.trim() });
-    //     console.log("promoFind With CC", promoFind);
-    //     let updatePromo = await db.get_scrooge_promoDB().findOneAndUpdate(
-    //       { couponCode: body.item.promoCode.trim() },
-    //       {
-    //         $push: { claimedUser: payload },
-    //       },
-    //       {
-    //         new: true,
-    //       }
-    //     );
-    //     console.log(
-    //       "updatePromoupdatePromoupdatePromo with Creadit card",
-    //       updatePromo
-    //     );
-    //   }
-    //   if (user.refrenceId) {
-    //     await db.get_scrooge_usersDB().findOneAndUpdate(
-    //       { _id: ObjectId(user._id) },
-    //       {
-    //         $inc: {
-    //           totalBuy: parseInt(body.item.price),
-    //           totalProfit: parseInt(body.item.price),
-    //         },
-    //       }
-    //     );
-    //   }
-    //   await db.get_scrooge_usersDB().findOneAndUpdate(
-    //     { _id: ObjectId(user._id) },
-
-    //     { $set: { isGCPurchase: true } }
-    //   );
-    //   let getUserDetail = await db
-    //     .get_scrooge_usersDB()
-    //     .findOne({ _id: ObjectId(user._id) });
-    //   res.status(200).send({
-    //     success: true,
-    //     data: "Chips added successfully.",
-    //     user: getUserDetail,
-    //     purchaseDetails: data,
-    //   });
+    if (data) {
+      console.log("getUser", parseInt(data?.gcAmount));
+      const trans = await rewards.addChips(
+        getUser?._id?.toString(),
+        parseInt(data?.freeTokenAmount),
+        "",
+        "CC To Gold Coin",
+        parseInt(data?.gcAmount),
+        response,
+        0
+      );
+    }
   });
 
   // res.send({ success: true });
