@@ -542,21 +542,23 @@ app.post("/api/authorize-webhook", async (req, res) => {
       });
     }
     const getUser = await db.get_scrooge_usersDB().findOne({ email: email });
-    const data = await db.get_marketplace_gcPackagesDB().findOne({
-      priceInBUSD: amount?.toString(),
-    });
-    console.log("data", data);
-    if (data) {
-      console.log("getUser", parseInt(data?.gcAmount));
-      const trans = await rewards.addChips(
-        getUser?._id?.toString(),
-        parseInt(data?.freeTokenAmount),
-        "",
-        "CC To Gold Coin",
-        parseInt(data?.gcAmount),
-        response,
-        0
-      );
+    if (amount) {
+      const data = await db.get_marketplace_gcPackagesDB().findOne({
+        priceInBUSD: amount?.toString(),
+      });
+      console.log("data", data);
+      if (data) {
+        console.log("getUser", parseInt(data?.gcAmount));
+        const trans = await rewards.addChips(
+          getUser?._id?.toString(),
+          parseInt(data?.freeTokenAmount),
+          "",
+          "CC To Gold Coin",
+          parseInt(data?.gcAmount),
+          response,
+          0
+        );
+      }
     }
   });
 
