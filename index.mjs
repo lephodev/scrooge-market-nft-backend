@@ -548,7 +548,11 @@ app.post("/api/authorize-webhook", async (req, res) => {
       });
       console.log("data", data);
       if (data) {
-        console.log("getUser", parseInt(data?.gcAmount));
+        console.log(
+          "getUser",
+          parseInt(data?.freeTokenAmount),
+          typeof parseInt(data?.freeTokenAmount)
+        );
         const trans = await rewards.addChips(
           getUser?._id?.toString(),
           parseInt(data?.freeTokenAmount),
