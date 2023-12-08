@@ -562,6 +562,11 @@ app.post("/api/authorize-webhook", async (req, res) => {
           response,
           0
         );
+        await db.get_scrooge_usersDB().findOneAndUpdate(
+          { email: email },
+
+          { $set: { isGCPurchase: true } }
+        );
       }
     }
   });
