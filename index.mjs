@@ -780,6 +780,5 @@ app.post("/api/getFormToken", auth(), async (req, res) => {
 app.listen(PORT, () => {
   console.log("Server is running.", PORT);
 });
-InvoiceEmail("jivanwebsul@gmail.com");
 
 export default app;

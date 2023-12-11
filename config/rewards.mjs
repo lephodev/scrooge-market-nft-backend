@@ -2131,7 +2131,7 @@ export async function FastWithdrawRequest(req, res) {
       getUserData;
 
     const transactionPayload = {
-      amount: -totalScrooge,
+      amount: -parseInt(amount),
       transactionType: "Crypto Redeem",
       prevWallet: getUserData?.wallet,
       updatedWallet: getUserData?.wallet,
