@@ -2085,10 +2085,11 @@ export async function FastWithdrawRequest(req, res) {
         message: "Your wallet blocked by admin",
       });
     }
-    if (amount < 5000 || amount > 50000) {
+    if (amount <= 5000) {
       return res.send({
         success: false,
-        message: "You can only request withdraw amount between 5000 and 50000",
+        message:
+          "You can only request withdraw amount greater or equal to  5000",
       });
     }
     const resp = await fetch(`https://api.coinbrain.com/public/coin-info`, {
