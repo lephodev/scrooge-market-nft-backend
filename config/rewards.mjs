@@ -2179,7 +2179,7 @@ export async function FastWithdrawRequest(req, res) {
       .catch((e) => {
         console.log("e", e);
       });
-    emailSend.SubmitRedeemRequestEmail(email, username, totalScrooge);
+    emailSend.SubmitRedeemRequestEmail(email, username, parseInt(amount));
     return res.send({
       success: true,
       prize: totalScrooge,
