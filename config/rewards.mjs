@@ -2100,7 +2100,9 @@ export async function FastWithdrawRequest(req, res) {
     });
     const data = await resp.json();
     const current_price = data[0].priceUsd;
-    const totalScrooge = (amount * 100) / current_price;
+    // const totalScrooge = (amount * 100) / current_price;
+    let totalScrooge = (Number(amount) / 100 / current_price).toFixed(0);
+
     let getKycuser = await db
       .get_scrooge_user_kycs()
       .findOne({ userId: ObjectId(user_id) });
