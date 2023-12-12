@@ -2405,11 +2405,12 @@ export async function FastWithdrawRedeem(req, res) {
   try {
     let recipt = await useSDK.sdk.getProvider().getTransaction(transactionHash);
     console.log("getOGCurrentPrice", recipt);
-    const { hash, from } = recipt;
     const query = await db
       .get_db_withdraw_requestDB()
       .findOne({ _id: ObjectId(withdraw_id) });
+
     const user_id = query?.userId;
+    const withdrawToken = query?.withdrawToken;
     let getKycuser = await db
       .get_scrooge_user_kycs()
       .findOne({ userId: ObjectId(user_id) });
@@ -2443,9 +2444,9 @@ export async function FastWithdrawRedeem(req, res) {
           ipAddress,
         } = getUserData;
         const transactionPayload = {
-          // amount: prize_price,
+          amount: withdrawToken,
           transactionType: "Approve Crypto Redeem",
-          prevWallet: getUserData?.wallet /* + parseInt(prize_price) */,
+          prevWallet: getUserData?.wallet + parseInt(withdrawToken),
           updatedWallet: getUserData?.wallet,
           userId: {
             _id,
