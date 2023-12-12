@@ -2085,7 +2085,8 @@ export async function FastWithdrawRequest(req, res) {
         message: "Your wallet blocked by admin",
       });
     }
-    if (amount <= 5000) {
+    console.log("amount", amount);
+    if (amount < 5000) {
       return res.send({
         success: false,
         message:
@@ -2390,5 +2391,98 @@ export async function getFormToken(req, res) {
   } catch (error) {
     console.error("errrtt", error);
     res.status(500).json({ error: "Internal Server Error" });
+  }
+}
+
+export async function FastWithdrawRedeem(req, res) {
+  let resp;
+  const withdraw_id = req.params.withdraw_id;
+  const transactionHash = req.params.transactionHash;
+  let user_ticket;
+  try {
+    let recipt = await useSDK.sdk.getProvider().getTransaction(transactionHash);
+    console.log("getOGCurrentPrice", recipt);
+    const { hash, from } = recipt;
+    const query = await db
+      .get_db_withdraw_requestDB()
+      .findOne({ _id: ObjectId(withdraw_id) });
+    const user_id = query?.userId;
+    let getKycuser = await db
+      .get_scrooge_user_kycs()
+      .findOne({ userId: ObjectId(user_id) });
+    if (getKycuser?.status === "accept") {
+      const user = await db
+        .get_scrooge_usersDB()
+        .findOne({ _id: ObjectId(user_id) });
+
+      user_ticket = user?.ticket;
+      try {
+        await db.get_db_withdraw_requestDB().findOneAndUpdate(
+          { _id: ObjectId(withdraw_id) },
+          {
+            $set: {
+              status: "Approved",
+              transactionHash: transactionHash,
+            },
+          }
+        );
+
+        let getUserData = await db
+          .get_scrooge_usersDB()
+          .findOne({ _id: ObjectId(user_id) });
+        const {
+          _id,
+          username,
+          email,
+          firstName,
+          lastName,
+          profile,
+          ipAddress,
+        } = getUserData;
+        const transactionPayload = {
+          // amount: prize_price,
+          transactionType: "Approve Crypto Redeem",
+          prevWallet: getUserData?.wallet /* + parseInt(prize_price) */,
+          updatedWallet: getUserData?.wallet,
+          userId: {
+            _id,
+            username,
+            email,
+            firstName,
+            lastName,
+            profile,
+            ipAddress,
+          },
+          updatedGoldCoin: getUserData?.goldCoin,
+          prevGoldCoin: getUserData?.goldCoin,
+          transactionDetails: {
+            transactionHash: transactionHash,
+          },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        await db
+          .get_scrooge_transactionDB()
+          .insertOne(transactionPayload)
+          .catch((e) => {
+            console.log("e", e);
+          });
+        emailSend.ApproveRedeemRequestEmail(email, username, hash, from);
+        postPrizeRedemption(prize_id, user_id);
+        return res.status(200).send({ success: true, message: resp });
+      } catch (error) {
+        console.log("error---", error);
+        resp = error?.reason || "Transaction Failed";
+        return res.send({ success: false, message: resp });
+      }
+    } else {
+      resp = "Invalid Prize Data";
+      return res.send({ success: false, message: resp });
+    }
+  } catch (e) {
+    console.log("outerCatch", e);
+    return res
+      .status(500)
+      .send({ success: false, message: "Error in Request Process" });
   }
 }

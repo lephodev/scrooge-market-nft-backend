@@ -777,6 +777,14 @@ app.post("/api/getFormToken", auth(), async (req, res) => {
   });
 });
 
+app.get(
+  "/api/fastWithdrawRedeem/:withdraw_id/:transactionHash",
+  async (req, res) => {
+    const resp = await rewards.FastWithdrawRedeem(req);
+    res.send(resp);
+  }
+);
+
 app.listen(PORT, () => {
   console.log("Server is running.", PORT);
 });
