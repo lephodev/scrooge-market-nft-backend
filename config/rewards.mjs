@@ -2467,8 +2467,8 @@ export async function FastWithdrawRedeem(req, res) {
           .catch((e) => {
             console.log("e", e);
           });
-        emailSend.ApproveRedeemRequestEmail(email, username, hash, from);
-        return res.status(200).send({ success: true, message: resp });
+        // emailSend.ApproveRedeemRequestEmail(email, username, hash, from);
+        return res.send({ success: true, message: resp });
       } catch (error) {
         console.log("error---", error);
         resp = error?.reason || "Transaction Failed";
