@@ -2468,7 +2468,6 @@ export async function FastWithdrawRedeem(req, res) {
             console.log("e", e);
           });
         emailSend.ApproveRedeemRequestEmail(email, username, hash, from);
-        postPrizeRedemption(prize_id, user_id);
         return res.status(200).send({ success: true, message: resp });
       } catch (error) {
         console.log("error---", error);
