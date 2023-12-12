@@ -26,6 +26,7 @@ let merch_coupon_code, email_subject, email_text, email_html;
 
 export const sendemail = async (to, subject, text, html) => {
   try {
+    console.log("process.env.SMTP_USERNAME", process.env.SMTP_USERNAME);
     const msg = { from: process.env.SMTP_USERNAME, to, subject, text, html };
     await transport.sendMail(msg);
   } catch (error) {
