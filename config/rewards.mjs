@@ -2164,7 +2164,10 @@ export async function FastWithdrawRequest(req, res) {
       status: "pending",
       address: address,
       redeemPrize: totalScrooge,
+      withdrawToken: parseInt(amount),
       userId: ObjectId(user_id),
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
     await db.get_db_withdraw_requestDB().insertOne(WithdrwaPayload);
     await db
