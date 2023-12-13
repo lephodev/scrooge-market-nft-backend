@@ -219,7 +219,9 @@ export function getAnAcceptPaymentPage(body, user, callback) {
   const customerProfileIdType = new ApiContracts.CustomerProfileIdType();
   const customerType = new ApiContracts.CustomerType();
 
-  customerType.setEmail(user.email); // set from  user middle ware email
+  const concatenatedEmail = `${user?.email}_${user?._id}`;
+
+  customerType.setEmail(concatenatedEmail); // set from  user middle ware email
 
   transactionRequestType.setCustomer(customerType);
   transactionRequestType.setProfile(customerProfileIdType);
