@@ -81,8 +81,8 @@ export async function updateUserDataAndTransaction(req, responseData, user) {
             $inc: {
               wallet: resultData?.token,
               goldCoin: resultData?.gc,
-              dailySpinBonus: resultData?.token,
-              nonWithdrawableAmt: resultData?.token,
+              // dailySpinBonus: resultData?.token,
+              // nonWithdrawableAmt: resultData?.token,
             },
           }
         ),

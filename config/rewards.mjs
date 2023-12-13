@@ -53,16 +53,16 @@ export async function addChips(
       query = {
         goldCoin: gc,
         wallet: _qty,
-        monthlyClaimBonus: _qty,
-        nonWithdrawableAmt: _qty,
+        // monthlyClaimBonus: _qty,
+        // nonWithdrawableAmt: _qty,
       };
     } else {
       query = {
         goldCoin: gc,
         wallet: _qty,
-        dailySpinBonus: _qty - bonusToken,
-        nonWithdrawableAmt: _qty,
-        monthlyClaimBonus: bonusToken,
+        // dailySpinBonus: _qty - bonusToken,
+        // nonWithdrawableAmt: _qty,
+        // monthlyClaimBonus: bonusToken,
       };
     }
     console.log("query", query);
@@ -1967,7 +1967,7 @@ export async function WithdrawRequest(req, res) {
   console.log("updtdUser===>>>", updtdUser);
   let user_id = updtdUser?._id;
   // let token = updtdUser?.wallet;
-  let totalwallet = updtdUser?.wallet - updtdUser?.nonWithdrawableAmt;
+  let totalwallet = updtdUser?.wallet;
 
   // console.log("token--->>>", token);
 
@@ -2072,7 +2072,7 @@ export async function FastWithdrawRequest(req, res) {
   console.log("updtdUser===>>>", updtdUser);
   let user_id = updtdUser?._id;
   // let token = updtdUser?.wallet;
-  let totalwallet = updtdUser?.wallet - updtdUser?.nonWithdrawableAmt;
+  let totalwallet = updtdUser?.wallet;
 
   // console.log("token--->>>", token);
 
