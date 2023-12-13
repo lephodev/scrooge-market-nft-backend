@@ -51,7 +51,7 @@ export const ApproveRedeemRequestEmail = async (to, name, hash, from) => {
 
 export const InvoiceEmail = async (to, name, hash, from) => {
   console.log("to, name", to, name);
-  let subject = "Approve Redeem Request";
+  let subject = "Invoice";
   const text = ``;
   const html = SEND_INVOICE(name);
   await sendemail(to, subject, text, html);
