@@ -33,8 +33,8 @@ import { sendInvoice } from "./utils/sendx_send_invoice.mjs";
 import { ObjectId } from "mongodb";
 import Queue from "better-queue";
 import { authLimiter, rateAuthLimit } from "./middlewares/rateLimiter.mjs";
-import { SEND_INVOICE } from "./email/mailTemplate.mjs";
 import { InvoiceEmail } from "./email/emailSend.mjs";
+import moment from "moment";
 
 const app = express();
 // set security HTTP headers
@@ -566,6 +566,7 @@ app.post("/api/authorize-webhook", async (req, res) => {
             })
             .toArray();
           console.log("findTransactionIfExist", findTransactionIfExist);
+
           if (findTransactionIfExist.length === 0) {
             const trans = await rewards.addChips(
               getUser?._id?.toString(),
@@ -576,6 +577,21 @@ app.post("/api/authorize-webhook", async (req, res) => {
               response,
               0
             );
+            const reciptPayload = {
+              username: getUser.username,
+              email: getUser.email,
+              invoicDate: moment(new Date()).format("D MMMM  YYYY"),
+              paymentMethod: "GC Purchase",
+              packageName: "Gold Coin Purchase",
+              goldCoinQuantity: parseInt(data.gcAmount),
+              tokenQuantity: parseInt(data.freeTokenAmount),
+              purcahsePrice: amount.toString(),
+              Tax: 0,
+              firstName: getUser.firstName,
+              lastName: getUser.lastName,
+            };
+            await InvoiceEmail(getUser.email, reciptPayload);
+
             await db.get_scrooge_usersDB().findOneAndUpdate(
               { _id: extractedId },
 

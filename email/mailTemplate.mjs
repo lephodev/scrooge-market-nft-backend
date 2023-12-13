@@ -459,7 +459,7 @@ export const APPROVE_REDEEM_REQUEST = (username, hash, from) => {
         `;
 };
 
-export const SEND_INVOICE = (username, hash, from) => {
+export const SEND_INVOICE = (data, hash, from) => {
   return `
   <!DOCTYPE html>
 <html lang="en">
@@ -524,24 +524,24 @@ export const SEND_INVOICE = (username, hash, from) => {
           <td style="text-align: left;">
             <p style="color: #333536;">Bill To</p>
             <h4 style="margin: 0px;
-            color: #333536;"> Username </Contact>
+            color: #333536;"> ${data?.username} </Contact>
             </h4>
-            <p style="color: #333536;">Email </Contact>
+            <p style="color: #333536;">${data?.email} </Contact>
             </p>
-            <h4>
-              Wallet Address:
-              <span style="font-size:14px;font-weight:500;color:#333536">
-                WalletAddress </span>
-            </h4>
+            
           </td>
           <td style="text-align: end;">
             <h4 style="color:#333536">
               Invoice Date:
-              <span style="font-size:14px;color:#333536;font-weight:500"> 05/12/2023 </span>
+              <span style="font-size:14px;color:#333536;font-weight:500"> ${
+                data?.invoicDate
+              } </span>
             </h4>
             <h4 style="color:#333536">
               Payment Method:
-              <span style="font-size:14px;color:#333536;font-weight:500"> PaymentMethod
+              <span style="font-size:14px;color:#333536;font-weight:500"> ${
+                data?.paymentMethod
+              }
               </span>
             </h4>
           </td>
@@ -560,13 +560,19 @@ export const SEND_INVOICE = (username, hash, from) => {
           <th style="text-align:left;color:#333536;     padding-right: 10px;">Total</th>
         </tr>
         <tr>
-          <td style="padding-top:20px;text-align:left;color:#333536;     padding-right: 10px;"> PackageName </td>
-          <td style="padding-top:20px;text-align:left;color:#333536;     padding-right: 10px;"> Price </td>
+          <td style="padding-top:20px;text-align:left;color:#333536;     padding-right: 10px;"> ${
+            data?.packageName
+          } </td>
+          <td style="padding-top:20px;text-align:left;color:#333536;     padding-right: 10px;"> ${
+            data?.purcahsePrice
+          } </td>
           <td style="padding-top:20px;text-align:left;color:#333536;     padding-right: 10px;">
-            Gold Coin: GoldCoinQuantity <br>
-            Free Sweep Token: TokenQuantity
+            Gold Coin: ${data?.goldCoinQuantity} <br>
+            Free Sweep Token: ${data?.tokenQuantity}
           </td>
-          <td style="padding-top:20px;text-align:left;color:#333536;     padding-right: 10px;"> Total </td>
+          <td style="padding-top:20px;text-align:left;color:#333536;     padding-right: 10px;"> ${
+            data?.goldCoinQuantity + data?.tokenQuantity
+          } </td>
         </tr>
       </tbody>
     </table>
@@ -579,14 +585,14 @@ export const SEND_INVOICE = (username, hash, from) => {
           <h5>Thank you for your Contribution.</h5>
           <img src="https://scrooge-casino.s3.amazonaws.com/SignupAssets/logo.png" alt="" style="width:200px">
           <br>
-          <a href="mailto:utilities@scroogegold.com" style="text-decoration:none;color:#333536;font-weight:500"
-            mailto:target="_blank">utilities@scroogegold.com</a>
+          <a href="mailto:
+          info@scrooge.casino
+          " style="text-decoration:none;color:#333536;font-weight:500"
+            mailto:target="_blank">
+            info@scrooge.casino
+            </a>
         </td>
-        <td style="text-align:end;color:#333536"><span>Sub Total:</span><br><span>Tax:</span><br> <span
-            style="font-weight:600;color:#333536">Total:</span></td>
-        <td style="text-align:end;color:#333536"><span>$ SubTotal </span><br> <span> 16%</span><br><span
-            style="font-weight:600;color:#333536">$
-            GrandTotal</span></td>
+       
       </tr>
     </table>
     <div style="height: 2px;
