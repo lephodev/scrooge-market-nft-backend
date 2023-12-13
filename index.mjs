@@ -530,53 +530,58 @@ app.post("/api/authorize-webhook", async (req, res) => {
     console.log("response528", response);
     const amount = response?.transaction?.settleAmount;
     const email = response?.transaction?.customer?.email;
-    // console.log("email", email);
-    if (
-      response.messages.resultCode !== "Ok" ||
-      response.transactionResponse?.errors
-    ) {
-      return res.status(400).send({
-        success: false,
-        data: "transaction failed",
-        error: response.transactionResponse?.errors?.error[0]?.errorText,
-      });
-    }
-    const getUser = await db.get_scrooge_usersDB().findOne({ email: email });
-    if (amount) {
-      const data = await db.get_marketplace_gcPackagesDB().findOne({
-        priceInBUSD: amount?.toString(),
-      });
-      console.log("data", data);
-      if (data) {
-        console.log(
-          "getUser",
-          parseInt(data?.freeTokenAmount),
-          typeof parseInt(data?.freeTokenAmount)
-        );
+    const emailAndIdRegex = /^(.+?)_(\w+)$/;
+    const match = email.match(emailAndIdRegex);
+    console.log("email", email);
+    if (match) {
+      const extractedEmail = match[1];
+      const extractedId = match[2];
+      console.log("Extracted Email:", extractedEmail);
+      console.log("Extracted ID:", extractedId);
 
-        const findTransactionIfExist = await db
-          .get_scrooge_transactionDB()
-          .find({
-            "transactionDetails.transaction.transId":
-              response?.transaction?.transId,
-          })
-          .toArray();
-        console.log("findTransactionIfExist", findTransactionIfExist);
-        if (findTransactionIfExist.length === 0) {
-          const trans = await rewards.addChips(
-            getUser?._id?.toString(),
-            parseInt(data?.freeTokenAmount),
-            "",
-            "CC To Gold Coin",
-            parseInt(data?.gcAmount),
-            response,
-            0
-          );
-          await db.get_scrooge_usersDB().findOneAndUpdate(
-            { email: email },
+      if (
+        response.messages.resultCode !== "Ok" ||
+        response.transactionResponse?.errors
+      ) {
+        return res.status(400).send({
+          success: false,
+          data: "transaction failed",
+          error: response.transactionResponse?.errors?.error[0]?.errorText,
+        });
+      }
+      const getUser = await db
+        .get_scrooge_usersDB()
+        .findOne({ _id: ObjectId(extractedId) });
+      if (amount) {
+        const data = await db.get_marketplace_gcPackagesDB().findOne({
+          priceInBUSD: amount?.toString(),
+        });
+        console.log("data", data);
+        if (data) {
+          const findTransactionIfExist = await db
+            .get_scrooge_transactionDB()
+            .find({
+              "transactionDetails.transaction.transId":
+                response?.transaction?.transId,
+            })
+            .toArray();
+          console.log("findTransactionIfExist", findTransactionIfExist);
+          if (findTransactionIfExist.length === 0) {
+            const trans = await rewards.addChips(
+              getUser?._id?.toString(),
+              parseInt(data?.freeTokenAmount),
+              "",
+              "CC To Gold Coin",
+              parseInt(data?.gcAmount),
+              response,
+              0
+            );
+            await db.get_scrooge_usersDB().findOneAndUpdate(
+              { _id: extractedId },
 
-            { $set: { isGCPurchase: true } }
-          );
+              { $set: { isGCPurchase: true } }
+            );
+          }
         }
       }
     }
