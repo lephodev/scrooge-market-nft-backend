@@ -33,7 +33,6 @@ import { sendInvoice } from "./utils/sendx_send_invoice.mjs";
 import { ObjectId } from "mongodb";
 import Queue from "better-queue";
 import { authLimiter, rateAuthLimit } from "./middlewares/rateLimiter.mjs";
-import { SEND_INVOICE } from "./email/mailTemplate.mjs";
 import { InvoiceEmail } from "./email/emailSend.mjs";
 import moment from "moment";
 
@@ -553,6 +552,10 @@ app.post("/api/authorize-webhook", async (req, res) => {
       const getUser = await db
         .get_scrooge_usersDB()
         .findOne({ _id: ObjectId(extractedId) });
+      if (!getUser) {
+        console.log("User Not Found");
+        return;
+      }
       if (amount) {
         const data = await db.get_marketplace_gcPackagesDB().findOne({
           priceInBUSD: amount?.toString(),
@@ -579,19 +582,19 @@ app.post("/api/authorize-webhook", async (req, res) => {
               0
             );
             const reciptPayload = {
-              username: getUser.username,
-              email: getUser.email,
+              username: getUser?.username,
+              email: getUser?.email,
               invoicDate: moment(new Date()).format("D MMMM  YYYY"),
               paymentMethod: "GC Purchase",
               packageName: "Gold Coin Purchase",
-              goldCoinQuantity: parseInt(data.gcAmount),
-              tokenQuantity: parseInt(data.freeTokenAmount),
-              purcahsePrice: amount.toString(),
+              goldCoinQuantity: parseInt(data?.gcAmount),
+              tokenQuantity: parseInt(data?.freeTokenAmount),
+              purcahsePrice: amount?.toString(),
               Tax: 0,
-              firstName: getUser.firstName,
-              lastName: getUser.lastName,
+              firstName: getUser?.firstName,
+              lastName: getUser?.lastName,
             };
-            await InvoiceEmail(getUser.email, reciptPayload);
+            await InvoiceEmail(getUser?.email, reciptPayload);
 
             await db.get_scrooge_usersDB().findOneAndUpdate(
               { _id: extractedId },
