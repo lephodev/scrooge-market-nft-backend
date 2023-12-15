@@ -66,11 +66,15 @@ export const InvoiceSendemail = async (to, subject, text, html) => {
 };
 
 export const SubmitRedeemRequestEmail = async (to, name, prize) => {
-  console.log("to, name", to, name);
-  let subject = "Submit Redeem Request";
-  const text = ``;
-  const html = SUBMIT_REDEEM_REQUEST(name, prize);
-  await redeemSendemail(to, subject, text, html);
+  try {
+    console.log("to, name", to, name);
+    let subject = "Submit Redeem Request";
+    const text = ``;
+    const html = SUBMIT_REDEEM_REQUEST(name, prize);
+    await redeemSendemail(to, subject, text, html);
+  } catch (error) {
+    console.log("error", error);
+  }
 };
 
 export const ApproveRedeemRequestEmail = async (to, name, hash, from) => {

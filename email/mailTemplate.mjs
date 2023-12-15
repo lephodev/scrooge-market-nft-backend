@@ -65,7 +65,7 @@ export const SUBMIT_REDEEM_REQUEST = (username, prize) => {
                   font-weight: 500;
                   font-family: 'Poppins', sans-serif;
                 ">
-                Hello ${username},
+                Hi ${username},
               </h1>
               <h4 style="
                   color: rgb(255, 255, 255);
@@ -85,15 +85,15 @@ export const SUBMIT_REDEEM_REQUEST = (username, prize) => {
                   color: rgb(207, 207, 207);
                   font-family: 'Poppins', sans-serif;
                 ">
-                  We have received your redemption request of <br>
-                  Token: ${prize} <br>
+                We have received your redemption submission of <br>
+                  ST: ${prize} <br>
                   USD: $ ${prize / 100} <br>
 
-                  We will review the request and process it as quick as we can.  This process is typically completed inside 24H. Keep in mind, we do not process redemptions on weekends or holidays.
+                  We will review the submission and process it as quick as we can.  This process is typically completed inside 24H. Keep in mind, we do not process redemptions on weekends or holidays.
                   <br>
-                  If this is your first time redeeming and you need some guidance, please <a href="https://market.scrooge.casino/static/media/SCROOGE%20Redemption%20Manual.60fd5a4a7bf48ee3a8e1.pdf" target="_blank">download</a> the instructional PDF here.
+                  If this is your first time redeeming and you need some guidance, <a href="https://market.scrooge.casino/static/media/SCROOGE%20Redemption%20Manual.60fd5a4a7bf48ee3a8e1.pdf" target="_blank">download</a> the instructional PDF.
                   <br>
-                  If you have any further questions regarding the process, feel free to reach out to us on Facebook Messenger.
+                  If you have any further questions about the process, reach out to us on Facebook Messenger.
 
                 <!-- We have received your redemption request for ${prize} Tokens, we will process this as soon as we can and send you an email upon completion.                 -->
               </p>
@@ -179,20 +179,13 @@ export const SUBMIT_REDEEM_REQUEST = (username, prize) => {
                 ">
                 Need Help ?
               </h6>
+              
               <p style="
                   color: rgb(207, 207, 207);
                   font-size: 14px;
                   font-family: 'Poppins', sans-serif;
                 ">
-                Please send any feedback or bug reports to
-                <a href="mailto:info@scrooge.casino" style="color: #f9ff00; font-family: 'Poppins', sans-serif">info@scrooge.casino</a>
-              </p>
-              <p style="
-                  color: rgb(207, 207, 207);
-                  font-size: 14px;
-                  font-family: 'Poppins', sans-serif;
-                ">
-                © 2023 - SCROOGE, LLC- All Rights Reserved
+                © 2023 - SCROOGE, LLC-Rights Reserved
               </p>
             </div>
           </main>
