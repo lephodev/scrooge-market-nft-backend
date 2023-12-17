@@ -595,7 +595,7 @@ app.post("/api/authorize-webhook", async (req, res) => {
               lastName: getUser?.lastName,
             };
             await db.get_scrooge_usersDB().findOneAndUpdate(
-              { _id: extractedId },
+              { _id: ObjectId(extractedId) },
 
               { $set: { isGCPurchase: true } }
             );
