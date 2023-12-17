@@ -594,13 +594,12 @@ app.post("/api/authorize-webhook", async (req, res) => {
               firstName: getUser?.firstName,
               lastName: getUser?.lastName,
             };
-            await InvoiceEmail(getUser?.email, reciptPayload);
-
             await db.get_scrooge_usersDB().findOneAndUpdate(
               { _id: extractedId },
 
               { $set: { isGCPurchase: true } }
             );
+            await InvoiceEmail(getUser?.email, reciptPayload);
           }
         }
       }
