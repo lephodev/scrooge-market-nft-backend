@@ -482,7 +482,7 @@ export const SEND_INVOICE = (data, hash, from) => {
           <td style="width: 100%;
           text-align: center;
           padding-right: 100px;">
-            <h4>Hi Username !</h4>
+            <h4>hi ${data?.username}!</h4>
             <p>Thanks for your purchase from Scrooge Casino</p>
           </td>
         </tr>
