@@ -766,6 +766,7 @@ app.post(
 );
 app.post(
   "/api/WithdrawRequestWithFiat",
+  Basicauth,
   auth(),
   rewards.WithdrawRequestWithFiat
 );
@@ -775,7 +776,7 @@ app.get(
   auth(),
   rewards.getCryptoToGCPurcahse
 );
-app.post("/api/getFormToken", auth(), async (req, res) => {
+app.post("/api/getFormToken", Basicauth, auth(), async (req, res) => {
   const { user, body } = req || {};
   getAnAcceptPaymentPage(body, user, async (response) => {
     return res.send({
