@@ -84,24 +84,6 @@ app.use(cookieParser());
 
 passport.use("jwt", jwtStrategy);
 
-app.use((req, res, next) => {
-  console.log("req.get('origin')", req.get("origin"));
-  if (
-    req.get("origin") === "https://scrooge.casino" ||
-    req.get("origin") === "https://market.scrooge.casino" ||
-    req.get("origin") === "https://slot.scrooge.casino" ||
-    req.get("origin") === "https://admin.scrooge.casino" ||
-    req.get("origin") === "https://poker.scrooge.casino" ||
-    req.get("origin") === "https://blackjack.scrooge.casino" ||
-    req.get("origin") === "http://localhost:3000"
-  ) {
-    req.io = io;
-    next();
-  } else {
-    console.log("marketplace log ", req.get("origin"));
-    res.send("unauthenticated request");
-  }
-});
 // app.use((req, _, next) => {
 //   logger.info(`HEADERS ${req.headers} `);
 //   next();
