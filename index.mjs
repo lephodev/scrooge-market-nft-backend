@@ -37,6 +37,8 @@ import { InvoiceEmail } from "./email/emailSend.mjs";
 import moment from "moment";
 import { Server } from "socket.io";
 
+import Basicauth from "./middlewares/basicAuth.mjs";
+
 const app = express();
 
 const server = createServer(app);
@@ -142,11 +144,17 @@ app.use(async (req, res, next) => {
 
 //################################# Affiliates #################################//
 // Route to get Affiliate user
-app.get("/api/getAffiliateUser/:user_id", auth(), affiliate.getAffiliateUser);
+app.get(
+  "/api/getAffiliateUser/:user_id",
+  Basicauth,
+  auth(),
+  affiliate.getAffiliateUser
+);
 
 // Route to create Affiliate user
 app.get(
   "/api/createAffiliateUser/:user_id/:ip_address",
+  Basicauth,
   auth(),
   affiliate.createAffiliateUser
 );
@@ -154,6 +162,7 @@ app.get(
 // Route to get affiliate leaders by number of tokens earned
 app.get(
   "/api/getAffLeadersByTokens/:limit/:days",
+  Basicauth,
   auth(),
   affiliate.getAffLeadersByTokens
 );
@@ -161,6 +170,7 @@ app.get(
 // Route to get affiliate leaders by number of commissions (num of sales) earned
 app.get(
   "/api/getAffLeadersByCount/:limit/:days",
+  Basicauth,
   auth(),
   affiliate.getAffLeadersByCount
 );
@@ -168,6 +178,7 @@ app.get(
 // Route to get affiliate leaders by number of commissions (num of sales) earned
 app.get(
   "/api/getAffLeadersByType/:type/:limit/:days",
+  Basicauth,
   auth(),
   affiliate.getAffLeadersByType
 );
@@ -199,7 +210,7 @@ app.get(
 // });
 // });
 
-app.get("/api/getItems/:type", auth(), async (req, res) => {
+app.get("/api/getItems/:type", Basicauth, auth(), async (req, res) => {
   const resp = await rewards.getItems(req).then((data) => {
     res.send(data);
   });
@@ -207,7 +218,7 @@ app.get("/api/getItems/:type", auth(), async (req, res) => {
 
 //################################# Prizes #################################//
 // Route to get available prizes
-app.get("/api/getPrizes", auth(), async (req, res) => {
+app.get("/api/getPrizes", Basicauth, auth(), async (req, res) => {
   console.log("abcccc");
   const resp = await rewards.getPrizes(req).then((data) => {
     // console.log("prizes resp: ", data);
@@ -215,19 +226,25 @@ app.get("/api/getPrizes", auth(), async (req, res) => {
   });
 });
 
-app.get("/api/getGCPackages", auth(), rewards.getCryptoToGCPackages);
-app.get("/api/getTicketToToken", auth(), rewards.getTicketToToken);
+app.get("/api/getGCPackages", Basicauth, auth(), rewards.getCryptoToGCPackages);
+app.get("/api/getTicketToToken", Basicauth, auth(), rewards.getTicketToToken);
 
 // Route to get user's redeemed prizes
-app.get("/api/getUserRedeemed/:user_id", auth(), async (req, res) => {
-  const resp = await rewards.getUserRedeemed(req).then((data) => {
-    res.send(data);
-  });
-});
+app.get(
+  "/api/getUserRedeemed/:user_id",
+  Basicauth,
+  auth(),
+  async (req, res) => {
+    const resp = await rewards.getUserRedeemed(req).then((data) => {
+      res.send(data);
+    });
+  }
+);
 
 // Route to update markRedeemed flag in prize_redeem_transactions table
 app.get(
   "/api/markMerchCouponRedeemed/:trans_id/:user_id",
+  Basicauth,
   auth(),
   async (req, res) => {
     const resp = await rewards.markMerchCouponRedeemed(req).then((data) => {
@@ -239,6 +256,7 @@ app.get(
 // Route to redeem prize
 app.get(
   "/api/redeemPrize/:withdraw_id/:transactionHash",
+  Basicauth,
   /* auth(), */ rewards.redeemPrize
 );
 
@@ -255,6 +273,7 @@ app.get(
 // Route to claim DL Tokens
 app.get(
   "/api/claimDLTokens/:address/:user_id/:token_id",
+  Basicauth,
   auth(),
   async (req, res) => {
     const resp = await rewards.claimDLTokens(req).then((data) => {
@@ -264,17 +283,23 @@ app.get(
 );
 
 // Route to claim daily rewards
-app.get("/api/claimDailyRewards/:user_id", auth(), async (req, res) => {
-  const resp = await rewards.claimDailyRewards(req).then((data) => {
-    res.send(data);
-  });
-});
+app.get(
+  "/api/claimDailyRewards/:user_id",
+  Basicauth,
+  auth(),
+  async (req, res) => {
+    const resp = await rewards.claimDailyRewards(req).then((data) => {
+      res.send(data);
+    });
+  }
+);
 
-app.get("/api/getDLNFTs/:address", auth(), useSDK.getDLNFTs);
+app.get("/api/getDLNFTs/:address", Basicauth, auth(), useSDK.getDLNFTs);
 
 // Route to claim holder monthly Tokens
 app.get(
   "/api/claimHolderTokens/:address/:signerToken",
+  Basicauth,
   auth(),
   async (req, res) => {
     const resp = await rewards.claimHolderTokens(req).then((data) => {
@@ -285,18 +310,34 @@ app.get(
 
 //################################# Sharable Data #################################//
 // Route to get Sharable Messages
-app.get("/api/getSharableMessages", auth(), sharable.getSharableMessages);
+app.get(
+  "/api/getSharableMessages",
+  Basicauth,
+  auth(),
+  sharable.getSharableMessages
+);
 
 // Route to get shortened link
-app.get("/api/getShortLink/:link", auth(), sharable.getShortLink);
+app.get("/api/getShortLink/:link", Basicauth, auth(), sharable.getShortLink);
 
 //Reute to get user reward
-app.get("/api/shareReward/:user_id/:message_id", auth(), sharable.shareReward);
-app.get("/api/getSocialShare/:user_id", auth(), sharable.getSocialShare);
+app.get(
+  "/api/shareReward/:user_id/:message_id",
+  Basicauth,
+  auth(),
+  sharable.shareReward
+);
+app.get(
+  "/api/getSocialShare/:user_id",
+  Basicauth,
+  auth(),
+  sharable.getSocialShare
+);
 
 // Route to get AI message
 app.get(
   "/api/getAIMessage/:prompt/:user_id/:type",
+  Basicauth,
   auth(),
   async (req, res) => {
     const resp = await chatgpt.getAIMessage(req).then((data) => {
@@ -337,11 +378,12 @@ app.get("/api/encrypt/:text", auth(), (req, res) => {
 
 //################################# Wallet #################################//
 // Route to get OG Balance
-app.get("/api/getOGBalance/:address", auth(), useSDK.getOGBalance);
+app.get("/api/getOGBalance/:address", Basicauth, auth(), useSDK.getOGBalance);
 
 // Route to get user's NFT balance
 app.get(
   "/api/getWalletNFTBalanceByTokenID/:address/:token_id/:user_id/:qty",
+  Basicauth,
   auth(),
   async (req, res) => {
     const resp = await useSDK.getWalletNFTBalanceByTokenID(req).then((data) => {
@@ -351,19 +393,26 @@ app.get(
 );
 
 // Route to get wallet DL data
-app.get("/api/getWalletDLBalance/:address", auth(), async (req, res) => {
-  const resp = await useSDK.getWalletDLBalance(req).then((data) => {
-    res.send(data);
-  });
-});
+app.get(
+  "/api/getWalletDLBalance/:address",
+  Basicauth,
+  auth(),
+  async (req, res) => {
+    const resp = await useSDK.getWalletDLBalance(req).then((data) => {
+      res.send(data);
+    });
+  }
+);
 
 app.get(
   "/api/convertCryptoToToken/:userId/:address/:tokens/:transactionHash",
+  Basicauth,
   auth(),
   rewards.convertCryptoToToken
 );
 app.get(
   "/api/convertCryptoToGoldCoin/:address/:transactionHash",
+  Basicauth,
   auth(),
   (req, res) => {
     CryptoToGCQueue.push({ req, res }, (err, result) => {
@@ -372,11 +421,16 @@ app.get(
   }
 );
 
-app.get("/api/coverttickettotoken/:ticketPrice", auth(), async (req, res) => {
-  TicketToTokenQueue.push({ req, res }, (err, result) => {
-    console.log("ticket converted.", err, result);
-  });
-});
+app.get(
+  "/api/coverttickettotoken/:ticketPrice",
+  Basicauth,
+  auth(),
+  async (req, res) => {
+    TicketToTokenQueue.push({ req, res }, (err, result) => {
+      console.log("ticket converted.", err, result);
+    });
+  }
+);
 
 var q = new Queue(async function (task, cb) {
   if (task.type === "gameResult") {
@@ -385,13 +439,19 @@ var q = new Queue(async function (task, cb) {
   cb(null, 1);
 });
 
-app.get("/api/gameResult", auth(), rateAuthLimit, async (req, res) => {
-  try {
-    q.push({ req, res, type: "gameResult" });
-  } catch (error) {
-    console.log("errr", error);
+app.get(
+  "/api/gameResult",
+  Basicauth,
+  auth(),
+  rateAuthLimit,
+  async (req, res) => {
+    try {
+      q.push({ req, res, type: "gameResult" });
+    } catch (error) {
+      console.log("errr", error);
+    }
   }
-});
+);
 
 const gameResult = async (req, res) => {
   try {
@@ -505,11 +565,13 @@ app.post("/api/authorize-webhook", async (req, res) => {
 
 app.get(
   "/api/WithdrawRequest/:address/:prize_id",
+  Basicauth,
   auth(),
   rewards.createWithdraw
 );
 app.get(
   "/api/FastWithdrawRequest/:address/:amount",
+  Basicauth,
   auth(),
   rewards.createFastWithdraw
 );
@@ -677,14 +739,26 @@ app.post("/api/accept-deceptor", auth(), authLimiter, async (req, res) => {
   }
 });
 
-app.post("/api/applyPromoCode", auth(), rateAuthLimit, rewards.applyPromoCode);
+app.post(
+  "/api/applyPromoCode",
+  Basicauth,
+  auth(),
+  rateAuthLimit,
+  rewards.applyPromoCode
+);
 app.post(
   "/api/WithdrawRequestWithFiat",
+  Basicauth,
   auth(),
   rewards.WithdrawRequestWithFiat
 );
-app.get("/api/getCryptoToGCPurcahse", auth(), rewards.getCryptoToGCPurcahse);
-app.post("/api/getFormToken", auth(), async (req, res) => {
+app.get(
+  "/api/getCryptoToGCPurcahse",
+  Basicauth,
+  auth(),
+  rewards.getCryptoToGCPurcahse
+);
+app.post("/api/getFormToken", Basicauth, auth(), async (req, res) => {
   const { user, body } = req || {};
   getAnAcceptPaymentPage(body, user, async (response) => {
     return res.send({
