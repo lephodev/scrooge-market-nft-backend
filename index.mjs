@@ -36,7 +36,6 @@ import { authLimiter, rateAuthLimit } from "./middlewares/rateLimiter.mjs";
 import { InvoiceEmail } from "./email/emailSend.mjs";
 import moment from "moment";
 import { Server } from "socket.io";
-
 import Basicauth from "./middlewares/basicAuth.mjs";
 
 const app = express();

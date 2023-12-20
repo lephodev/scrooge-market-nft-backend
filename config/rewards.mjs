@@ -15,7 +15,6 @@ import BNB_ABI from "../config/BNB_ABI.json" assert { type: "json" };
 import { sendInvoice } from "../utils/sendx_send_invoice.mjs";
 import { getSigner } from "../utils/signer.mjs";
 import Queue from "better-queue";
-import createHostedPaymentPage from "authorize-net";
 import { getAnAcceptPaymentPage } from "../utils/payment.mjs";
 
 const { Schema } = mongoose;
