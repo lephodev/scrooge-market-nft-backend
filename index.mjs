@@ -35,14 +35,9 @@ import Queue from "better-queue";
 import { authLimiter, rateAuthLimit } from "./middlewares/rateLimiter.mjs";
 import { InvoiceEmail } from "./email/emailSend.mjs";
 import moment from "moment";
-import { Server } from "socket.io";
 import Basicauth from "./middlewares/basicAuth.mjs";
 
 const app = express();
-
-const server = createServer(app);
-
-const io = new Server(server, {});
 
 const PORT = process.env.PORT;
 app.use(
