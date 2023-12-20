@@ -254,11 +254,7 @@ app.get(
 );
 
 // Route to redeem prize
-app.get(
-  "/api/redeemPrize/:withdraw_id/:transactionHash",
-  Basicauth,
-  /* auth(), */ rewards.redeemPrize
-);
+app.get("/api/redeemPrize/:withdraw_id/:transactionHash", rewards.redeemPrize);
 
 //################################# Raffles #################################//
 // Route to get current raffles
