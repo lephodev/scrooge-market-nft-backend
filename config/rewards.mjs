@@ -1011,8 +1011,8 @@ export async function redeemPrize(req, res) {
                   console.log("e", e);
                 });
               emailSend.ApproveRedeemRequestEmail(
-                prize_price,
                 email,
+                prize_price,
                 username,
                 hash,
                 from
