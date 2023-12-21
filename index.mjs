@@ -479,10 +479,7 @@ app.post("/api/authorize-webhook", async (req, res) => {
     console.log("reqreqreq", req.origin);
     const rawPayload = JSON.stringify(req.body);
     console.log("rawPayload", rawPayload);
-    res.status(200).send({
-      success: true,
-      data: "Chips added successfully.",
-    });
+
     getTransactionDetails(rawPayload, async (response) => {
       console.log("response528", response);
       const amount = response?.transaction?.settleAmount;
@@ -562,8 +559,15 @@ app.post("/api/authorize-webhook", async (req, res) => {
         }
       }
     });
+    res.status(200).send({
+      success: true,
+      data: "Chips added successfully.",
+    });
   } catch (error) {
     console.log("webhook err", error);
+    res.status(500).json({
+      message: "Something went wrong",
+    });
   }
   // res.send({ success: true });
 });
