@@ -565,7 +565,7 @@ app.post("/api/authorize-webhook", async (req, res) => {
     });
   } catch (error) {
     console.log("webhook err", error);
-    res.status(500).json({
+    res.status(200).json({
       message: "Something went wrong",
     });
   }
