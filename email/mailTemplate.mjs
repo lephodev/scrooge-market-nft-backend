@@ -196,7 +196,7 @@ export const SUBMIT_REDEEM_REQUEST = (username, prize) => {
         `;
 };
 
-export const APPROVE_REDEEM_REQUEST = (username, hash, from) => {
+export const APPROVE_REDEEM_REQUEST = (prize_price, username, hash, from) => {
   return `
     <!DOCTYPE html>
     <html lang="en">
@@ -263,7 +263,7 @@ export const APPROVE_REDEEM_REQUEST = (username, hash, from) => {
                   font-weight: 500;
                   font-family: 'Poppins', sans-serif;
                 ">
-                Hi ${username},
+                Hello ${username},
               </h1>
               <h4 style="
                   color: rgb(255, 255, 255);
@@ -283,10 +283,10 @@ export const APPROVE_REDEEM_REQUEST = (username, hash, from) => {
                   color: rgb(207, 207, 207);
                   font-family: 'Poppins', sans-serif;
                 ">
-                We are pleased to inform you that your redemption of
-                <br> ST: ${prize} 
-                <br> USD: $ ${prize / 100}
-                <br> Has been processed.  The Scrooge cryptocurrency is in your ${WalletAddress} The following is the successful transaction hash from the transfer: ${hash}
+                We are pleased to inform you that your redemption request of
+                <br> Token: ${prize_price}
+                <br> USD: $ ${prize_price / 100}
+                <br> Has been processed.  The Scrooge cryptocurrency is now in your  The following is the successful transaction hash from the transfer: ${hash}
                 </p>
                 <p style="
                 font-size: 20px;
@@ -301,9 +301,7 @@ export const APPROVE_REDEEM_REQUEST = (username, hash, from) => {
                     color: rgb(207, 207, 207);
                     font-family: 'Poppins', sans-serif;
                   ">
-                  If this is your first time redeeming and you need some guidance, <a href="https://market.scrooge.casino/static/media/SCROOGE%20Redemption%20Manual.60fd5a4a7bf48ee3a8e1.pdf" target="_blank">download</a> the instructional PDF.
-                  <br>
-                  If you have any further questions about the process, reach out to us on Facebook Messenger.
+                  If this is your first time redeeming and you need some guidance, please <a href="https://market.scrooge.casino/static/media/SCROOGE%20Redemption%20Manual.60fd5a4a7bf48ee3a8e1.pdf" target="_blank">download</a> the instructional PDF here
                   </p>
                   <!-- <p style="
                 font-size: 20px;
@@ -341,7 +339,13 @@ export const APPROVE_REDEEM_REQUEST = (username, hash, from) => {
                       ">
                       ${from}
                   </p> -->
-                
+                  <p style="
+                  font-size: 20px;
+                      color: rgb(207, 207, 207);
+                      font-family: 'Poppins', sans-serif;
+                  ">
+                  If you have any further questions regarding the process, feel free to reach out to us on Facebook Messenger.
+                  </p>
             </div>
             <div style="
                 margin-top: 18px !important;
@@ -424,13 +428,20 @@ export const APPROVE_REDEEM_REQUEST = (username, hash, from) => {
                 ">
                 Need Help ?
               </h6>
-             
               <p style="
                   color: rgb(207, 207, 207);
                   font-size: 14px;
                   font-family: 'Poppins', sans-serif;
                 ">
-                © 2023 - SCROOGE, LLC-Rights Reserved
+                Please send any feedback or bug reports to
+                <a href="mailto:info@scrooge.casino" style="color: #f9ff00; font-family: 'Poppins', sans-serif">info@scrooge.casino</a>
+              </p>
+              <p style="
+                  color: rgb(207, 207, 207);
+                  font-size: 14px;
+                  font-family: 'Poppins', sans-serif;
+                ">
+                © 2023 - SCROOGE, LLC- All Rights Reserved
               </p>
             </div>
           </main>
@@ -440,7 +451,6 @@ export const APPROVE_REDEEM_REQUEST = (username, hash, from) => {
     </html>
         `;
 };
-
 export const SEND_INVOICE = (data, hash, from) => {
   return `
   <!DOCTYPE html>

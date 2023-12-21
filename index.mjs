@@ -475,8 +475,6 @@ app.post("/api/bitcartcc-notification", async (req, res) => {
 
 app.post("/api/authorize-webhook", async (req, res) => {
   try {
-    console.log("rrrrrrrrrrrrrrrrrrrrrrrrrrr", req);
-    console.log("reqreqreq", req.origin);
     const rawPayload = JSON.stringify(req.body);
     console.log("rawPayload", rawPayload);
 

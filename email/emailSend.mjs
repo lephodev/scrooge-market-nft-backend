@@ -77,11 +77,17 @@ export const SubmitRedeemRequestEmail = async (to, name, prize) => {
   }
 };
 
-export const ApproveRedeemRequestEmail = async (to, name, hash, from) => {
+export const ApproveRedeemRequestEmail = async (
+  to,
+  prize_price,
+  name,
+  hash,
+  from
+) => {
   console.log("to, name", to, name);
   let subject = "Approve Redeem Request";
   const text = ``;
-  const html = APPROVE_REDEEM_REQUEST(name, hash, from);
+  const html = APPROVE_REDEEM_REQUEST(prize_price, name, hash, from);
   await redeemSendemail(to, subject, text, html);
 };
 

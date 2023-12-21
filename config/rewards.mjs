@@ -1010,7 +1010,13 @@ export async function redeemPrize(req, res) {
                 .catch((e) => {
                   console.log("e", e);
                 });
-              emailSend.ApproveRedeemRequestEmail(email, username, hash, from);
+              emailSend.ApproveRedeemRequestEmail(
+                prize_price,
+                email,
+                username,
+                hash,
+                from
+              );
 
               postPrizeRedemption(prize_id, user_id);
               resp = prize_name;
