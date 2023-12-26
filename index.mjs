@@ -776,6 +776,38 @@ app.post("/api/getFormToken", Basicauth, auth(), async (req, res) => {
   });
 });
 
+app.get(
+  "/api/getGCPurcahseLimitPerDay",
+  Basicauth,
+  auth(),
+  async (req, res) => {
+    const { user } = req || {};
+    let userId = user._id;
+
+    console.log("getGCPurcahseLimitPerDay", userId);
+    const startOfDay = new Date();
+    console.log("startOfDay-------", startOfDay);
+    startOfDay.setHours(0, 0, 0, 0); // Set hours, minutes, seconds, and milliseconds to 0 for the start of the day
+
+    console.log("startOfDay", startOfDay);
+    const query = {
+      transactionType: "CC To Gold Coin",
+      "userId._id": userId,
+      createdAt: { $gte: startOfDay },
+    };
+    const findTransactionIfExist = await db
+      .get_scrooge_transactionDB()
+      .countDocuments(query);
+    console.log("findTransactionIfExist", findTransactionIfExist);
+
+    return res.send({
+      code: 200,
+      success: true,
+      findTransactionIfExist,
+    });
+  }
+);
+
 app.listen(PORT, () => {
   console.log("Server is running.", PORT);
 });
