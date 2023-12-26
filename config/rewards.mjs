@@ -74,29 +74,29 @@ export async function addChips(
       },
       { new: true }
     );
-    if (bonusToken > 0) {
-      const exprDate = new Date();
-      exprDate.setHours(24 * 30 + exprDate.getHours());
-      exprDate.setSeconds(0);
-      exprDate.setMilliseconds(0);
+    // if (bonusToken > 0) {
+    const exprDate = new Date();
+    exprDate.setHours(24 * 30 + exprDate.getHours());
+    exprDate.setSeconds(0);
+    exprDate.setMilliseconds(0);
 
-      await db.get_scrooge_bonus().insert({
-        userId: ObjectId(_user_id),
-        bonusType: "monthly",
-        bonusAmount: bonusToken,
-        bonusExpirationTime: exprDate,
-        wagerLimit: bonusToken * 10,
-        rollOverTimes: 10,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        isExpired: false,
-        wageredAmount: 0,
-        subCategory: "Promo Bonus",
-        restAmount: bonusToken,
-        expiredAmount: bonusToken,
-        executing: false,
-      });
-    }
+    await db.get_scrooge_bonus().insert({
+      userId: ObjectId(_user_id),
+      bonusType: "monthly",
+      bonusAmount: bonusToken,
+      bonusExpirationTime: exprDate,
+      wagerLimit: bonusToken * 10,
+      rollOverTimes: 10,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      isExpired: false,
+      wageredAmount: 0,
+      subCategory: "Promo Bonus",
+      restAmount: bonusToken,
+      expiredAmount: bonusToken,
+      executing: false,
+    });
+    // }
     await db.get_marketplace_chip_transactionsDB().insertOne({
       user_id: ObjectId(_user_id),
       address: _address,
