@@ -4,7 +4,7 @@ import passport from "passport";
 import auth from "./middlewares/auth.mjs";
 import jwtStrategy from "./config/passport.mjs";
 import cookieParser from "cookie-parser";
-
+import { createServer } from "http";
 import helmet from "helmet";
 import * as rewards from "./config/rewards.mjs";
 import * as affiliate from "./config/affiliate.mjs";
@@ -33,23 +33,18 @@ import { sendInvoice } from "./utils/sendx_send_invoice.mjs";
 import { ObjectId } from "mongodb";
 import Queue from "better-queue";
 import { authLimiter, rateAuthLimit } from "./middlewares/rateLimiter.mjs";
-import { SEND_INVOICE } from "./email/mailTemplate.mjs";
 import { InvoiceEmail } from "./email/emailSend.mjs";
+import moment from "moment";
+import { Server } from "socket.io";
+
+import Basicauth from "./middlewares/basicAuth.mjs";
 
 const app = express();
-// set security HTTP headers
-// app.use(
-//   helmet({
-//     frameguard: {
-//       action: 'sameorigin'
-//     },
-//     hsts: {
-//       maxAge: 31536000,
-//       includeSubDomains: true,
-//       preload: true
-//     }
-//   })
-// );
+
+const server = createServer(app);
+
+const io = new Server(server, {});
+
 const PORT = process.env.PORT;
 app.use(
   cors({
@@ -90,6 +85,7 @@ app.use(cookieParser());
 // app.use("/api/accept-deceptor", authLimiter);
 
 passport.use("jwt", jwtStrategy);
+
 // app.use((req, _, next) => {
 //   logger.info(`HEADERS ${req.headers} `);
 //   next();
@@ -148,11 +144,17 @@ app.use(async (req, res, next) => {
 
 //################################# Affiliates #################################//
 // Route to get Affiliate user
-app.get("/api/getAffiliateUser/:user_id", auth(), affiliate.getAffiliateUser);
+app.get(
+  "/api/getAffiliateUser/:user_id",
+  Basicauth,
+  auth(),
+  affiliate.getAffiliateUser
+);
 
 // Route to create Affiliate user
 app.get(
   "/api/createAffiliateUser/:user_id/:ip_address",
+  Basicauth,
   auth(),
   affiliate.createAffiliateUser
 );
@@ -160,6 +162,7 @@ app.get(
 // Route to get affiliate leaders by number of tokens earned
 app.get(
   "/api/getAffLeadersByTokens/:limit/:days",
+  Basicauth,
   auth(),
   affiliate.getAffLeadersByTokens
 );
@@ -167,6 +170,7 @@ app.get(
 // Route to get affiliate leaders by number of commissions (num of sales) earned
 app.get(
   "/api/getAffLeadersByCount/:limit/:days",
+  Basicauth,
   auth(),
   affiliate.getAffLeadersByCount
 );
@@ -174,6 +178,7 @@ app.get(
 // Route to get affiliate leaders by number of commissions (num of sales) earned
 app.get(
   "/api/getAffLeadersByType/:type/:limit/:days",
+  Basicauth,
   auth(),
   affiliate.getAffLeadersByType
 );
@@ -205,7 +210,7 @@ app.get(
 // });
 // });
 
-app.get("/api/getItems/:type", auth(), async (req, res) => {
+app.get("/api/getItems/:type", Basicauth, auth(), async (req, res) => {
   const resp = await rewards.getItems(req).then((data) => {
     res.send(data);
   });
@@ -213,7 +218,7 @@ app.get("/api/getItems/:type", auth(), async (req, res) => {
 
 //################################# Prizes #################################//
 // Route to get available prizes
-app.get("/api/getPrizes", auth(), async (req, res) => {
+app.get("/api/getPrizes", Basicauth, auth(), async (req, res) => {
   console.log("abcccc");
   const resp = await rewards.getPrizes(req).then((data) => {
     // console.log("prizes resp: ", data);
@@ -221,19 +226,25 @@ app.get("/api/getPrizes", auth(), async (req, res) => {
   });
 });
 
-app.get("/api/getGCPackages", auth(), rewards.getCryptoToGCPackages);
-app.get("/api/getTicketToToken", auth(), rewards.getTicketToToken);
+app.get("/api/getGCPackages", Basicauth, auth(), rewards.getCryptoToGCPackages);
+app.get("/api/getTicketToToken", Basicauth, auth(), rewards.getTicketToToken);
 
 // Route to get user's redeemed prizes
-app.get("/api/getUserRedeemed/:user_id", auth(), async (req, res) => {
-  const resp = await rewards.getUserRedeemed(req).then((data) => {
-    res.send(data);
-  });
-});
+app.get(
+  "/api/getUserRedeemed/:user_id",
+  Basicauth,
+  auth(),
+  async (req, res) => {
+    const resp = await rewards.getUserRedeemed(req).then((data) => {
+      res.send(data);
+    });
+  }
+);
 
 // Route to update markRedeemed flag in prize_redeem_transactions table
 app.get(
   "/api/markMerchCouponRedeemed/:trans_id/:user_id",
+  Basicauth,
   auth(),
   async (req, res) => {
     const resp = await rewards.markMerchCouponRedeemed(req).then((data) => {
@@ -243,114 +254,11 @@ app.get(
 );
 
 // Route to redeem prize
-app.get(
-  "/api/redeemPrize/:withdraw_id/:transactionHash",
-  /* auth(), */ rewards.redeemPrize
-);
+app.get("/api/redeemPrize/:withdraw_id/:transactionHash", rewards.redeemPrize);
 
 //################################# Raffles #################################//
 // Route to get current raffles
-app.get("/api/getCurrentRaffles/:limit/:days", auth(), async (req, res) => {
-  const resp = await raffles.getCurrentRaffles(req).then((data) => {
-    res.send(data);
-  });
-});
 
-// Route to get finished raffles
-app.get("/api/getFinishedRaffles/:limit/:days", auth(), async (req, res) => {
-  const resp = await raffles.getFinishedRaffles(req).then((data) => {
-    res.send(data);
-  });
-});
-
-// Route to get entries by raffle ID
-app.get(
-  "/api/getEntriesByRaffleID/:raffle_id/:limit/:days",
-  auth(),
-  async (req, res) => {
-    const resp = await raffles.getEntriesByRaffleID(req).then((data) => {
-      res.send(data);
-    });
-  }
-);
-
-// Route to get entries count by raffle ID
-app.get(
-  "/api/getEntriesCountByRaffleID/:raffle_id",
-  auth(),
-  async (req, res) => {
-    const resp = await raffles.getEntriesCountByRaffleID(req).then((data) => {
-      res.send(data);
-    });
-  }
-);
-
-// Route to get entries by user ID
-app.get(
-  "/api/getEntriesByUserID/:user_id/:limit/:days",
-  auth(),
-  async (req, res) => {
-    const resp = await raffles.getEntriesByUserID(req).then((data) => {
-      res.send(data);
-    });
-  }
-);
-
-// Route to get draw by raffle ID
-app.get("/api/getDrawByRaffleID/:raffle_id", auth(), async (req, res) => {
-  const resp = await raffles.getDrawByRaffleID(req).then((data) => {
-    res.send(data);
-  });
-});
-
-// Route to get prize by prize ID
-app.get("/api/getDrawByRaffleID/:prize_id", auth(), async (req, res) => {
-  const resp = await raffles.getPrizeByPrizeID(req).then((data) => {
-    res.send(data);
-  });
-});
-
-// Route to enter raffle
-// app.get(
-//   "/api/enterRaffle/:raffle_id/:user_id/:address",
-//   auth(),
-//   async (req, res) => {
-//     const resp = await raffles.enterRaffle(req).then((data) => {
-//       res.send(data);
-//     });
-//   }
-// );
-
-// Route to get amount of user's raffle tickets
-app.get("/api/getUserRaffleTickets/:user_id", auth(), async (req, res) => {
-  const resp = await raffles.getUserRaffleTickets(req).then((data) => {
-    res.send(data);
-  });
-});
-
-// Route to intialize raffle purchase event
-app.get(
-  "/api/initEntryPurchase/:user_id/:address/:amt/:item_id",
-  auth(),
-  async (req, res) => {
-    const resp = await raffles.initEntryPurchase(req).then((data) => {
-      res.send(data);
-    });
-  }
-);
-
-// Route to finalize raffle purchase event
-// app.get(
-//   "/api/finalizeEntryPurchase/:user_id/:address/:amt/:purchase_id/:trans_hash",
-//   auth(),
-//   async (req, res) => {
-//     const resp = await raffles.finalizeEntryPurchase(req).then((data) => {
-//       res.send(data);
-//     });
-//   }
-// );
-
-//################################# Rewards #################################//
 // Route to get last claim date
 app.get(
   "/api/getNextClaimDate/:address/:type/:user_id/:token_id",
@@ -361,6 +269,7 @@ app.get(
 // Route to claim DL Tokens
 app.get(
   "/api/claimDLTokens/:address/:user_id/:token_id",
+  Basicauth,
   auth(),
   async (req, res) => {
     const resp = await rewards.claimDLTokens(req).then((data) => {
@@ -370,17 +279,23 @@ app.get(
 );
 
 // Route to claim daily rewards
-app.get("/api/claimDailyRewards/:user_id", auth(), async (req, res) => {
-  const resp = await rewards.claimDailyRewards(req).then((data) => {
-    res.send(data);
-  });
-});
+app.get(
+  "/api/claimDailyRewards/:user_id",
+  Basicauth,
+  auth(),
+  async (req, res) => {
+    const resp = await rewards.claimDailyRewards(req).then((data) => {
+      res.send(data);
+    });
+  }
+);
 
-app.get("/api/getDLNFTs/:address", auth(), useSDK.getDLNFTs);
+app.get("/api/getDLNFTs/:address", Basicauth, auth(), useSDK.getDLNFTs);
 
 // Route to claim holder monthly Tokens
 app.get(
   "/api/claimHolderTokens/:address/:signerToken",
+  Basicauth,
   auth(),
   async (req, res) => {
     const resp = await rewards.claimHolderTokens(req).then((data) => {
@@ -391,18 +306,34 @@ app.get(
 
 //################################# Sharable Data #################################//
 // Route to get Sharable Messages
-app.get("/api/getSharableMessages", auth(), sharable.getSharableMessages);
+app.get(
+  "/api/getSharableMessages",
+  Basicauth,
+  auth(),
+  sharable.getSharableMessages
+);
 
 // Route to get shortened link
-app.get("/api/getShortLink/:link", auth(), sharable.getShortLink);
+app.get("/api/getShortLink/:link", Basicauth, auth(), sharable.getShortLink);
 
 //Reute to get user reward
-app.get("/api/shareReward/:user_id/:message_id", auth(), sharable.shareReward);
-app.get("/api/getSocialShare/:user_id", auth(), sharable.getSocialShare);
+app.get(
+  "/api/shareReward/:user_id/:message_id",
+  Basicauth,
+  auth(),
+  sharable.shareReward
+);
+app.get(
+  "/api/getSocialShare/:user_id",
+  Basicauth,
+  auth(),
+  sharable.getSocialShare
+);
 
 // Route to get AI message
 app.get(
   "/api/getAIMessage/:prompt/:user_id/:type",
+  Basicauth,
   auth(),
   async (req, res) => {
     const resp = await chatgpt.getAIMessage(req).then((data) => {
@@ -443,11 +374,12 @@ app.get("/api/encrypt/:text", auth(), (req, res) => {
 
 //################################# Wallet #################################//
 // Route to get OG Balance
-app.get("/api/getOGBalance/:address", auth(), useSDK.getOGBalance);
+app.get("/api/getOGBalance/:address", Basicauth, auth(), useSDK.getOGBalance);
 
 // Route to get user's NFT balance
 app.get(
   "/api/getWalletNFTBalanceByTokenID/:address/:token_id/:user_id/:qty",
+  Basicauth,
   auth(),
   async (req, res) => {
     const resp = await useSDK.getWalletNFTBalanceByTokenID(req).then((data) => {
@@ -457,19 +389,26 @@ app.get(
 );
 
 // Route to get wallet DL data
-app.get("/api/getWalletDLBalance/:address", auth(), async (req, res) => {
-  const resp = await useSDK.getWalletDLBalance(req).then((data) => {
-    res.send(data);
-  });
-});
+app.get(
+  "/api/getWalletDLBalance/:address",
+  Basicauth,
+  auth(),
+  async (req, res) => {
+    const resp = await useSDK.getWalletDLBalance(req).then((data) => {
+      res.send(data);
+    });
+  }
+);
 
 app.get(
   "/api/convertCryptoToToken/:userId/:address/:tokens/:transactionHash",
+  Basicauth,
   auth(),
   rewards.convertCryptoToToken
 );
 app.get(
   "/api/convertCryptoToGoldCoin/:address/:transactionHash",
+  Basicauth,
   auth(),
   (req, res) => {
     CryptoToGCQueue.push({ req, res }, (err, result) => {
@@ -478,11 +417,16 @@ app.get(
   }
 );
 
-app.get("/api/coverttickettotoken/:ticketPrice", auth(), async (req, res) => {
-  TicketToTokenQueue.push({ req, res }, (err, result) => {
-    console.log("ticket converted.", err, result);
-  });
-});
+app.get(
+  "/api/coverttickettotoken/:ticketPrice",
+  Basicauth,
+  auth(),
+  async (req, res) => {
+    TicketToTokenQueue.push({ req, res }, (err, result) => {
+      console.log("ticket converted.", err, result);
+    });
+  }
+);
 
 var q = new Queue(async function (task, cb) {
   if (task.type === "gameResult") {
@@ -491,13 +435,19 @@ var q = new Queue(async function (task, cb) {
   cb(null, 1);
 });
 
-app.get("/api/gameResult", auth(), rateAuthLimit, async (req, res) => {
-  try {
-    q.push({ req, res, type: "gameResult" });
-  } catch (error) {
-    console.log("errr", error);
+app.get(
+  "/api/gameResult",
+  Basicauth,
+  auth(),
+  rateAuthLimit,
+  async (req, res) => {
+    try {
+      q.push({ req, res, type: "gameResult" });
+    } catch (error) {
+      console.log("errr", error);
+    }
   }
-});
+);
 
 const gameResult = async (req, res) => {
   try {
@@ -524,74 +474,111 @@ app.post("/api/bitcartcc-notification", async (req, res) => {
 });
 
 app.post("/api/authorize-webhook", async (req, res) => {
-  const rawPayload = JSON.stringify(req.body);
-  console.log("rawPayload", rawPayload);
-  getTransactionDetails(rawPayload, async (response) => {
-    console.log("response528", response);
-    const amount = response?.transaction?.settleAmount;
-    const email = response?.transaction?.customer?.email;
-    // console.log("email", email);
-    if (
-      response.messages.resultCode !== "Ok" ||
-      response.transactionResponse?.errors
-    ) {
-      return res.status(400).send({
-        success: false,
-        data: "transaction failed",
-        error: response.transactionResponse?.errors?.error[0]?.errorText,
-      });
-    }
-    const getUser = await db.get_scrooge_usersDB().findOne({ email: email });
-    if (amount) {
-      const data = await db.get_marketplace_gcPackagesDB().findOne({
-        priceInBUSD: amount?.toString(),
-      });
-      console.log("data", data);
-      if (data) {
-        console.log(
-          "getUser",
-          parseInt(data?.freeTokenAmount),
-          typeof parseInt(data?.freeTokenAmount)
-        );
+  try {
+    const rawPayload = JSON.stringify(req.body);
+    console.log("rawPayload", rawPayload);
 
-        const findTransactionIfExist = await db
-          .get_scrooge_transactionDB()
-          .find({
-            "transactionDetails.transaction.transId":
-              response?.transaction?.transId,
-          })
-          .toArray();
-        console.log("findTransactionIfExist", findTransactionIfExist);
-        if (findTransactionIfExist.length === 0) {
-          const trans = await rewards.addChips(
-            getUser?._id?.toString(),
-            parseInt(data?.freeTokenAmount),
-            "",
-            "CC To Gold Coin",
-            parseInt(data?.gcAmount),
-            response,
-            0
-          );
-          await db.get_scrooge_usersDB().findOneAndUpdate(
-            { email: email },
+    getTransactionDetails(rawPayload, async (response) => {
+      console.log("response528", response);
+      const amount = response?.transaction?.settleAmount;
+      const email = response?.transaction?.customer?.email;
+      const emailAndIdRegex = /^(.+?)_(\w+)$/;
+      const match = email.match(emailAndIdRegex);
+      console.log("email", email);
+      if (match) {
+        const extractedEmail = match[1];
+        const extractedId = match[2];
+        console.log("Extracted Email:", extractedEmail);
+        console.log("Extracted ID:", extractedId);
 
-            { $set: { isGCPurchase: true } }
-          );
+        if (
+          response.messages.resultCode !== "Ok" ||
+          response.transactionResponse?.errors
+        ) {
+          return res.status(400).send({
+            success: false,
+            data: "transaction failed",
+            error: response.transactionResponse?.errors?.error[0]?.errorText,
+          });
+        }
+        const getUser = await db
+          .get_scrooge_usersDB()
+          .findOne({ _id: ObjectId(extractedId) });
+        if (!getUser) {
+          console.log("User Not Found");
+          return;
+        }
+        if (amount) {
+          const data = await db.get_marketplace_gcPackagesDB().findOne({
+            priceInBUSD: amount?.toString(),
+          });
+          console.log("data", data);
+          if (data) {
+            const findTransactionIfExist = await db
+              .get_scrooge_transactionDB()
+              .find({
+                "transactionDetails.transaction.transId":
+                  response?.transaction?.transId,
+              })
+              .toArray();
+            console.log("findTransactionIfExist", findTransactionIfExist);
+
+            if (findTransactionIfExist.length === 0) {
+              const trans = await rewards.addChips(
+                getUser?._id?.toString(),
+                parseInt(data?.freeTokenAmount),
+                "",
+                "CC To Gold Coin",
+                parseInt(data?.gcAmount),
+                response,
+                0
+              );
+              const reciptPayload = {
+                username: getUser?.username,
+                email: getUser?.email,
+                invoicDate: moment(new Date()).format("D MMMM  YYYY"),
+                paymentMethod: "GC Purchase",
+                packageName: "Gold Coin Purchase",
+                goldCoinQuantity: parseInt(data?.gcAmount),
+                tokenQuantity: parseInt(data?.freeTokenAmount),
+                purcahsePrice: amount?.toString(),
+                Tax: 0,
+                firstName: getUser?.firstName,
+                lastName: getUser?.lastName,
+              };
+              await db.get_scrooge_usersDB().findOneAndUpdate(
+                { _id: ObjectId(extractedId) },
+
+                { $set: { isGCPurchase: true } }
+              );
+              await InvoiceEmail(getUser?.email, reciptPayload);
+            }
+          }
         }
       }
-    }
-  });
-
+    });
+    res.status(200).send({
+      success: true,
+      data: "Chips added successfully.",
+    });
+  } catch (error) {
+    console.log("webhook err", error);
+    res.status(200).json({
+      message: "Something went wrong",
+    });
+  }
   // res.send({ success: true });
 });
 
 app.get(
   "/api/WithdrawRequest/:address/:prize_id",
+  Basicauth,
   auth(),
   rewards.createWithdraw
 );
 app.get(
   "/api/FastWithdrawRequest/:address/:amount",
+  Basicauth,
   auth(),
   rewards.createFastWithdraw
 );
@@ -759,14 +746,26 @@ app.post("/api/accept-deceptor", auth(), authLimiter, async (req, res) => {
   }
 });
 
-app.post("/api/applyPromoCode", auth(), rateAuthLimit, rewards.applyPromoCode);
+app.post(
+  "/api/applyPromoCode",
+  Basicauth,
+  auth(),
+  rateAuthLimit,
+  rewards.applyPromoCode
+);
 app.post(
   "/api/WithdrawRequestWithFiat",
+  Basicauth,
   auth(),
   rewards.WithdrawRequestWithFiat
 );
-app.get("/api/getCryptoToGCPurcahse", auth(), rewards.getCryptoToGCPurcahse);
-app.post("/api/getFormToken", auth(), async (req, res) => {
+app.get(
+  "/api/getCryptoToGCPurcahse",
+  Basicauth,
+  auth(),
+  rewards.getCryptoToGCPurcahse
+);
+app.post("/api/getFormToken", Basicauth, auth(), async (req, res) => {
   const { user, body } = req || {};
   getAnAcceptPaymentPage(body, user, async (response) => {
     return res.send({
@@ -776,6 +775,38 @@ app.post("/api/getFormToken", auth(), async (req, res) => {
     });
   });
 });
+
+app.get(
+  "/api/getGCPurcahseLimitPerDay",
+  Basicauth,
+  auth(),
+  async (req, res) => {
+    const { user } = req || {};
+    let userId = user._id;
+
+    console.log("getGCPurcahseLimitPerDay", userId);
+    const startOfDay = new Date();
+    console.log("startOfDay-------", startOfDay);
+    startOfDay.setHours(0, 0, 0, 0); // Set hours, minutes, seconds, and milliseconds to 0 for the start of the day
+
+    console.log("startOfDay", startOfDay);
+    const query = {
+      transactionType: "CC To Gold Coin",
+      "userId._id": userId,
+      createdAt: { $gte: startOfDay },
+    };
+    const findTransactionIfExist = await db
+      .get_scrooge_transactionDB()
+      .countDocuments(query);
+    console.log("findTransactionIfExist", findTransactionIfExist);
+
+    return res.send({
+      code: 200,
+      success: true,
+      findTransactionIfExist,
+    });
+  }
+);
 
 app.listen(PORT, () => {
   console.log("Server is running.", PORT);
