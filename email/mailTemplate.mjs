@@ -286,7 +286,7 @@ export const APPROVE_REDEEM_REQUEST = (prize_price, username, hash, from) => {
                 We are pleased to inform you that your redemption request of
                 <br> Token: ${prize_price}
                 <br> USD: $ ${prize_price / 100}
-                <br> Has been processed.  The Scrooge cryptocurrency is now in your wallet The following is the successful transaction hash from the transfer: ${hash}
+                <br> Has been processed.  The Scrooge cryptocurrency is now in your wallet. The following is the successful transaction hash from the transfer: ${hash}
                 </p>
                 <p style="
                 font-size: 20px;
