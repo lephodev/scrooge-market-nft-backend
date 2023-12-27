@@ -488,8 +488,10 @@ app.post("/api/authorize-webhook", async (req, res) => {
       if (match) {
         const extractedEmail = match[1];
         const extractedId = match[2];
+        const extractedPromoCode = match[3];
         console.log("Extracted Email:", extractedEmail);
         console.log("Extracted ID:", extractedId);
+        console.log("extractedPromoCode:", extractedPromoCode);
 
         if (
           response.messages.resultCode !== "Ok" ||
@@ -524,14 +526,37 @@ app.post("/api/authorize-webhook", async (req, res) => {
             console.log("findTransactionIfExist", findTransactionIfExist);
 
             if (findTransactionIfExist.length === 0) {
+              let query = {
+                couponCode: extractedPromoCode,
+                expireDate: { $gte: new Date() },
+              };
+              let findPromoData = await db.get_scrooge_promoDB().findOne(query);
+              console.log("findPromoData", findPromoData);
               const trans = await rewards.addChips(
                 getUser?._id?.toString(),
-                parseInt(data?.freeTokenAmount),
+                findPromoData?.coupanType === "Percent"
+                  ? parseInt(data.freeTokenAmount) +
+                      parseInt(data.freeTokenAmount) *
+                        (parseFloat(findPromoData?.discountInPercent) / 100)
+                  : findPromoData?.coupanType === "2X"
+                  ? parseInt(data.freeTokenAmount) * 2
+                  : parseInt(data.freeTokenAmount),
                 "",
                 "CC To Gold Coin",
-                parseInt(data?.gcAmount),
+                findPromoData?.coupanType === "Percent"
+                  ? parseInt(data.gcAmount) +
+                      parseInt(data.gcAmount) *
+                        (parseFloat(findPromoData?.discountInPercent) / 100)
+                  : findPromoData?.coupanType === "2X"
+                  ? parseInt(data.gcAmount) * 2
+                  : parseInt(data.gcAmount),
                 response,
-                0
+                findPromoData?.coupanType === "Percent"
+                  ? parseInt(data.freeTokenAmount) *
+                      (parseFloat(findPromoData?.discountInPercent) / 100)
+                  : findPromoData?.coupanType === "2X"
+                  ? parseInt(data.freeTokenAmount)
+                  : 0
               );
               const reciptPayload = {
                 username: getUser?.username,
