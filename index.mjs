@@ -611,8 +611,11 @@ app.post("/api/authorize-webhook", async (req, res) => {
                   extractedReffrenceId
                 );
                 if (extractedReffrenceId !== "null") {
-                  let refId = extractedReffrenceId;
                   console.log("I am in");
+                  console.log(
+                    "jivan extractedReffrenceId",
+                    extractedReffrenceId
+                  );
                   let affliateData = await db
                     .get_affiliatesDB()
                     .findOne({ userId: extractedId });
@@ -658,7 +661,6 @@ app.post("/api/authorize-webhook", async (req, res) => {
                   let getUserData = await db
                     .get_scrooge_usersDB()
                     .findOne({ _id: ObjectId(extractedReffrenceId) });
-                  let id = extractedReffrenceId;
                   const {
                     _id: referUserId,
                     username: referUserName,
