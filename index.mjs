@@ -479,108 +479,116 @@ app.post("/api/authorize-webhook", async (req, res) => {
     console.log("rawPayload", rawPayload);
 
     getTransactionDetails(rawPayload, async (response) => {
-      console.log("response528", response);
-      const amount = response?.transaction?.settleAmount;
-      const email = response?.transaction?.customer?.email;
-      const emailAndIdRegex = /^(.+?)_(\w+)$/;
-      const match = email.match(emailAndIdRegex);
-      console.log("email", email);
-      if (match) {
-        const extractedEmail = match[1];
-        const extractedId = match[2];
-        const extractedPromoCode = match[3];
-        console.log("Extracted Email:", extractedEmail);
-        console.log("Extracted ID:", extractedId);
-        console.log("extractedPromoCode:", extractedPromoCode);
+      try {
+        console.log("response528", response);
+        const amount = response?.transaction?.settleAmount;
+        const email = response?.transaction?.customer?.email;
+        // const emailAndIdRegex = /^(.+?)_(\w+)$/;
+        // const match = email.match(emailAndIdRegex);
+        // console.log("email", email);
+        var parts = email.split("_");
 
-        if (
-          response.messages.resultCode !== "Ok" ||
-          response.transactionResponse?.errors
-        ) {
-          return res.status(400).send({
-            success: false,
-            data: "transaction failed",
-            error: response.transactionResponse?.errors?.error[0]?.errorText,
-          });
-        }
-        const getUser = await db
-          .get_scrooge_usersDB()
-          .findOne({ _id: ObjectId(extractedId) });
-        if (!getUser) {
-          console.log("User Not Found");
-          return;
-        }
-        if (amount) {
-          const data = await db.get_marketplace_gcPackagesDB().findOne({
-            priceInBUSD: amount?.toString(),
-          });
-          console.log("data", data);
-          if (data) {
-            const findTransactionIfExist = await db
-              .get_scrooge_transactionDB()
-              .find({
-                "transactionDetails.transaction.transId":
-                  response?.transaction?.transId,
-              })
-              .toArray();
-            console.log("findTransactionIfExist", findTransactionIfExist);
+        if (parts) {
+          // Extract each part
+          const extractedId = parts[0] || null;
+          const extractedPromoCode = parts[1] || null;
 
-            if (findTransactionIfExist.length === 0) {
-              let query = {
-                couponCode: extractedPromoCode,
-                expireDate: { $gte: new Date() },
-              };
-              let findPromoData = await db.get_scrooge_promoDB().findOne(query);
-              console.log("findPromoData", findPromoData);
-              const trans = await rewards.addChips(
-                getUser?._id?.toString(),
-                findPromoData?.coupanType === "Percent"
-                  ? parseInt(data.freeTokenAmount) +
-                      parseInt(data.freeTokenAmount) *
+          console.log("extractedId:", extractedId);
+          console.log("extractedPromoCode:", extractedPromoCode);
+
+          console.log();
+
+          if (
+            response.messages.resultCode !== "Ok" ||
+            response.transactionResponse?.errors
+          ) {
+            return res.status(400).send({
+              success: false,
+              data: "transaction failed",
+              error: response.transactionResponse?.errors?.error[0]?.errorText,
+            });
+          }
+          const getUser = await db
+            .get_scrooge_usersDB()
+            .findOne({ _id: ObjectId(extractedId) });
+          if (!getUser) {
+            console.log("User Not Found");
+            return;
+          }
+          if (amount) {
+            const data = await db.get_marketplace_gcPackagesDB().findOne({
+              priceInBUSD: amount?.toString(),
+            });
+            console.log("data", data);
+            if (data) {
+              const findTransactionIfExist = await db
+                .get_scrooge_transactionDB()
+                .find({
+                  "transactionDetails.transaction.transId":
+                    response?.transaction?.transId,
+                })
+                .toArray();
+              console.log("findTransactionIfExist", findTransactionIfExist);
+
+              if (findTransactionIfExist.length === 0) {
+                let query = {
+                  couponCode: extractedPromoCode,
+                  expireDate: { $gte: new Date() },
+                };
+                let findPromoData = await db
+                  .get_scrooge_promoDB()
+                  .findOne(query);
+                console.log("findPromoData", findPromoData);
+                const trans = await rewards.addChips(
+                  getUser?._id?.toString(),
+                  findPromoData?.coupanType === "Percent"
+                    ? parseInt(data.freeTokenAmount) +
+                        parseInt(data.freeTokenAmount) *
+                          (parseFloat(findPromoData?.discountInPercent) / 100)
+                    : findPromoData?.coupanType === "2X"
+                    ? parseInt(data.freeTokenAmount) * 2
+                    : parseInt(data.freeTokenAmount),
+                  "",
+                  "CC To Gold Coin",
+                  findPromoData?.coupanType === "Percent"
+                    ? parseInt(data.gcAmount) +
+                        parseInt(data.gcAmount) *
+                          (parseFloat(findPromoData?.discountInPercent) / 100)
+                    : findPromoData?.coupanType === "2X"
+                    ? parseInt(data.gcAmount) * 2
+                    : parseInt(data.gcAmount),
+                  response,
+                  findPromoData?.coupanType === "Percent"
+                    ? parseInt(data.freeTokenAmount) *
                         (parseFloat(findPromoData?.discountInPercent) / 100)
-                  : findPromoData?.coupanType === "2X"
-                  ? parseInt(data.freeTokenAmount) * 2
-                  : parseInt(data.freeTokenAmount),
-                "",
-                "CC To Gold Coin",
-                findPromoData?.coupanType === "Percent"
-                  ? parseInt(data.gcAmount) +
-                      parseInt(data.gcAmount) *
-                        (parseFloat(findPromoData?.discountInPercent) / 100)
-                  : findPromoData?.coupanType === "2X"
-                  ? parseInt(data.gcAmount) * 2
-                  : parseInt(data.gcAmount),
-                response,
-                findPromoData?.coupanType === "Percent"
-                  ? parseInt(data.freeTokenAmount) *
-                      (parseFloat(findPromoData?.discountInPercent) / 100)
-                  : findPromoData?.coupanType === "2X"
-                  ? parseInt(data.freeTokenAmount)
-                  : 0
-              );
-              const reciptPayload = {
-                username: getUser?.username,
-                email: getUser?.email,
-                invoicDate: moment(new Date()).format("D MMMM  YYYY"),
-                paymentMethod: "GC Purchase",
-                packageName: "Gold Coin Purchase",
-                goldCoinQuantity: parseInt(data?.gcAmount),
-                tokenQuantity: parseInt(data?.freeTokenAmount),
-                purcahsePrice: amount?.toString(),
-                Tax: 0,
-                firstName: getUser?.firstName,
-                lastName: getUser?.lastName,
-              };
-              await db.get_scrooge_usersDB().findOneAndUpdate(
-                { _id: ObjectId(extractedId) },
+                    : findPromoData?.coupanType === "2X"
+                    ? parseInt(data.freeTokenAmount)
+                    : 0
+                );
+                const reciptPayload = {
+                  username: getUser?.username,
+                  email: getUser?.email,
+                  invoicDate: moment(new Date()).format("D MMMM  YYYY"),
+                  paymentMethod: "GC Purchase",
+                  packageName: "Gold Coin Purchase",
+                  goldCoinQuantity: parseInt(data?.gcAmount),
+                  tokenQuantity: parseInt(data?.freeTokenAmount),
+                  purcahsePrice: amount?.toString(),
+                  Tax: 0,
+                  firstName: getUser?.firstName,
+                  lastName: getUser?.lastName,
+                };
+                await db.get_scrooge_usersDB().findOneAndUpdate(
+                  { _id: ObjectId(extractedId) },
 
-                { $set: { isGCPurchase: true } }
-              );
-              await InvoiceEmail(getUser?.email, reciptPayload);
+                  { $set: { isGCPurchase: true } }
+                );
+                await InvoiceEmail(getUser?.email, reciptPayload);
+              }
             }
           }
         }
-      }
+      } catch (error) {}
     });
     res.status(200).send({
       success: true,
