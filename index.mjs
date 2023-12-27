@@ -610,7 +610,7 @@ app.post("/api/authorize-webhook", async (req, res) => {
                   extractedReffrenceId
                 );
                 if (extractedReffrenceId !== null) {
-                  console.log("I am in", extractedReffrenceId);
+                  console.log("I am in");
                   let affliateData = await db
                     .get_affiliatesDB()
                     .findOne({ userId: extractedId });
@@ -624,7 +624,8 @@ app.post("/api/authorize-webhook", async (req, res) => {
                   let affliateUserDetails = {
                     commission: getTicketBonus,
                     monthly_earned: getTicketBonus,
-                    referred_user_id: ObjectId(extractedReffrenceId),
+                    referred_user_id:
+                      extractedReffrenceId && ObjectId(extractedReffrenceId),
                     affiliate_id: affliateData?._id || null,
                     userId: extractedId,
                     transactionType: "crypto to Gc refferal",
