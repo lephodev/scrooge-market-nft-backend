@@ -604,14 +604,12 @@ app.post("/api/authorize-webhook", async (req, res) => {
                       new: true,
                     }
                   );
-                }
-                console.log(
-                  "extractedReffrenceIdextractedReffrenceIdextractedReffrenceId",
-                  typeof extractedReffrenceId,
-                  extractedReffrenceId
-                );
-                if (extractedReffrenceId !== "null") {
+                } else if (extractedReffrenceId !== "null") {
                   console.log("I am in");
+                  console.log(
+                    "jivan extractedReffrenceId",
+                    extractedReffrenceId
+                  );
                   let affliateData = await db
                     .get_affiliatesDB()
                     .findOne({ userId: extractedId });
