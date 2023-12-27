@@ -610,7 +610,7 @@ app.post("/api/authorize-webhook", async (req, res) => {
                   typeof extractedReffrenceId,
                   extractedReffrenceId
                 );
-                if (extractedReffrenceId != null) {
+                if (extractedReffrenceId !== "null") {
                   console.log("I am in");
                   let affliateData = await db
                     .get_affiliatesDB()
