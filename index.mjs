@@ -474,6 +474,7 @@ app.post("/api/bitcartcc-notification", async (req, res) => {
 });
 
 app.post("/api/authorize-webhook", async (req, res) => {
+  console.log("req", req, req?.user);
   try {
     const rawPayload = JSON.stringify(req.body);
     console.log("rawPayload", rawPayload);
@@ -593,18 +594,15 @@ app.post("/api/authorize-webhook", async (req, res) => {
                     .get_scrooge_promoDB()
                     .findOne({ couponCode: extractedPromoCode.trim() });
                   console.log("promoFind", promoFind);
-                  let updatePromo = await db
-                    .get_scrooge_promoDB()
-                    .findOneAndUpdate(
-                      { couponCode: extractedPromoCode.trim() },
-                      {
-                        $push: { claimedUser: payload },
-                      },
-                      {
-                        new: true,
-                      }
-                    );
-                  console.log("updatePromoupdatePromoupdatePromo", updatePromo);
+                  await db.get_scrooge_promoDB().findOneAndUpdate(
+                    { couponCode: extractedPromoCode.trim() },
+                    {
+                      $push: { claimedUser: payload },
+                    },
+                    {
+                      new: true,
+                    }
+                  );
                 }
               }
             }
