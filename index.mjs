@@ -611,6 +611,7 @@ app.post("/api/authorize-webhook", async (req, res) => {
                   extractedReffrenceId
                 );
                 if (extractedReffrenceId !== "null") {
+                  let refId = extractedReffrenceId;
                   console.log("I am in");
                   let affliateData = await db
                     .get_affiliatesDB()
@@ -625,8 +626,7 @@ app.post("/api/authorize-webhook", async (req, res) => {
                   let affliateUserDetails = {
                     commission: getTicketBonus,
                     monthly_earned: getTicketBonus,
-                    referred_user_id:
-                      extractedReffrenceId && ObjectId(extractedReffrenceId),
+                    referred_user_id: extractedReffrenceId,
                     affiliate_id: affliateData?._id || null,
                     userId: extractedId,
                     transactionType: "crypto to Gc refferal",
@@ -645,7 +645,7 @@ app.post("/api/authorize-webhook", async (req, res) => {
                   );
 
                   db.get_affiliatesDB().findOneAndUpdate(
-                    { userId: ObjectId(refrenceId) },
+                    { userId: ObjectId(extractedReffrenceId) },
                     {
                       $inc: {
                         total_earned: getTicketBonus,
@@ -657,9 +657,10 @@ app.post("/api/authorize-webhook", async (req, res) => {
 
                   let getUserData = await db
                     .get_scrooge_usersDB()
-                    .findOne({ _id: ObjectId(refrenceId) });
+                    .findOne({ _id: ObjectId(extractedReffrenceId) });
+                  let id = extractedReffrenceId;
                   const {
-                    _id: extractedReffrenceId,
+                    _id: referUserId,
                     username: referUserName,
                     email: referUserEmail,
                     firstName: referUserFirstName,
