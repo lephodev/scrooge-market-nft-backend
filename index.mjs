@@ -496,6 +496,7 @@ app.post("/api/authorize-webhook", async (req, res) => {
 
           console.log("extractedId:", extractedId);
           console.log("extractedPromoCode:", extractedPromoCode);
+          console.log("extractedReffrenceId", extractedReffrenceId);
 
           if (
             response.messages.resultCode !== "Ok" ||
@@ -605,6 +606,7 @@ app.post("/api/authorize-webhook", async (req, res) => {
                   );
                 }
                 if (extractedReffrenceId) {
+                  console.log("I am in", extractedReffrenceId);
                   let affliateData = await db
                     .get_affiliatesDB()
                     .findOne({ userId: extractedId });
