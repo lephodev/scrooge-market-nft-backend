@@ -201,6 +201,7 @@ export function createAnAcceptPaymentTransaction(body, user, callback) {
 }
 
 export function getAnAcceptPaymentPage(body, user, callback) {
+  console.log("body?.promoCode", body?.promoCode);
   var merchantAuthenticationType =
     new ApiContracts.MerchantAuthenticationType();
   merchantAuthenticationType.setName(process.env.AUTHORIZE_LOGIN_ID);
@@ -219,7 +220,7 @@ export function getAnAcceptPaymentPage(body, user, callback) {
   const customerProfileIdType = new ApiContracts.CustomerProfileIdType();
   const customerType = new ApiContracts.CustomerType();
 
-  const concatenatedEmail = `${user?.email}_${user?._id}`;
+  const concatenatedEmail = `${user?.email}_${user?._id}_${body?.promoCode}`;
 
   customerType.setEmail(concatenatedEmail); // set from  user middle ware email
 
