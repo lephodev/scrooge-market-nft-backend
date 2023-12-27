@@ -496,8 +496,6 @@ app.post("/api/authorize-webhook", async (req, res) => {
           console.log("extractedId:", extractedId);
           console.log("extractedPromoCode:", extractedPromoCode);
 
-          console.log();
-
           if (
             response.messages.resultCode !== "Ok" ||
             response.transactionResponse?.errors
@@ -584,6 +582,30 @@ app.post("/api/authorize-webhook", async (req, res) => {
                   { $set: { isGCPurchase: true } }
                 );
                 await InvoiceEmail(getUser?.email, reciptPayload);
+                if (extractedPromoCode) {
+                  let payload = {
+                    userId: extractedId,
+                    claimedDate: new Date(),
+                  };
+                  console.log("promoCode", extractedPromoCode);
+                  console.log("payload", payload);
+                  let promoFind = await db
+                    .get_scrooge_promoDB()
+                    .findOne({ couponCode: extractedPromoCode.trim() });
+                  console.log("promoFind", promoFind);
+                  let updatePromo = await db
+                    .get_scrooge_promoDB()
+                    .findOneAndUpdate(
+                      { couponCode: extractedPromoCode.trim() },
+                      {
+                        $push: { claimedUser: payload },
+                      },
+                      {
+                        new: true,
+                      }
+                    );
+                  console.log("updatePromoupdatePromoupdatePromo", updatePromo);
+                }
               }
             }
           }
