@@ -614,7 +614,7 @@ app.post("/api/authorize-webhook", async (req, res) => {
                   const { cryptoToGcReferalBonus } = getAdminSettings;
                   // let getGcBonus=((cryptoToGcReferalBonus/100)*parseInt(data.gcAmount))
                   let getTicketBonus =
-                    (cryptoToGcReferalBonus / 100) * parseInt(amt * 100);
+                    (cryptoToGcReferalBonus / 100) * parseInt(amount * 100);
                   let affliateUserDetails = {
                     commission: getTicketBonus,
                     monthly_earned: getTicketBonus,
