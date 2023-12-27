@@ -527,7 +527,7 @@ app.post("/api/authorize-webhook", async (req, res) => {
 
             if (findTransactionIfExist.length === 0) {
               let query = {
-                couponCode: promoCode,
+                couponCode: extractedPromoCode,
                 expireDate: { $gte: new Date() },
               };
               let findPromoData = await db.get_scrooge_promoDB().findOne(query);
