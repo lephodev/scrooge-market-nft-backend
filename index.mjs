@@ -473,88 +473,236 @@ app.post("/api/bitcartcc-notification", async (req, res) => {
   res.send({ success: true });
 });
 
+const getGCPurchaseAffliateBonus = async (
+  extractedId,
+  extractedReffrenceId,
+  amount
+) => {
+  let affliateData = await db
+    .get_affiliatesDB()
+    .findOne({ userId: extractedId });
+  let getAdminSettings = await db.get_db_admin_settingDB().findOne({});
+  const { cryptoToGcReferalBonus } = getAdminSettings;
+  let getTicketBonus = (cryptoToGcReferalBonus / 100) * parseInt(amount * 100);
+  console.log("getTicketBonus", getTicketBonus, amount, cryptoToGcReferalBonus);
+  let affliateUserDetails = {
+    commission: getTicketBonus,
+    monthly_earned: getTicketBonus,
+    referred_user_id: ObjectId(extractedReffrenceId),
+    affiliate_id: affliateData?._id || null,
+    userId: ObjectId(extractedId),
+    transactionType: "crypto to Gc refferal",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+  await db.get_db_affiliates_transactionDB().insertOne(affliateUserDetails);
+  let getUser = await db.get_scrooge_usersDB().findOneAndUpdate(
+    { _id: ObjectId(extractedReffrenceId) },
+    {
+      $inc: { wallet: getTicketBonus },
+    },
+    { new: true }
+  );
+
+  db.get_affiliatesDB().findOneAndUpdate(
+    { userId: ObjectId(extractedReffrenceId) },
+    {
+      $inc: {
+        total_earned: getTicketBonus,
+        monthly_earned: getTicketBonus,
+      },
+    },
+    { new: true }
+  );
+
+  let getUserData = await db
+    .get_scrooge_usersDB()
+    .findOne({ _id: ObjectId(extractedReffrenceId) });
+  const {
+    _id: referUserId,
+    username: referUserName,
+    email: referUserEmail,
+    firstName: referUserFirstName,
+    lastName: referUserLastName,
+    profile: referUserProfile,
+  } = getUserData;
+  const transactionPayload = {
+    amount: getTicketBonus,
+    transactionType: "Crypto To Gc bonus",
+    prevWallet: getUser?.value?.wallet,
+    updatedWallet: getUser?.value?.wallet,
+    // userId: ObjectId(refrenceId),
+
+    userId: {
+      _id: referUserId,
+      username: referUserName,
+      email: referUserEmail,
+      firstName: referUserFirstName,
+      referUserLastName,
+      profile: referUserProfile,
+      ipAddress: getUserData?.ipAddress,
+    },
+
+    updatedTicket: getUser?.value?.ticket + getTicketBonus,
+    prevGoldCoin: getUser?.value?.goldCoin,
+    updatedGoldCoin: getUser?.value?.goldCoin,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    prevTicket: getUser?.value?.ticket,
+  };
+  await db.get_scrooge_transactionDB().insertOne(transactionPayload);
+};
+
 app.post("/api/authorize-webhook", async (req, res) => {
   try {
     const rawPayload = JSON.stringify(req.body);
     console.log("rawPayload", rawPayload);
 
     getTransactionDetails(rawPayload, async (response) => {
-      console.log("response528", response);
-      const amount = response?.transaction?.settleAmount;
-      const email = response?.transaction?.customer?.email;
-      const emailAndIdRegex = /^(.+?)_(\w+)$/;
-      const match = email.match(emailAndIdRegex);
-      console.log("email", email);
-      if (match) {
-        const extractedEmail = match[1];
-        const extractedId = match[2];
-        console.log("Extracted Email:", extractedEmail);
-        console.log("Extracted ID:", extractedId);
+      try {
+        console.log("response528", response);
+        const amount = response?.transaction?.settleAmount;
+        const email = response?.transaction?.customer?.email;
+        // const emailAndIdRegex = /^(.+?)_(\w+)$/;
+        // const match = email.match(emailAndIdRegex);
+        // console.log("email", email);
+        var parts = email.split("_");
 
-        if (
-          response.messages.resultCode !== "Ok" ||
-          response.transactionResponse?.errors
-        ) {
-          return res.status(400).send({
-            success: false,
-            data: "transaction failed",
-            error: response.transactionResponse?.errors?.error[0]?.errorText,
-          });
-        }
-        const getUser = await db
-          .get_scrooge_usersDB()
-          .findOne({ _id: ObjectId(extractedId) });
-        if (!getUser) {
-          console.log("User Not Found");
-          return;
-        }
-        if (amount) {
-          const data = await db.get_marketplace_gcPackagesDB().findOne({
-            priceInBUSD: amount?.toString(),
-          });
-          console.log("data", data);
-          if (data) {
-            const findTransactionIfExist = await db
-              .get_scrooge_transactionDB()
-              .find({
-                "transactionDetails.transaction.transId":
-                  response?.transaction?.transId,
-              })
-              .toArray();
-            console.log("findTransactionIfExist", findTransactionIfExist);
+        if (parts) {
+          // Extract each part
+          const extractedId = parts[0] || null;
+          const extractedPromoCode = parts[1] || null;
+          const extractedReffrenceId = parts[2] || null;
 
-            if (findTransactionIfExist.length === 0) {
-              const trans = await rewards.addChips(
-                getUser?._id?.toString(),
-                parseInt(data?.freeTokenAmount),
-                "",
-                "CC To Gold Coin",
-                parseInt(data?.gcAmount),
-                response,
-                0
-              );
-              const reciptPayload = {
-                username: getUser?.username,
-                email: getUser?.email,
-                invoicDate: moment(new Date()).format("D MMMM  YYYY"),
-                paymentMethod: "GC Purchase",
-                packageName: "Gold Coin Purchase",
-                goldCoinQuantity: parseInt(data?.gcAmount),
-                tokenQuantity: parseInt(data?.freeTokenAmount),
-                purcahsePrice: amount?.toString(),
-                Tax: 0,
-                firstName: getUser?.firstName,
-                lastName: getUser?.lastName,
-              };
-              await db.get_scrooge_usersDB().findOneAndUpdate(
-                { _id: ObjectId(extractedId) },
+          console.log("extractedId:", extractedId);
+          console.log("extractedPromoCode:", extractedPromoCode);
+          console.log("extractedReffrenceId", extractedReffrenceId);
 
-                { $set: { isGCPurchase: true } }
-              );
-              await InvoiceEmail(getUser?.email, reciptPayload);
+          if (
+            response.messages.resultCode !== "Ok" ||
+            response.transactionResponse?.errors
+          ) {
+            return res.status(400).send({
+              success: false,
+              data: "transaction failed",
+              error: response.transactionResponse?.errors?.error[0]?.errorText,
+            });
+          }
+          const getUser = await db
+            .get_scrooge_usersDB()
+            .findOne({ _id: ObjectId(extractedId) });
+          if (!getUser) {
+            console.log("User Not Found");
+            return;
+          }
+          if (amount) {
+            const data = await db.get_marketplace_gcPackagesDB().findOne({
+              priceInBUSD: amount?.toString(),
+            });
+            console.log("data", data);
+            if (data) {
+              const findTransactionIfExist = await db
+                .get_scrooge_transactionDB()
+                .find({
+                  "transactionDetails.transaction.transId":
+                    response?.transaction?.transId,
+                })
+                .toArray();
+              console.log("findTransactionIfExist", findTransactionIfExist);
+
+              if (findTransactionIfExist.length === 0) {
+                let query = {
+                  couponCode: extractedPromoCode,
+                  expireDate: { $gte: new Date() },
+                };
+                let findPromoData = await db
+                  .get_scrooge_promoDB()
+                  .findOne(query);
+                console.log("findPromoData", findPromoData);
+                const trans = await rewards.addChips(
+                  getUser?._id?.toString(),
+                  findPromoData?.coupanType === "Percent"
+                    ? parseInt(data.freeTokenAmount) +
+                        parseInt(data.freeTokenAmount) *
+                          (parseFloat(findPromoData?.discountInPercent) / 100)
+                    : findPromoData?.coupanType === "2X"
+                    ? parseInt(data.freeTokenAmount) * 2
+                    : parseInt(data.freeTokenAmount),
+                  "",
+                  "CC To Gold Coin",
+                  findPromoData?.coupanType === "Percent"
+                    ? parseInt(data.gcAmount) +
+                        parseInt(data.gcAmount) *
+                          (parseFloat(findPromoData?.discountInPercent) / 100)
+                    : findPromoData?.coupanType === "2X"
+                    ? parseInt(data.gcAmount) * 2
+                    : parseInt(data.gcAmount),
+                  response,
+                  findPromoData?.coupanType === "Percent"
+                    ? parseInt(data.freeTokenAmount) *
+                        (parseFloat(findPromoData?.discountInPercent) / 100)
+                    : findPromoData?.coupanType === "2X"
+                    ? parseInt(data.freeTokenAmount)
+                    : 0
+                );
+                const reciptPayload = {
+                  username: getUser?.username,
+                  email: getUser?.email,
+                  invoicDate: moment(new Date()).format("D MMMM  YYYY"),
+                  paymentMethod: "GC Purchase",
+                  packageName: "Gold Coin Purchase",
+                  goldCoinQuantity: parseInt(data?.gcAmount),
+                  tokenQuantity: parseInt(data?.freeTokenAmount),
+                  purcahsePrice: amount?.toString(),
+                  Tax: 0,
+                  firstName: getUser?.firstName,
+                  lastName: getUser?.lastName,
+                };
+                await db.get_scrooge_usersDB().findOneAndUpdate(
+                  { _id: ObjectId(extractedId) },
+
+                  { $set: { isGCPurchase: true } }
+                );
+                await InvoiceEmail(getUser?.email, reciptPayload);
+                if (extractedPromoCode) {
+                  let payload = {
+                    userId: extractedId,
+                    claimedDate: new Date(),
+                  };
+                  console.log("promoCode", extractedPromoCode);
+                  console.log("payload", payload);
+                  let promoFind = await db
+                    .get_scrooge_promoDB()
+                    .findOne({ couponCode: extractedPromoCode.trim() });
+                  console.log("promoFind", promoFind);
+                  await db.get_scrooge_promoDB().findOneAndUpdate(
+                    { couponCode: extractedPromoCode.trim() },
+                    {
+                      $push: { claimedUser: payload },
+                    },
+                    {
+                      new: true,
+                    }
+                  );
+                }
+                console.log(
+                  "extractedReffrenceIdextractedReffrenceIdextractedReffrenceId",
+                  typeof extractedReffrenceId,
+                  extractedReffrenceId
+                );
+                if (extractedReffrenceId !== "null") {
+                  getGCPurchaseAffliateBonus(
+                    extractedId,
+                    extractedReffrenceId,
+                    amount
+                  );
+                }
+              }
             }
           }
         }
+      } catch (error) {
+        console.log("error", error);
       }
     });
     res.status(200).send({
@@ -767,13 +915,45 @@ app.get(
 );
 app.post("/api/getFormToken", Basicauth, auth(), async (req, res) => {
   const { user, body } = req || {};
-  getAnAcceptPaymentPage(body, user, async (response) => {
-    return res.send({
-      code: 200,
-      success: true,
-      response,
+  // console.log("user", user);
+
+  if (user) {
+    // const query = {
+    //   transactionType: "CC To Gold Coin",
+    //   "userId._id": ObjectId(user?._id),
+    // };
+
+    // const latestTransaction = await db
+    //   .get_scrooge_transactionDB()
+    //   .findOne(query, { sort: { _id: -1 } });
+    // console.log("latestTransaction", latestTransaction);
+
+    // if (
+    //   latestTransaction &&
+    //   // new Date() - latestTransaction.createdAt < 3 * 60 * 1000 // 60 seconds * 1000 milliseconds
+    // ) {
+
+    //   const crrDt = new Date();
+    //   const cretedDt = new Date(latestTransaction.createdAt);
+    //   crrDt.setMinutes(crrDt.getMinutes() - 1);
+    //   const crrTime = crrDt.getTime();
+    //   const cretedTime = cretedDt
+
+    //   return res.send({
+    //     code: 400,
+    //     success: false,
+    //     message: "You cannot make another transaction within a minute.",
+    //   });
+    // }
+
+    getAnAcceptPaymentPage(body, user, async (response) => {
+      return res.send({
+        code: 200,
+        success: true,
+        response,
+      });
     });
-  });
+  }
 });
 
 app.get(

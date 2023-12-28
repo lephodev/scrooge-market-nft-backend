@@ -1628,6 +1628,7 @@ export async function convertCryptoToGoldCoin(req, res) {
       );
       console.log("updatePromoupdatePromoupdatePromo", updatePromo);
     }
+
     if (refrenceId) {
       let affliateData = await db
         .get_affiliatesDB()
