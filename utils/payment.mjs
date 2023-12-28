@@ -201,7 +201,7 @@ export function createAnAcceptPaymentTransaction(body, user, callback) {
 }
 
 export function getAnAcceptPaymentPage(body, user, callback) {
-  console.log("body?.promoCode", body?.promoCode);
+  // console.log("body?.promoCode", body?.promoCode);
   var merchantAuthenticationType =
     new ApiContracts.MerchantAuthenticationType();
   merchantAuthenticationType.setName(process.env.AUTHORIZE_LOGIN_ID);

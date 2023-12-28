@@ -915,13 +915,35 @@ app.get(
 );
 app.post("/api/getFormToken", Basicauth, auth(), async (req, res) => {
   const { user, body } = req || {};
-  getAnAcceptPaymentPage(body, user, async (response) => {
-    return res.send({
-      code: 200,
-      success: true,
-      response,
+  // console.log("user", user);
+  if (user) {
+    const query = {
+      transactionType: "CC To Gold Coin",
+      "userId._id": ObjectId(user?._id),
+    };
+    const latestTransaction = await db
+      .get_scrooge_transactionDB()
+      .findOne(query, { sort: { _id: -1 } });
+    console.log("latestTransaction", latestTransaction);
+    if (
+      latestTransaction &&
+      Date.now() - latestTransaction.createdAt < 60 * 1000 // 60 seconds * 1000 milliseconds
+    ) {
+      return res.send({
+        code: 400,
+        success: false,
+        message: "You cannot make another transaction within a minute.",
+      });
+    }
+
+    getAnAcceptPaymentPage(body, user, async (response) => {
+      return res.send({
+        code: 200,
+        success: true,
+        response,
+      });
     });
-  });
+  }
 });
 
 app.get(
