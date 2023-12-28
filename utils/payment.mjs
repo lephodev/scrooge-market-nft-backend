@@ -242,9 +242,9 @@ export function getAnAcceptPaymentPage(body, user, callback) {
   setting3.setSettingValue(
     JSON.stringify({
       showReceipt: true,
-      url: "https://devmarket.scrooge.casino/crypto-to-gc?status=success",
+      url: "https://market.scrooge.casino/crypto-to-gc?status=success",
       urlText: "Continue",
-      cancelUrl: "https://devmarket.scrooge.casino/crypto-to-gc?status=cancel",
+      cancelUrl: "https://market.scrooge.casino/crypto-to-gc?status=cancel",
       cancelUrlText: "Cancel",
     })
   );
