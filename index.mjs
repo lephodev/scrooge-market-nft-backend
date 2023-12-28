@@ -473,6 +473,86 @@ app.post("/api/bitcartcc-notification", async (req, res) => {
   res.send({ success: true });
 });
 
+const getGCPurchaseAffliateBonus = async (
+  extractedId,
+  extractedReffrenceId,
+  amount
+) => {
+  let affliateData = await db
+    .get_affiliatesDB()
+    .findOne({ userId: extractedId });
+  let getAdminSettings = await db.get_db_admin_settingDB().findOne({});
+  const { cryptoToGcReferalBonus } = getAdminSettings;
+  let getTicketBonus = (cryptoToGcReferalBonus / 100) * parseInt(amount * 100);
+  console.log("getTicketBonus", getTicketBonus, amount, cryptoToGcReferalBonus);
+  let affliateUserDetails = {
+    commission: getTicketBonus,
+    monthly_earned: getTicketBonus,
+    referred_user_id: ObjectId(extractedReffrenceId),
+    affiliate_id: affliateData?._id || null,
+    userId: ObjectId(extractedId),
+    transactionType: "crypto to Gc refferal",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+  await db.get_db_affiliates_transactionDB().insertOne(affliateUserDetails);
+  let getUser = await db.get_scrooge_usersDB().findOneAndUpdate(
+    { _id: ObjectId(extractedReffrenceId) },
+    {
+      $inc: { wallet: getTicketBonus },
+    },
+    { new: true }
+  );
+
+  db.get_affiliatesDB().findOneAndUpdate(
+    { userId: ObjectId(extractedReffrenceId) },
+    {
+      $inc: {
+        total_earned: getTicketBonus,
+        monthly_earned: getTicketBonus,
+      },
+    },
+    { new: true }
+  );
+
+  let getUserData = await db
+    .get_scrooge_usersDB()
+    .findOne({ _id: ObjectId(extractedReffrenceId) });
+  const {
+    _id: referUserId,
+    username: referUserName,
+    email: referUserEmail,
+    firstName: referUserFirstName,
+    lastName: referUserLastName,
+    profile: referUserProfile,
+  } = getUserData;
+  const transactionPayload = {
+    amount: getTicketBonus,
+    transactionType: "Crypto To Gc bonus",
+    prevWallet: getUser?.value?.wallet,
+    updatedWallet: getUser?.value?.wallet,
+    // userId: ObjectId(refrenceId),
+
+    userId: {
+      _id: referUserId,
+      username: referUserName,
+      email: referUserEmail,
+      firstName: referUserFirstName,
+      referUserLastName,
+      profile: referUserProfile,
+      ipAddress: getUserData?.ipAddress,
+    },
+
+    updatedTicket: getUser?.value?.ticket + getTicketBonus,
+    prevGoldCoin: getUser?.value?.goldCoin,
+    updatedGoldCoin: getUser?.value?.goldCoin,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    prevTicket: getUser?.value?.ticket,
+  };
+  await db.get_scrooge_transactionDB().insertOne(transactionPayload);
+};
+
 app.post("/api/authorize-webhook", async (req, res) => {
   try {
     const rawPayload = JSON.stringify(req.body);
@@ -611,91 +691,11 @@ app.post("/api/authorize-webhook", async (req, res) => {
                   extractedReffrenceId
                 );
                 if (extractedReffrenceId !== "null") {
-                  console.log("I am in");
-                  console.log(
-                    "jivan extractedReffrenceId",
-                    extractedReffrenceId
+                  getGCPurchaseAffliateBonus(
+                    extractedId,
+                    extractedReffrenceId,
+                    amount
                   );
-                  let affliateData = await db
-                    .get_affiliatesDB()
-                    .findOne({ userId: extractedId });
-                  let getAdminSettings = await db
-                    .get_db_admin_settingDB()
-                    .findOne({});
-                  const { cryptoToGcReferalBonus } = getAdminSettings;
-                  // let getGcBonus=((cryptoToGcReferalBonus/100)*parseInt(data.gcAmount))
-                  let getTicketBonus =
-                    (cryptoToGcReferalBonus / 100) * parseInt(amount * 100);
-                  let affliateUserDetails = {
-                    commission: getTicketBonus,
-                    monthly_earned: getTicketBonus,
-                    referred_user_id: extractedReffrenceId,
-                    affiliate_id: affliateData?._id || null,
-                    userId: extractedId,
-                    transactionType: "crypto to Gc refferal",
-                    createdAt: new Date(),
-                    updatedAt: new Date(),
-                  };
-                  await db
-                    .get_db_affiliates_transactionDB()
-                    .insertOne(affliateUserDetails);
-                  let getUser = await db.get_scrooge_usersDB().findOneAndUpdate(
-                    { _id: ObjectId(extractedReffrenceId) },
-                    {
-                      $inc: { ticket: getTicketBonus },
-                    },
-                    { new: true }
-                  );
-
-                  db.get_affiliatesDB().findOneAndUpdate(
-                    { userId: ObjectId(extractedReffrenceId) },
-                    {
-                      $inc: {
-                        total_earned: getTicketBonus,
-                        monthly_earned: getTicketBonus,
-                      },
-                    },
-                    { new: true }
-                  );
-
-                  let getUserData = await db
-                    .get_scrooge_usersDB()
-                    .findOne({ _id: ObjectId(extractedReffrenceId) });
-                  const {
-                    _id: referUserId,
-                    username: referUserName,
-                    email: referUserEmail,
-                    firstName: referUserFirstName,
-                    lastName: referUserLastName,
-                    profile: referUserProfile,
-                  } = getUserData;
-                  const transactionPayload = {
-                    amount: getTicketBonus,
-                    transactionType: "Crypto To Gc bonus",
-                    prevWallet: getUser?.value?.wallet,
-                    updatedWallet: getUser?.value?.wallet,
-                    // userId: ObjectId(refrenceId),
-
-                    userId: {
-                      _id: referUserId,
-                      username: referUserName,
-                      email: referUserEmail,
-                      firstName: referUserFirstName,
-                      referUserLastName,
-                      profile: referUserProfile,
-                      ipAddress: getUserData?.ipAddress,
-                    },
-
-                    updatedTicket: getUser?.value?.ticket + getTicketBonus,
-                    prevGoldCoin: getUser?.value?.goldCoin,
-                    updatedGoldCoin: getUser?.value?.goldCoin,
-                    createdAt: new Date(),
-                    updatedAt: new Date(),
-                    prevTicket: getUser?.value?.ticket,
-                  };
-                  const trans_id = await db
-                    .get_scrooge_transactionDB()
-                    .insertOne(transactionPayload);
                 }
               }
             }
