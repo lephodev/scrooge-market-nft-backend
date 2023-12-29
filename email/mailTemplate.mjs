@@ -91,7 +91,7 @@ export const SUBMIT_REDEEM_REQUEST = (username, prize) => {
 
                   We will review the submission and process it as quick as we can.  This process is typically completed inside 24H. Keep in mind, we do not process redemptions on weekends or holidays.
                   <br>
-                  If this is your first time redeeming and you need some guidance, <a href="https://market.scrooge.casino/static/media/SCROOGE%20Redemption%20Manual.60fd5a4a7bf48ee3a8e1.pdf" target="_blank">download</a> the instructional PDF.
+                  If this is your first time redeeming and you need some guidance, <a href="https://market.scrooge.casino/static/media/Manual.703b0c26cd8fd014a77d.pdf" target="_blank">download</a> the instructional PDF.
                   <br>
                   If you have any further questions about the process, reach out to us on Facebook Messenger.
 
@@ -301,7 +301,7 @@ export const APPROVE_REDEEM_REQUEST = (prize_price, username, hash, from) => {
                     color: rgb(207, 207, 207);
                     font-family: 'Poppins', sans-serif;
                   ">
-                  If this is your first time redeeming and you need some guidance, please <a href="https://market.scrooge.casino/static/media/SCROOGE%20Redemption%20Manual.60fd5a4a7bf48ee3a8e1.pdf" target="_blank">download</a> the instructional PDF here
+                  If this is your first time redeeming and you need some guidance, please <a href="https://market.scrooge.casino/static/media/Manual.703b0c26cd8fd014a77d.pdf" target="_blank">download</a> the instructional PDF here
                   </p>
                   <!-- <p style="
                 font-size: 20px;
