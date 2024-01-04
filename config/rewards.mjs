@@ -2282,7 +2282,7 @@ export async function getCryptoToGCPurcahse(req, res) {
 export async function WithdrawRequestWithFiat(req, res) {
   console.log("req,body", req.body);
   const {
-    redeemPrize,
+    amount: redeemPrize,
     paymentType,
     cashAppid,
     email: fiatEmail,
@@ -2295,7 +2295,7 @@ export async function WithdrawRequestWithFiat(req, res) {
   let token = updtdUser?.wallet;
   console.log("token--->>>", token);
 
-  const redeemToken = 100 * redeemPrize;
+  const redeemToken = redeemPrize;
 
   try {
     if (req?.user?.isBlockWallet) {
@@ -2311,6 +2311,8 @@ export async function WithdrawRequestWithFiat(req, res) {
     if (getKycuser?.status !== "accept") {
       return res.send({ success: false, message: "Your kyc is not approved" });
     }
+    console.log("redeemToken", redeemToken);
+
     if (token < redeemToken) {
       return res.send({ success: false, message: "Not Enough Tokens" });
     }
