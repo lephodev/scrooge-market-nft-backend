@@ -47,6 +47,7 @@ export async function addChips(
   recipt = {},
   bonusToken
 ) {
+  console.log("bonusToken", bonusToken);
   try {
     let query = {};
     // For Rollover
@@ -61,7 +62,7 @@ export async function addChips(
       query = {
         goldCoin: gc,
         wallet: _qty,
-        dailySpinBonus: _qty - bonusToken,
+        dailySpinBonus: _qty,
         nonWithdrawableAmt: _qty,
         monthlyClaimBonus: bonusToken,
       };
