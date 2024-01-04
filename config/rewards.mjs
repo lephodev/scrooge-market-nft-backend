@@ -62,7 +62,7 @@ export async function addChips(
       query = {
         goldCoin: gc,
         wallet: _qty,
-        dailySpinBonus: _qty,
+        dailySpinBonus: _qty - bonusToken,
         nonWithdrawableAmt: _qty,
         monthlyClaimBonus: bonusToken,
       };
