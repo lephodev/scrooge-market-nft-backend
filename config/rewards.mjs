@@ -1646,7 +1646,7 @@ export async function convertCryptoToGoldCoin(req, res) {
       let getUser = await db.get_scrooge_usersDB().findOneAndUpdate(
         { _id: ObjectId(refrenceId) },
         {
-          $inc: { ticket: getTicketBonus },
+          $inc: { wallet: getTicketBonus },
         },
         { new: true }
       );

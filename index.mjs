@@ -515,6 +515,16 @@ const getGCPurchaseAffliateBonus = async (
     { new: true }
   );
 
+  await db.get_scrooge_usersDB().findOneAndUpdate(
+    { _id: ObjectId(extractedId) },
+    {
+      $inc: {
+        totalBuy: parseInt(amount),
+        totalProfit: parseInt(amount),
+      },
+    }
+  );
+
   let getUserData = await db
     .get_scrooge_usersDB()
     .findOne({ _id: ObjectId(extractedReffrenceId) });
