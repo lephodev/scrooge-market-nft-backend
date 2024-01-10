@@ -1512,8 +1512,10 @@ export async function convertCryptoToGoldCoin(req, res) {
     console.log("recipt", recipt);
     const amt = await getDecodedData(recipt);
     console.log("amt", amt);
+    let cealAmount = Math.ceil(amt);
+    console.log("cealAmount", cealAmount);
     const data = await db.get_marketplace_gcPackagesDB().findOne({
-      priceInBUSD: amt.toString(),
+      priceInBUSD: cealAmount.toString(),
     });
     console.log("datadata--------", data);
     if (!data)
