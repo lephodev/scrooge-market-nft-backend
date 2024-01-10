@@ -496,13 +496,17 @@ const getGCPurchaseAffliateBonus = async (
     updatedAt: new Date(),
   };
   await db.get_db_affiliates_transactionDB().insertOne(affliateUserDetails);
-  let getUser = await db.get_scrooge_usersDB().findOneAndUpdate(
-    { _id: ObjectId(extractedReffrenceId) },
-    {
-      $inc: { wallet: getTicketBonus },
-    },
-    { new: true }
-  );
+  // let getUser = await db.get_scrooge_usersDB().findOneAndUpdate(
+  //   { _id: ObjectId(extractedReffrenceId) },
+  //   {
+  //     $inc: { wallet: getTicketBonus },
+  //   },
+  //   { new: true }
+  // );
+
+  let getUser = await db
+    .get_scrooge_usersDB()
+    .findOne({ _id: ObjectId(extractedReffrenceId) });
 
   db.get_affiliatesDB().findOneAndUpdate(
     { userId: ObjectId(extractedReffrenceId) },
@@ -620,7 +624,7 @@ app.post("/api/authorize-webhook", async (req, res) => {
                 .toArray();
               console.log("findTransactionIfExist", findTransactionIfExist);
 
-              if (findTransactionIfExist.length === 0) {
+              if (findTransactionIfExist.length > 0) {
                 let query = {
                   couponCode: extractedPromoCode,
                   expireDate: { $gte: new Date() },
