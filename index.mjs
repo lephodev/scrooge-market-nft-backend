@@ -520,7 +520,7 @@ const getGCPurchaseAffliateBonus = async (
       {
         $inc: {
           // total_earned: getTicketBonus,
-          monthly_earned: getTicketBonus,
+          // monthly_earned: getTicketBonus,
         },
       },
       { new: true }
