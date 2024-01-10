@@ -512,7 +512,7 @@ const getGCPurchaseAffliateBonus = async (
     { userId: ObjectId(extractedReffrenceId) },
     {
       $inc: {
-        total_earned: getTicketBonus,
+        // total_earned: getTicketBonus,
         monthly_earned: getTicketBonus,
       },
     },
