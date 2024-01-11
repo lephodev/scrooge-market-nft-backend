@@ -479,6 +479,10 @@ const getGCPurchaseAffliateBonus = async (
   amount
 ) => {
   try {
+    let getUser = await db
+      .get_scrooge_usersDB()
+      .findOne({ _id: ObjectId(extractedReffrenceId) });
+
     let affliateData = await db
       .get_affiliatesDB()
       .findOne({ userId: extractedId });
@@ -499,6 +503,8 @@ const getGCPurchaseAffliateBonus = async (
       affiliate_id: affliateData?._id || null,
       userId: ObjectId(extractedId),
       transactionType: "CC to Gc refferal",
+      purchaseAmount: amount,
+      tokenAmount: getUser?.value?.wallet,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -510,10 +516,6 @@ const getGCPurchaseAffliateBonus = async (
     //   },
     //   { new: true }
     // );
-
-    let getUser = await db
-      .get_scrooge_usersDB()
-      .findOne({ _id: ObjectId(extractedReffrenceId) });
 
     db.get_affiliatesDB().findOneAndUpdate(
       { userId: ObjectId(extractedReffrenceId) },
