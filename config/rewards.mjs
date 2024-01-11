@@ -980,6 +980,7 @@ export async function redeemPrize(req, res) {
                 lastName,
                 profile,
                 ipAddress,
+                ref,
               } = getUserData;
               const transactionPayload = {
                 amount: prize_price,
@@ -994,6 +995,7 @@ export async function redeemPrize(req, res) {
                   lastName,
                   profile,
                   ipAddress,
+                  refrenceId,
                 },
                 // updatedTicket: getUserData?.ticket,
 
@@ -1017,6 +1019,23 @@ export async function redeemPrize(req, res) {
                   console.log("e", e);
                 });
               emailSend.ApproveRedeemRequestEmail(email, username, hash, from);
+
+              if (refrenceId) {
+                let getUserdetails = await db
+                  .get_scrooge_usersDB()
+                  .findOne({ _id: ObjectId(user_id) });
+                let affliateUserDetails = {
+                  userId: user_id,
+                  transactionType: "Approve Crypto Redeem",
+                  redeemAmount: parseInt(prize_price / 100),
+                  tokenAmount: getUserdetails?.wallet,
+                  createdAt: new Date(),
+                  updatedAt: new Date(),
+                };
+                await db
+                  .get_db_affiliates_transactionDB()
+                  .insertOne(affliateUserDetails);
+              }
 
               postPrizeRedemption(prize_id, user_id);
               resp = prize_name;
