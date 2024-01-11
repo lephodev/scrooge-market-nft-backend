@@ -479,10 +479,10 @@ const getGCPurchaseAffliateBonus = async (
   amount
 ) => {
   try {
-    let getUser = await db
+    let getUserdetails = await db
       .get_scrooge_usersDB()
-      .findOne({ _id: ObjectId(extractedReffrenceId) });
-
+      .findOne({ _id: ObjectId(extractedId) });
+    console.log("getUsergetUser", getUserdetails);
     let affliateData = await db
       .get_affiliatesDB()
       .findOne({ userId: extractedId });
@@ -502,9 +502,9 @@ const getGCPurchaseAffliateBonus = async (
       referred_user_id: ObjectId(extractedReffrenceId),
       affiliate_id: affliateData?._id || null,
       userId: ObjectId(extractedId),
-      transactionType: "CC to Gc refferal",
+      transactionType: "CC to Gc",
       purchaseAmount: amount,
-      tokenAmount: getUser?.value?.wallet,
+      tokenAmount: getUserdetails?.wallet,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -537,7 +537,9 @@ const getGCPurchaseAffliateBonus = async (
         },
       }
     );
-
+    let getUser = await db
+      .get_scrooge_usersDB()
+      .findOne({ _id: ObjectId(extractedReffrenceId) });
     let getUserData = await db
       .get_scrooge_usersDB()
       .findOne({ _id: ObjectId(extractedReffrenceId) });
@@ -636,7 +638,7 @@ app.post("/api/authorize-webhook", async (req, res) => {
                 .toArray();
               console.log("findTransactionIfExist", findTransactionIfExist);
 
-              if (findTransactionIfExist.length === 0) {
+              if (findTransactionIfExist.length > 0) {
                 let query = {
                   couponCode: extractedPromoCode,
                   expireDate: { $gte: new Date() },

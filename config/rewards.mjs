@@ -1628,6 +1628,9 @@ export async function convertCryptoToGoldCoin(req, res) {
     }
 
     if (refrenceId) {
+      let getUserdetails = await db
+        .get_scrooge_usersDB()
+        .findOne({ _id: userId });
       let affliateData = await db
         .get_affiliatesDB()
         .findOne({ userId: userId });
@@ -1641,7 +1644,9 @@ export async function convertCryptoToGoldCoin(req, res) {
         referred_user_id: ObjectId(refrenceId),
         affiliate_id: affliateData?._id || null,
         userId: userId,
-        transactionType: "crypto to Gc refferal",
+        transactionType: "Crypto to Gc",
+        purchaseAmount: parseInt(amt),
+        tokenAmount: getUserdetails?.wallet,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -1654,16 +1659,16 @@ export async function convertCryptoToGoldCoin(req, res) {
         { new: true }
       );
 
-      db.get_affiliatesDB().findOneAndUpdate(
-        { userId: ObjectId(refrenceId) },
-        {
-          $inc: {
-            total_earned: getTicketBonus,
-            monthly_earned: getTicketBonus,
-          },
-        },
-        { new: true }
-      );
+      // db.get_affiliatesDB().findOneAndUpdate(
+      //   { userId: ObjectId(refrenceId) },
+      //   {
+      //     $inc: {
+      //       total_earned: getTicketBonus,
+      //       monthly_earned: getTicketBonus,
+      //     },
+      //   },
+      //   { new: true }
+      // );
 
       let getUserData = await db
         .get_scrooge_usersDB()
