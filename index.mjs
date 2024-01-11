@@ -498,7 +498,7 @@ const getGCPurchaseAffliateBonus = async (
       referred_user_id: ObjectId(extractedReffrenceId),
       affiliate_id: affliateData?._id || null,
       userId: ObjectId(extractedId),
-      transactionType: "crypto to Gc refferal",
+      transactionType: "CC to Gc refferal",
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -549,7 +549,7 @@ const getGCPurchaseAffliateBonus = async (
     } = getUserData;
     const transactionPayload = {
       amount: getTicketBonus,
-      transactionType: "Crypto To Gc bonus",
+      transactionType: "CC To Gc bonus",
       prevWallet: getUser?.value?.wallet,
       updatedWallet: getUser?.value?.wallet,
       // userId: ObjectId(refrenceId),
