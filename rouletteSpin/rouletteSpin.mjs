@@ -62,13 +62,15 @@ export async function updateUserDataAndTransaction(req, responseData, user) {
       prevWallet: user.wallet,
       previousTickets: user.ticket,
       prevGoldCoin: user.goldCoin,
-      updatedGoldCoin: user.goldCoin + resultData?.gc,
+      updatedGoldCoin: user.goldCoin,
       updatedWallet: user.wallet + resultData?.token,
       updatedTicket: user.ticket,
-      amount: resultData?.gc + resultData?.token,
+      amount: resultData?.token,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
+
+    console.log("payload", payload);
 
     await Promise.allSettled(
       [
@@ -80,7 +82,7 @@ export async function updateUserDataAndTransaction(req, responseData, user) {
             },
             $inc: {
               wallet: resultData?.token,
-              goldCoin: resultData?.gc,
+              // goldCoin: resultData?.gc,
               // dailySpinBonus: resultData?.token,
               // nonWithdrawableAmt: resultData?.token,
             },

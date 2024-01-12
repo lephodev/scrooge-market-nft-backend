@@ -435,19 +435,13 @@ var q = new Queue(async function (task, cb) {
   cb(null, 1);
 });
 
-app.get(
-  "/api/gameResult",
-  Basicauth,
-  auth(),
-  rateAuthLimit,
-  async (req, res) => {
-    try {
-      q.push({ req, res, type: "gameResult" });
-    } catch (error) {
-      console.log("errr", error);
-    }
+app.get("/api/gameResult", Basicauth, auth(), async (req, res) => {
+  try {
+    q.push({ req, res, type: "gameResult" });
+  } catch (error) {
+    console.log("errr", error);
   }
-);
+});
 
 const gameResult = async (req, res) => {
   try {
