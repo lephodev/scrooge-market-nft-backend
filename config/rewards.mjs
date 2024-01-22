@@ -46,6 +46,7 @@ export async function addChips(
   recipt = {},
   bonusToken
 ) {
+  console.log("bonusToken", bonusToken);
   try {
     let query = {};
     // For Rollover
@@ -978,6 +979,7 @@ export async function redeemPrize(req, res) {
                 lastName,
                 profile,
                 ipAddress,
+                ref,
               } = getUserData;
               const transactionPayload = {
                 amount: prize_price,
@@ -992,6 +994,7 @@ export async function redeemPrize(req, res) {
                   lastName,
                   profile,
                   ipAddress,
+                  refrenceId,
                 },
                 // updatedTicket: getUserData?.ticket,
 
@@ -1021,6 +1024,23 @@ export async function redeemPrize(req, res) {
                 hash,
                 from
               );
+
+              if (refrenceId) {
+                let getUserdetails = await db
+                  .get_scrooge_usersDB()
+                  .findOne({ _id: ObjectId(user_id) });
+                let affliateUserDetails = {
+                  userId: user_id,
+                  transactionType: "Approve Crypto Redeem",
+                  redeemAmount: parseInt(prize_price / 100),
+                  tokenAmount: getUserdetails?.wallet,
+                  createdAt: new Date(),
+                  updatedAt: new Date(),
+                };
+                await db
+                  .get_db_affiliates_transactionDB()
+                  .insertOne(affliateUserDetails);
+              }
 
               postPrizeRedemption(prize_id, user_id);
               resp = prize_name;
@@ -1632,6 +1652,9 @@ export async function convertCryptoToGoldCoin(req, res) {
     }
 
     if (refrenceId) {
+      let getUserdetails = await db
+        .get_scrooge_usersDB()
+        .findOne({ _id: userId });
       let affliateData = await db
         .get_affiliatesDB()
         .findOne({ userId: userId });
@@ -1645,7 +1668,9 @@ export async function convertCryptoToGoldCoin(req, res) {
         referred_user_id: ObjectId(refrenceId),
         affiliate_id: affliateData?._id || null,
         userId: userId,
-        transactionType: "crypto to Gc refferal",
+        transactionType: "Crypto to Gc",
+        purchaseAmount: parseInt(amt),
+        tokenAmount: getUserdetails?.wallet,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -1653,21 +1678,21 @@ export async function convertCryptoToGoldCoin(req, res) {
       let getUser = await db.get_scrooge_usersDB().findOneAndUpdate(
         { _id: ObjectId(refrenceId) },
         {
-          $inc: { ticket: getTicketBonus },
+          $inc: { wallet: getTicketBonus },
         },
         { new: true }
       );
 
-      db.get_affiliatesDB().findOneAndUpdate(
-        { userId: ObjectId(refrenceId) },
-        {
-          $inc: {
-            total_earned: getTicketBonus,
-            monthly_earned: getTicketBonus,
-          },
-        },
-        { new: true }
-      );
+      // db.get_affiliatesDB().findOneAndUpdate(
+      //   { userId: ObjectId(refrenceId) },
+      //   {
+      //     $inc: {
+      //       total_earned: getTicketBonus,
+      //       monthly_earned: getTicketBonus,
+      //     },
+      //   },
+      //   { new: true }
+      // );
 
       let getUserData = await db
         .get_scrooge_usersDB()
@@ -2289,7 +2314,7 @@ export async function getCryptoToGCPurcahse(req, res) {
 export async function WithdrawRequestWithFiat(req, res) {
   console.log("req,body", req.body);
   const {
-    redeemPrize,
+    amount: redeemPrize,
     paymentType,
     cashAppid,
     email: fiatEmail,
@@ -2302,7 +2327,7 @@ export async function WithdrawRequestWithFiat(req, res) {
   let token = updtdUser?.wallet;
   console.log("token--->>>", token);
 
-  const redeemToken = 100 * redeemPrize;
+  const redeemToken = redeemPrize;
 
   try {
     if (req?.user?.isBlockWallet) {
@@ -2318,6 +2343,8 @@ export async function WithdrawRequestWithFiat(req, res) {
     if (getKycuser?.status !== "accept") {
       return res.send({ success: false, message: "Your kyc is not approved" });
     }
+    console.log("redeemToken", redeemToken);
+
     if (token < redeemToken) {
       return res.send({ success: false, message: "Not Enough Tokens" });
     }
