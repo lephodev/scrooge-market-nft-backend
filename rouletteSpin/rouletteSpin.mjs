@@ -1,7 +1,7 @@
 import { ObjectId } from "mongodb";
 import * as db from "../config/mongodb.mjs";
 import spinGameModel from "../models/spinGameModel.mjs";
-import { places } from "./roulleteArray.mjs";
+import { RiskWheelPlaces, places } from "./roulleteArray.mjs";
 import { generateServerSeed, verifyResult } from "./rouletteUtils.mjs";
 
 export async function gameResult(req, userId) {
@@ -9,6 +9,44 @@ export async function gameResult(req, userId) {
     const { clientSeed } = req.query;
     let container = [];
     places.forEach((el) => {
+      for (let i = 0.0; i < el.chances; i = i + 0.1) {
+        container.push(el);
+      }
+    });
+    let nonce = await db.get_scrooge_spinGameDB().countDocuments({ userId });
+    if (!nonce) nonce = 0;
+    const serverSeed = generateServerSeed();
+    const resultIndex = verifyResult(
+      serverSeed,
+      clientSeed,
+      nonce + 1,
+      container.length
+    );
+    const resultData = container[resultIndex];
+    return {
+      code: 200,
+      resultData,
+      gameModelData: {
+        serverSeed,
+        clientSeed,
+        nonce: nonce + 1,
+        userId,
+        resultIndex,
+        rouletteItems: places,
+        containerLength: container.length,
+        winItem: resultData,
+      },
+    };
+  } catch (error) {
+    console.log("error", error);
+  }
+}
+
+export async function gameResultForRiskWheel(req, userId) {
+  try {
+    const { clientSeed } = req.query;
+    let container = [];
+    RiskWheelPlaces.forEach((el) => {
       for (let i = 0.0; i < el.chances; i = i + 0.1) {
         container.push(el);
       }

@@ -435,14 +435,34 @@ var q = new Queue(async function (task, cb) {
   cb(null, 1);
 });
 
+var riskWheelq = new Queue(async function (task, cb) {
+  if (task.type === "gameResultForRiskWheel") {
+    await gameResultForRiskWheel(task.req, task.res);
+  }
+  cb(null, 1);
+});
+
 app.get(
   "/api/gameResult",
   Basicauth,
   auth(),
-  rateAuthLimit,
+  // rateAuthLimit,
   async (req, res) => {
     try {
       q.push({ req, res, type: "gameResult" });
+    } catch (error) {
+      console.log("errr", error);
+    }
+  }
+);
+app.get(
+  "/api/gameResultForRiskWheel",
+  Basicauth,
+  auth(),
+  // rateAuthLimit,
+  async (req, res) => {
+    try {
+      riskWheelq.push({ req, res, type: "gameResultForRiskWheel" });
     } catch (error) {
       console.log("errr", error);
     }
@@ -456,6 +476,21 @@ const gameResult = async (req, res) => {
     if (!checkUserCanSpin(user?.lastSpinTime))
       return res.status(400).send({ msg: "Not eleigible for Spin" });
     const resp1 = await rouletteSpin.gameResult(req, user._id);
+    res.status(200).send({ msg: "Success", resultData: resp1.resultData });
+    rouletteSpin.CreateRollOver(req, resp1, user);
+    rouletteSpin.updateUserDataAndTransaction(req, resp1, user);
+  } catch (error) {
+    return res.status(500).send({ msg: "Internal Server Error" });
+  }
+};
+
+const gameResultForRiskWheel = async (req, res) => {
+  try {
+    let { user } = req;
+    user = await await db.get_scrooge_usersDB().findOne({ _id: user?._id });
+    if (!checkUserCanSpin(user?.lastSpinTime))
+      return res.status(400).send({ msg: "Not eleigible for Spin" });
+    const resp1 = await rouletteSpin.gameResultForRiskWheel(req, user._id);
     res.status(200).send({ msg: "Success", resultData: resp1.resultData });
     rouletteSpin.CreateRollOver(req, resp1, user);
     rouletteSpin.updateUserDataAndTransaction(req, resp1, user);
