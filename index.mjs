@@ -632,7 +632,7 @@ app.post("/api/authorize-webhook", async (req, res) => {
                 .toArray();
               console.log("findTransactionIfExist", findTransactionIfExist);
 
-              if (findTransactionIfExist.length > 0) {
+              if (findTransactionIfExist.length === 0) {
                 let query = {
                   couponCode: extractedPromoCode,
                   expireDate: { $gte: new Date() },
