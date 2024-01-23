@@ -994,7 +994,7 @@ export async function redeemPrize(req, res) {
                   lastName,
                   profile,
                   ipAddress,
-                  refrenceId,
+                  // refrenceId,
                 },
                 // updatedTicket: getUserData?.ticket,
 
