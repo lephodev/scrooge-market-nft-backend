@@ -54,16 +54,16 @@ export async function addChips(
       query = {
         goldCoin: gc,
         wallet: _qty,
-        // monthlyClaimBonus: _qty,
-        // nonWithdrawableAmt: _qty,
+        monthlyClaimBonus: _qty,
+        nonWithdrawableAmt: _qty,
       };
     } else {
       query = {
         goldCoin: gc,
         wallet: _qty,
-        // dailySpinBonus: _qty - bonusToken,
-        // nonWithdrawableAmt: _qty,
-        // monthlyClaimBonus: bonusToken,
+        dailySpinBonus: _qty - bonusToken,
+        nonWithdrawableAmt: _qty,
+        monthlyClaimBonus: bonusToken,
       };
     }
     console.log("query", query);
