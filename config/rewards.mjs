@@ -2122,7 +2122,7 @@ export async function FastWithdrawRequest(req, res) {
       });
     }
     console.log("amount", amount);
-    if (amount < 0) {
+    if (amount < 5000) {
       return res.send({
         success: false,
         message:
