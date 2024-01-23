@@ -1012,6 +1012,12 @@ app.get(
   }
 );
 
+app.get(
+  "/api/fastWithdrawRedeem/:withdraw_id/:transactionHash",
+  auth(),
+  rewards.FastWithdrawRedeem
+);
+
 app.listen(PORT, () => {
   console.log("Server is running.", PORT);
 });
