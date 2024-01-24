@@ -2398,6 +2398,8 @@ export async function WithdrawRequestWithFiat(req, res) {
       .catch((e) => {
         console.log("e", e);
       });
+    emailSend.SubmitRedeemRequestEmail(email, username, redeemPrize);
+
     return res.send({
       success: true,
       message:
