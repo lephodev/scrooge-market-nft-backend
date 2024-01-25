@@ -1735,13 +1735,15 @@ export async function convertCryptoToGoldCoin(req, res) {
         .insertOne(transactionPayload);
     }
 
-    console.log("userId", userId);
-    await db
-      .get_scrooge_usersDB()
-      .findOneAndUpdate(
-        { _id: ObjectId(userId) },
-        { $push: { megaOffer: parseFloat(amt) } }
-      );
+    console.log("OfferType", data?.offerType);
+    if (data?.offerType === "MegaOffer") {
+      await db
+        .get_scrooge_usersDB()
+        .findOneAndUpdate(
+          { _id: ObjectId(userId) },
+          { $push: { megaOffer: parseFloat(amt) } }
+        );
+    }
     let getUserDetail = await db
       .get_scrooge_usersDB()
       .findOne({ _id: ObjectId(userId) });
