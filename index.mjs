@@ -688,11 +688,13 @@ app.post("/api/authorize-webhook", async (req, res) => {
                   firstName: getUser?.firstName,
                   lastName: getUser?.lastName,
                 };
-                await db.get_scrooge_usersDB().findOneAndUpdate(
-                  { _id: ObjectId(extractedId) },
+                if (data?.offerType === "MegaOffer") {
+                  await db.get_scrooge_usersDB().findOneAndUpdate(
+                    { _id: ObjectId(extractedId) },
 
-                  { $set: { isGCPurchase: true } }
-                );
+                    { $push: { megaOffer: parseFloat(amount) } }
+                  );
+                }
                 await InvoiceEmail(getUser?.email, reciptPayload);
                 if (extractedPromoCode) {
                   let payload = {
