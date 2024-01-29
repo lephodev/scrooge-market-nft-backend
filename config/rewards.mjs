@@ -1443,6 +1443,9 @@ const getDecodedData = async (recipt) => {
         if (cryptoUsd === 11.5884) {
           return 9.99;
         }
+        if (cryptoUsd === 23.1884) {
+          return 19.99;
+        }
         return parseInt(Math.round(cryptoUsd));
       }
 
@@ -1470,6 +1473,9 @@ const getDecodedData = async (recipt) => {
       if (cryptoUsd === 11.5884) {
         return 9.99;
       }
+      if (cryptoUsd === 23.1884) {
+        return 19.99;
+      }
       return pids[Math.round(cryptoUsd)];
     }
     return cryptoAmt;
@@ -1480,7 +1486,7 @@ const getDecodedData = async (recipt) => {
 
 export async function convertCryptoToGoldCoin(req, res) {
   const { address, transactionHash } = req.params;
-  const { promoCode } = req.query;
+  const { promoCode, usd } = req.query;
   const {
     user: {
       _id: userId,
@@ -1534,12 +1540,12 @@ export async function convertCryptoToGoldCoin(req, res) {
       });
     }
     console.log("recipt", recipt);
-    const amt = await getDecodedData(recipt);
+    const amt = usd;
     console.log("amt", amt);
-    let cealAmount = Math.ceil(amt);
-    console.log("cealAmount", cealAmount);
+    // let cealAmount = Math.ceil(amt);
+    console.log("cealAmount", usd);
     const data = await db.get_marketplace_gcPackagesDB().findOne({
-      priceInBUSD: cealAmount.toString(),
+      priceInBUSD: amt.toString(),
     });
     console.log("datadata--------", data);
     if (!data)
@@ -1734,13 +1740,15 @@ export async function convertCryptoToGoldCoin(req, res) {
         .insertOne(transactionPayload);
     }
 
-    console.log("userId", userId);
-    await db
-      .get_scrooge_usersDB()
-      .findOneAndUpdate(
-        { _id: ObjectId(userId) },
-        { $set: { isGCPurchase: true } }
-      );
+    console.log("OfferType", data?.offerType);
+    if (data?.offerType === "MegaOffer") {
+      await db
+        .get_scrooge_usersDB()
+        .findOneAndUpdate(
+          { _id: ObjectId(userId) },
+          { $push: { megaOffer: parseFloat(amt) } }
+        );
+    }
     let getUserDetail = await db
       .get_scrooge_usersDB()
       .findOne({ _id: ObjectId(userId) });
@@ -2403,6 +2411,8 @@ export async function WithdrawRequestWithFiat(req, res) {
       .catch((e) => {
         console.log("e", e);
       });
+    emailSend.SubmitRedeemRequestEmail(email, username, redeemPrize);
+
     return res.send({
       success: true,
       message:
