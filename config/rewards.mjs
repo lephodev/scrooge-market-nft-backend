@@ -62,7 +62,7 @@ export async function addChips(
       };
     } else {
       console.log("prchAmt", Math.floor(prchAmt));
-            
+
       query = {
         goldCoin: gc,
         wallet: _qty,
@@ -194,7 +194,7 @@ export async function addChips(
   }
 }
 
-const getRolloverMultiplier = ()=>{
+const getRolloverMultiplier = (prchAmt)=>{
   if(Math.floor(prchAmt) === 25){
     return 4
   }else if(Math.floor(prchAmt) == 50){
