@@ -533,15 +533,11 @@ export const SEND_INVOICE = (data, hash, from) => {
           <td style="text-align: end;">
             <h4 style="color:#333536">
               Invoice Date:
-              <span style="font-size:14px;color:#333536;font-weight:500"> ${
-                data?.invoicDate
-              } </span>
+              <span style="font-size:14px;color:#333536;font-weight:500"> ${data?.invoicDate} </span>
             </h4>
             <h4 style="color:#333536">
               Payment Method:
-              <span style="font-size:14px;color:#333536;font-weight:500"> ${
-                data?.paymentMethod
-              }
+              <span style="font-size:14px;color:#333536;font-weight:500"> ${data?.paymentMethod}
               </span>
             </h4>
           </td>
@@ -557,22 +553,15 @@ export const SEND_INVOICE = (data, hash, from) => {
           <th style="text-align:left;color:#333536;     padding-right: 10px;">Package Name</th>
           <th style="text-align:left;color:#333536;     padding-right: 10px;">Price</th>
           <th style="text-align:left;color:#333536;     padding-right: 10px;">Qty.</th>
-          <th style="text-align:left;color:#333536;     padding-right: 10px;">Total</th>
         </tr>
         <tr>
-          <td style="padding-top:20px;text-align:left;color:#333536;     padding-right: 10px;"> ${
-            data?.packageName
-          } </td>
-          <td style="padding-top:20px;text-align:left;color:#333536;     padding-right: 10px;"> ${
-            data?.purcahsePrice
-          } </td>
+          <td style="padding-top:20px;text-align:left;color:#333536;     padding-right: 10px;"> ${data?.packageName} </td>
+          <td style="padding-top:20px;text-align:left;color:#333536;     padding-right: 10px;"> ${data?.purcahsePrice} </td>
           <td style="padding-top:20px;text-align:left;color:#333536;     padding-right: 10px;">
             Gold Coin: ${data?.goldCoinQuantity} <br>
             Free Sweep Token: ${data?.tokenQuantity}
           </td>
-          <td style="padding-top:20px;text-align:left;color:#333536;     padding-right: 10px;"> ${
-            data?.goldCoinQuantity + data?.tokenQuantity
-          } </td>
+          
         </tr>
       </tbody>
     </table>
