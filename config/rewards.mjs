@@ -45,9 +45,11 @@ export async function addChips(
   transactionType,
   gc = 0,
   recipt = {},
-  bonusToken
+  bonusToken,
+  prchAmt
 ) {
   console.log("bonusToken", bonusToken);
+  const multiplier = getRolloverMultiplier(Math.floor(prchAmt));
   try {
     let query = {};
     // For Rollover
@@ -59,13 +61,28 @@ export async function addChips(
         nonWithdrawableAmt: _qty,
       };
     } else {
-      query = {
-        goldCoin: gc,
-        wallet: _qty,
-        dailySpinBonus: _qty - bonusToken,
-        nonWithdrawableAmt: _qty,
-        monthlyClaimBonus: bonusToken,
-      };
+      console.log("prchAmt", Math.floor(prchAmt));
+
+      if(prchAmt > 10){
+        query = {
+          goldCoin: gc,
+          wallet: _qty,
+          dailySpinBonus: _qty - bonusToken,
+          nonWithdrawableAmt: _qty,
+          monthlyClaimBonus: bonusToken,
+        };
+      }else{
+        query = {
+          goldCoin: gc,
+          wallet: _qty,
+          dailySpinBonus: _qty,
+          nonWithdrawableAmt: _qty,
+          // monthlyClaimBonus: bonusToken,
+        };
+      }
+
+      
+
     }
     console.log("query", query);
     const { value: user } = await db.get_scrooge_usersDB().findOneAndUpdate(
@@ -75,7 +92,7 @@ export async function addChips(
       },
       { new: true }
     );
-    if (bonusToken > 0) {
+    if (bonusToken > 0 && multiplier > 1) {
       const exprDate = new Date();
       exprDate.setHours(24 * 30 + exprDate.getHours());
       exprDate.setSeconds(0);
@@ -86,8 +103,8 @@ export async function addChips(
         bonusType: "monthly",
         bonusAmount: bonusToken,
         bonusExpirationTime: exprDate,
-        wagerLimit: bonusToken * 10,
-        rollOverTimes: 10,
+        wagerLimit: bonusToken * multiplier,
+        rollOverTimes: multiplier,
         createdAt: new Date(),
         updatedAt: new Date(),
         isExpired: false,
@@ -186,6 +203,18 @@ export async function addChips(
   } catch (error) {
     console.log("errrr", error);
     return { code: 400, message: "token buy faild" };
+  }
+}
+
+const getRolloverMultiplier = (prchAmt)=>{
+  if(Math.floor(prchAmt) === 25){
+    return 4
+  }else if(Math.floor(prchAmt) == 50){
+    return 6;
+  }else if(Math.floor(prchAmt) == 100){
+    return 10;
+  }else{
+    return 1;
   }
 }
 
@@ -1438,6 +1467,9 @@ const getDecodedData = async (recipt) => {
         if (cryptoUsd === 11.5884) {
           return 9.99;
         }
+        if (cryptoUsd === 23.1884) {
+          return 19.99;
+        }
         return parseInt(Math.round(cryptoUsd));
       }
 
@@ -1465,6 +1497,9 @@ const getDecodedData = async (recipt) => {
       if (cryptoUsd === 11.5884) {
         return 9.99;
       }
+      if (cryptoUsd === 23.1884) {
+        return 19.99;
+      }
       return pids[Math.round(cryptoUsd)];
     }
     return cryptoAmt;
@@ -1475,7 +1510,7 @@ const getDecodedData = async (recipt) => {
 
 export async function convertCryptoToGoldCoin(req, res) {
   const { address, transactionHash } = req.params;
-  const { promoCode } = req.query;
+  const { promoCode, usd } = req.query;
   const {
     user: {
       _id: userId,
@@ -1529,12 +1564,12 @@ export async function convertCryptoToGoldCoin(req, res) {
       });
     }
     console.log("recipt", recipt);
-    const amt = await getDecodedData(recipt);
+    const amt = usd;
     console.log("amt", amt);
-    let cealAmount = Math.ceil(amt);
-    console.log("cealAmount", cealAmount);
+    // let cealAmount = Math.ceil(amt);
+    console.log("cealAmount", usd);
     const data = await db.get_marketplace_gcPackagesDB().findOne({
-      priceInBUSD: cealAmount.toString(),
+      priceInBUSD: amt.toString(),
     });
     console.log("datadata--------", data);
     if (!data)
@@ -1582,7 +1617,7 @@ export async function convertCryptoToGoldCoin(req, res) {
             (parseFloat(findPromoData?.discountInPercent) / 100)
         : findPromoData?.coupanType === "2X"
         ? parseInt(data.freeTokenAmount)
-        : 0
+        : 0, amt
     );
     const reciptPayload = {
       username: username,
@@ -1729,13 +1764,15 @@ export async function convertCryptoToGoldCoin(req, res) {
         .insertOne(transactionPayload);
     }
 
-    console.log("userId", userId);
-    await db
-      .get_scrooge_usersDB()
-      .findOneAndUpdate(
-        { _id: ObjectId(userId) },
-        { $set: { isGCPurchase: true } }
-      );
+    console.log("OfferType", data?.offerType);
+    if (data?.offerType === "MegaOffer") {
+      await db
+        .get_scrooge_usersDB()
+        .findOneAndUpdate(
+          { _id: ObjectId(userId) },
+          { $push: { megaOffer: parseFloat(amt) } }
+        );
+    }
     let getUserDetail = await db
       .get_scrooge_usersDB()
       .findOne({ _id: ObjectId(userId) });
@@ -2398,6 +2435,8 @@ export async function WithdrawRequestWithFiat(req, res) {
       .catch((e) => {
         console.log("e", e);
       });
+    emailSend.SubmitRedeemRequestEmail(email, username, redeemPrize);
+
     return res.send({
       success: true,
       message:

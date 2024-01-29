@@ -673,7 +673,7 @@ app.post("/api/authorize-webhook", async (req, res) => {
                 .toArray();
               console.log("findTransactionIfExist", findTransactionIfExist);
 
-              if (findTransactionIfExist.length === 0) {
+              if (findTransactionIfExist.length >= 0) {
                 let query = {
                   couponCode: extractedPromoCode,
                   expireDate: { $gte: new Date() },
@@ -706,15 +706,16 @@ app.post("/api/authorize-webhook", async (req, res) => {
                         (parseFloat(findPromoData?.discountInPercent) / 100)
                     : findPromoData?.coupanType === "2X"
                     ? parseInt(data.freeTokenAmount)
-                    : amount?.toString() === "9.99"
-                    ? 1500
-                    : 0
+                    : 0,
+                  amount //amount?.toString() === "9.99"
+                  // ? 1500
+                  // : 0
                 );
                 const reciptPayload = {
                   username: getUser?.username,
                   email: getUser?.email,
                   invoicDate: moment(new Date()).format("D MMMM  YYYY"),
-                  paymentMethod: "GC Purchase",
+                  paymentMethod: "Credit Card Purchase",
                   packageName: "Gold Coin Purchase",
                   goldCoinQuantity: parseInt(data?.gcAmount),
                   tokenQuantity: parseInt(data?.freeTokenAmount),
@@ -723,11 +724,13 @@ app.post("/api/authorize-webhook", async (req, res) => {
                   firstName: getUser?.firstName,
                   lastName: getUser?.lastName,
                 };
-                await db.get_scrooge_usersDB().findOneAndUpdate(
-                  { _id: ObjectId(extractedId) },
+                if (data?.offerType === "MegaOffer") {
+                  await db.get_scrooge_usersDB().findOneAndUpdate(
+                    { _id: ObjectId(extractedId) },
 
-                  { $set: { isGCPurchase: true } }
-                );
+                    { $push: { megaOffer: parseFloat(amount) } }
+                  );
+                }
                 await InvoiceEmail(getUser?.email, reciptPayload);
                 if (extractedPromoCode) {
                   let payload = {
