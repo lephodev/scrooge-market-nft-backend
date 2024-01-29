@@ -62,14 +62,26 @@ export async function addChips(
       };
     } else {
       console.log("prchAmt", Math.floor(prchAmt));
-            
-      query = {
-        goldCoin: gc,
-        wallet: _qty,
-        dailySpinBonus: _qty - bonusToken,
-        nonWithdrawableAmt: _qty,
-        monthlyClaimBonus: bonusToken,
-      };
+
+      if(prchAmt > 10){
+        query = {
+          goldCoin: gc,
+          wallet: _qty,
+          dailySpinBonus: _qty - bonusToken,
+          nonWithdrawableAmt: _qty,
+          monthlyClaimBonus: bonusToken,
+        };
+      }else{
+        query = {
+          goldCoin: gc,
+          wallet: _qty,
+          dailySpinBonus: _qty,
+          nonWithdrawableAmt: _qty,
+          // monthlyClaimBonus: bonusToken,
+        };
+      }
+
+      
 
     }
     console.log("query", query);
@@ -80,7 +92,7 @@ export async function addChips(
       },
       { new: true }
     );
-    if (bonusToken > 0) {
+    if (bonusToken > 0 && multiplier > 1) {
       const exprDate = new Date();
       exprDate.setHours(24 * 30 + exprDate.getHours());
       exprDate.setSeconds(0);
@@ -92,7 +104,7 @@ export async function addChips(
         bonusAmount: bonusToken,
         bonusExpirationTime: exprDate,
         wagerLimit: bonusToken * multiplier,
-        rollOverTimes: 10,
+        rollOverTimes: multiplier,
         createdAt: new Date(),
         updatedAt: new Date(),
         isExpired: false,
@@ -194,7 +206,7 @@ export async function addChips(
   }
 }
 
-const getRolloverMultiplier = ()=>{
+const getRolloverMultiplier = (prchAmt)=>{
   if(Math.floor(prchAmt) === 25){
     return 4
   }else if(Math.floor(prchAmt) == 50){
