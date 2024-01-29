@@ -45,9 +45,11 @@ export async function addChips(
   transactionType,
   gc = 0,
   recipt = {},
-  bonusToken
+  bonusToken,
+  prchAmt
 ) {
   console.log("bonusToken", bonusToken);
+  const multiplier = getRolloverMultiplier(Math.floor(prchAmt));
   try {
     let query = {};
     // For Rollover
@@ -59,6 +61,8 @@ export async function addChips(
         nonWithdrawableAmt: _qty,
       };
     } else {
+      console.log("prchAmt", Math.floor(prchAmt));
+            
       query = {
         goldCoin: gc,
         wallet: _qty,
@@ -66,6 +70,7 @@ export async function addChips(
         nonWithdrawableAmt: _qty,
         monthlyClaimBonus: bonusToken,
       };
+
     }
     console.log("query", query);
     const { value: user } = await db.get_scrooge_usersDB().findOneAndUpdate(
@@ -86,7 +91,7 @@ export async function addChips(
         bonusType: "monthly",
         bonusAmount: bonusToken,
         bonusExpirationTime: exprDate,
-        wagerLimit: bonusToken * 10,
+        wagerLimit: bonusToken * multiplier,
         rollOverTimes: 10,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -186,6 +191,18 @@ export async function addChips(
   } catch (error) {
     console.log("errrr", error);
     return { code: 400, message: "token buy faild" };
+  }
+}
+
+const getRolloverMultiplier = ()=>{
+  if(Math.floor(prchAmt) === 25){
+    return 4
+  }else if(Math.floor(prchAmt) == 50){
+    return 6;
+  }else if(Math.floor(prchAmt) == 100){
+    return 10;
+  }else{
+    return 1;
   }
 }
 
@@ -1588,7 +1605,7 @@ export async function convertCryptoToGoldCoin(req, res) {
             (parseFloat(findPromoData?.discountInPercent) / 100)
         : findPromoData?.coupanType === "2X"
         ? parseInt(data.freeTokenAmount)
-        : 0
+        : 0, amt
     );
     const reciptPayload = {
       username: username,
