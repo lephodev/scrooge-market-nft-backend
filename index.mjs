@@ -671,7 +671,7 @@ app.post("/api/authorize-webhook", async (req, res) => {
                         (parseFloat(findPromoData?.discountInPercent) / 100)
                     : findPromoData?.coupanType === "2X"
                     ? parseInt(data.freeTokenAmount)
-                    : 0 //amount?.toString() === "9.99"
+                    : 0, amount //amount?.toString() === "9.99"
                   // ? 1500
                   // : 0
                 );
