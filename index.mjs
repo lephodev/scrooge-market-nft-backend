@@ -1024,20 +1024,20 @@ app.listen(PORT, () => {
   console.log("Server is running.", PORT);
 });
 
-const reciptPayload = {
-  username: "jivan",
-  email: "jivanwebsul@gmail.com",
-  invoicDate: moment(new Date()).format("D MMMM  YYYY"),
-  paymentMethod: "Credit Card Purchase",
-  packageName: "Gold Coin Purchase",
-  goldCoinQuantity: 30000000,
-  tokenQuantity: 3000,
-  purcahsePrice: "9.99",
-  Tax: 0,
-  firstName: "jivan",
-  lastName: "Tiwari",
-};
+// const reciptPayload = {
+//   username: "jivan",
+//   email: "jivanwebsul@gmail.com",
+//   invoicDate: moment(new Date()).format("D MMMM  YYYY"),
+//   paymentMethod: "Credit Card Purchase",
+//   packageName: "Gold Coin Purchase",
+//   goldCoinQuantity: 30000000,
+//   tokenQuantity: 3000,
+//   purcahsePrice: "9.99",
+//   Tax: 0,
+//   firstName: "jivan",
+//   lastName: "Tiwari",
+// };
 
-await InvoiceEmail("jivanwebsul@gmail.com", reciptPayload);
+// await InvoiceEmail("jivanwebsul@gmail.com", reciptPayload);
 
 export default app;
