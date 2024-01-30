@@ -1,7 +1,7 @@
 import { ObjectId } from "mongodb";
 import * as db from "../config/mongodb.mjs";
 import spinGameModel from "../models/spinGameModel.mjs";
-import { places } from "./roulleteArray.mjs";
+import { BigWheelPlaces, RiskWheelPlaces, places } from "./roulleteArray.mjs";
 import { generateServerSeed, verifyResult } from "./rouletteUtils.mjs";
 
 export async function gameResult(req, userId) {
@@ -42,11 +42,92 @@ export async function gameResult(req, userId) {
   }
 }
 
+export async function gameResultForRiskWheel(req, userId) {
+  try {
+    const { clientSeed } = req.query;
+    let container = [];
+    RiskWheelPlaces.forEach((el) => {
+      for (let i = 0.0; i < el.chances; i = i + 0.1) {
+        container.push(el);
+      }
+    });
+    let nonce = await db.get_scrooge_spinGameDB().countDocuments({ userId });
+    if (!nonce) nonce = 0;
+    const serverSeed = generateServerSeed();
+    const resultIndex = verifyResult(
+      serverSeed,
+      clientSeed,
+      nonce + 1,
+      container.length
+    );
+    const resultData = container[resultIndex];
+    return {
+      code: 200,
+      resultData,
+      gameModelData: {
+        serverSeed,
+        clientSeed,
+        nonce: nonce + 1,
+        userId,
+        resultIndex,
+        rouletteItems: places,
+        containerLength: container.length,
+        winItem: resultData,
+      },
+    };
+  } catch (error) {
+    console.log("error", error);
+  }
+}
+
+export async function gameResultForBigWheel(req, userId) {
+  try {
+    const { clientSeed } = req.query;
+    let container = [];
+    BigWheelPlaces.forEach((el) => {
+      for (let i = 0.0; i < el.chances; i = i + 0.1) {
+        container.push(el);
+      }
+    });
+    let nonce = await db.get_scrooge_spinGameDB().countDocuments({ userId });
+    if (!nonce) nonce = 0;
+    const serverSeed = generateServerSeed();
+    const resultIndex = verifyResult(
+      serverSeed,
+      clientSeed,
+      nonce + 1,
+      container.length
+    );
+    const resultData = container[resultIndex];
+    return {
+      code: 200,
+      resultData,
+      gameModelData: {
+        serverSeed,
+        clientSeed,
+        nonce: nonce + 1,
+        userId,
+        resultIndex,
+        rouletteItems: places,
+        containerLength: container.length,
+        winItem: resultData,
+      },
+    };
+  } catch (error) {
+    console.log("error", error);
+  }
+}
+
 export async function updateUserDataAndTransaction(req, responseData, user) {
   try {
     const { resultData, gameModelData } = responseData;
+
+    console.log("responseData", responseData);
+
     const { _id, username, email, firstName, lastName, profile, ipAddress } =
       user;
+
+    console.log("user", user);
     const payload = {
       userId: {
         _id,
@@ -60,12 +141,10 @@ export async function updateUserDataAndTransaction(req, responseData, user) {
       transactionType: "spin",
       status: "spin-win",
       prevWallet: user.wallet,
-      previousTickets: user.ticket,
       prevGoldCoin: user.goldCoin,
-      updatedGoldCoin: user.goldCoin + resultData?.gc,
+      updatedGoldCoin: user?.goldCoin,
       updatedWallet: user.wallet + resultData?.token,
-      updatedTicket: user.ticket,
-      amount: resultData?.gc + resultData?.token,
+      amount: resultData?.token,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -76,11 +155,10 @@ export async function updateUserDataAndTransaction(req, responseData, user) {
           { _id: ObjectId(req.user._id) },
           {
             $set: {
-              lastSpinTime: Date.now() + 86400000,
+              lastSpinTime: Date.now() + 0,
             },
             $inc: {
               wallet: resultData?.token,
-              goldCoin: resultData?.gc,
               dailySpinBonus: resultData?.token,
               nonWithdrawableAmt: resultData?.token,
             },
