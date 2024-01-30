@@ -1096,6 +1096,39 @@ const gameResultForRiskWheel = async (req, res) => {
   }
 };
 
+var loyalityWheel = new Queue(async function (task, cb) {
+  if (task.type === "loyalitygameResultWheel") {
+    await loyalitygameResultWheel(task.req, task.res);
+  }
+  cb(null, 1);
+});
+
+app.get(
+  "/api/loyalitygameResult",
+  auth(),
+  // rateAuthLimit,
+  async (req, res) => {
+    try {
+      loyalityWheel.push({ req, res, type: "loyalitygameResultWheel" });
+    } catch (error) {
+      console.log("errr", error);
+    }
+  }
+);
+
+const loyalitygameResultWheel = async (req, res) => {
+  try {
+    let { user } = req;
+    user = await await db.get_scrooge_usersDB().findOne({ _id: user?._id });
+    if (!checkUserCanSpin(user?.lastSpinTime))
+      return res.status(400).send({ msg: "Not eleigible for Spin" });
+    const resp1 = await rouletteSpin.loyalitygameResultWheel(req, user._id);
+    res.status(200).send({ msg: "Success", resultData: resp1.resultData });
+  } catch (error) {
+    return res.status(500).send({ msg: "Internal Server Error" });
+  }
+};
+
 app.listen(PORT, () => {
   console.log("Server is running.", PORT);
 });
