@@ -36,3 +36,11 @@ export const BigWheelPlaces = [
   { token: 90, chances: 10 },
   { token: 100, chances: 10 },
 ];
+
+export const LoyaltyWheelPlaces = [
+  { token: 150, chances: 10 },
+  { token: 175, chances: 10 },
+  { token: 200, chances: 10 },
+  { token: 225, chances: 10 },
+  { token: 250, chances: 10 },
+];
