@@ -161,12 +161,16 @@ export async function loyalitygameResultWheel(req, userId) {
   }
 }
 
-export async function updateUserDataAndTransaction(req, responseData, user) {
+export async function updateUserDataAndTransaction(
+  req,
+  responseData,
+  user,
+  type
+) {
   try {
     const { resultData, gameModelData } = responseData;
 
     const { token } = resultData;
-    console.log("resultData", resultData);
     if (
       token === "Red1" ||
       token === "Red2" ||
@@ -181,12 +185,9 @@ export async function updateUserDataAndTransaction(req, responseData, user) {
       resultData.token = 0;
     }
 
-    console.log("responseData", responseData);
-
     const { _id, username, email, firstName, lastName, profile, ipAddress } =
       user;
 
-    console.log("user", user);
     const payload = {
       userId: {
         _id,
@@ -241,36 +242,47 @@ export async function updateUserDataAndTransaction(req, responseData, user) {
     const getLastDaySpin = await db
       .get_scrooge_transactionDB()
       .findOne(query, { sort: { _id: -1 } });
-
-    if (getLastDaySpin) {
-      const prevDt = new Date();
-      prevDt.setDate(prevDt.getDate() - 1);
-      prevDt.setHours(0, 0, 0, 0);
-      console.log(
-        "preDtTime ==>",
-        prevDt.getTime(),
-        "spin time ==>",
-        new Date(getLastDaySpin.createdAt).getTime(),
-        prevDt.getTime() <= new Date(getLastDaySpin.createdAt).getTime()
+    if (type === "Loyality") {
+      console.log("Loyality");
+      await db.get_scrooge_usersDB().updateOne(
+        { _id: ObjectId(req.user._id) },
+        {
+          $set: {
+            loyalitySpinCount: 0,
+          },
+        }
       );
-      if (prevDt.getTime() <= new Date(getLastDaySpin.createdAt).getTime()) {
-        await db.get_scrooge_usersDB().updateOne(
-          { _id: ObjectId(req.user._id) },
-          {
-            $inc: {
-              loyalitySpinCount: 1,
-            },
-          }
-        );
-      } else {
-        await db.get_scrooge_usersDB().updateOne(
-          { _id: ObjectId(req.user._id) },
-          {
-            $set: {
-              loyalitySpinCount: 0,
-            },
-          }
-        );
+    } else {
+      if (getLastDaySpin) {
+        const prevDt = new Date();
+        prevDt.setDate(prevDt.getDate() - 1);
+        prevDt.setHours(0, 0, 0, 0);
+        // console.log(
+        //   "preDtTime ==>",
+        //   prevDt.getTime(),
+        //   "spin time ==>",
+        //   new Date(getLastDaySpin.createdAt).getTime(),
+        //   prevDt.getTime() <= new Date(getLastDaySpin.createdAt).getTime()
+        // );
+        if (prevDt.getTime() <= new Date(getLastDaySpin.createdAt).getTime()) {
+          await db.get_scrooge_usersDB().updateOne(
+            { _id: ObjectId(req.user._id) },
+            {
+              $inc: {
+                loyalitySpinCount: 1,
+              },
+            }
+          );
+        } else {
+          await db.get_scrooge_usersDB().updateOne(
+            { _id: ObjectId(req.user._id) },
+            {
+              $set: {
+                loyalitySpinCount: 0,
+              },
+            }
+          );
+        }
       }
     }
 

@@ -1130,8 +1130,11 @@ const loyalitygameResultWheel = async (req, res) => {
     if (!checkUserCanSpin(user?.lastSpinTime))
       return res.status(400).send({ msg: "Not eleigible for Spin" });
     const resp1 = await rouletteSpin.loyalitygameResultWheel(req, user._id);
+    rouletteSpin.CreateRollOver(req, resp1, user);
+    rouletteSpin.updateUserDataAndTransaction(req, resp1, user, "Loyality");
     res.status(200).send({ msg: "Success", resultData: resp1.resultData });
   } catch (error) {
+    console.log("loyalitygameResultWheel", error);
     return res.status(500).send({ msg: "Internal Server Error" });
   }
 };
