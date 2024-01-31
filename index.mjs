@@ -586,6 +586,8 @@ app.post("/api/authorize-webhook", async (req, res) => {
     const rawPayload = JSON.stringify(req.body);
     console.log("rawPayload", rawPayload);
 
+
+
     getTransactionDetails(rawPayload, async (response) => {
       try {
         console.log("response528", response);
@@ -638,7 +640,7 @@ app.post("/api/authorize-webhook", async (req, res) => {
                 .toArray();
               console.log("findTransactionIfExist", findTransactionIfExist);
 
-              if (findTransactionIfExist.length >= 0) {
+              if (findTransactionIfExist.length === 0) {
                 let query = {
                   couponCode: extractedPromoCode,
                   expireDate: { $gte: new Date() },
