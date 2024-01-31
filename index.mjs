@@ -1183,7 +1183,6 @@ app.get(
 
 app.get(
   "/api/fastWithdrawRedeem/:withdraw_id/:transactionHash",
-  auth(),
   rewards.FastWithdrawRedeem
 );
 
