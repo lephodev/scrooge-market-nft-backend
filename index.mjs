@@ -1091,6 +1091,13 @@ const gameResultForRiskWheel = async (req, res) => {
       return res.status(400).send({ msg: "Not eleigible for Spin" });
     const resp1 = await rouletteSpin.gameResultForRiskWheel(req, user._id);
     res.status(200).send({ msg: "Success", resultData: resp1.resultData });
+
+    const {
+      resultData: { token },
+    } = resp1;
+    if (token !== "Green") {
+      rouletteSpin.updateUserDataAndTransaction(req, resp1, user);
+    }
   } catch (error) {
     return res.status(500).send({ msg: "Internal Server Error" });
   }
@@ -1123,8 +1130,11 @@ const loyalitygameResultWheel = async (req, res) => {
     if (!checkUserCanSpin(user?.lastSpinTime))
       return res.status(400).send({ msg: "Not eleigible for Spin" });
     const resp1 = await rouletteSpin.loyalitygameResultWheel(req, user._id);
+    rouletteSpin.CreateRollOver(req, resp1, user);
+    rouletteSpin.updateUserDataAndTransaction(req, resp1, user, "Loyality");
     res.status(200).send({ msg: "Success", resultData: resp1.resultData });
   } catch (error) {
+    console.log("loyalitygameResultWheel", error);
     return res.status(500).send({ msg: "Internal Server Error" });
   }
 };
@@ -1132,6 +1142,20 @@ const loyalitygameResultWheel = async (req, res) => {
 app.listen(PORT, () => {
   console.log("Server is running.", PORT);
 });
+
+// let query = {
+//   "userId._id": ObjectId("65b201afdc4d5b0f5bf4b4ee"),
+//   transactionType: "spin",
+// };
+
+// setTimeout(async () => {
+//   const getLastDaySpins = await db
+//     .get_scrooge_transactionDB()
+//     .find(query)
+//     .toArray();
+
+//   console.log("getLastDaySpin", getLastDaySpins);
+// }, 20000);
 
 // const reciptPayload = {
 //   username: "jivan",
