@@ -21,7 +21,7 @@ export const RiskWheelPlaces = [
   { token: "Red7", chances: 10.5 },
   { token: "Red8", chances: 10.5 },
   { token: "Red9", chances: 10.5 },
-  { token: "Green", chances: 100 },
+  { token: "Green", chances: 5.5 },
 ];
 
 export const BigWheelPlaces = [

@@ -165,6 +165,22 @@ export async function updateUserDataAndTransaction(req, responseData, user) {
   try {
     const { resultData, gameModelData } = responseData;
 
+    const { token } = resultData;
+    console.log("resultData", resultData);
+    if (
+      token === "Red1" ||
+      token === "Red2" ||
+      token === "Red3" ||
+      token === "Red4" ||
+      token === "Red5" ||
+      token === "Red6" ||
+      token === "Red7" ||
+      token === "Red8" ||
+      token === "Red9"
+    ) {
+      resultData.token = 0;
+    }
+
     console.log("responseData", responseData);
 
     const { _id, username, email, firstName, lastName, profile, ipAddress } =
@@ -207,6 +223,7 @@ export async function updateUserDataAndTransaction(req, responseData, user) {
             },
           }
         ),
+
         db.get_scrooge_spinGameDB().insert({
           ...gameModelData,
           createdAt: new Date(),
@@ -215,6 +232,49 @@ export async function updateUserDataAndTransaction(req, responseData, user) {
       ],
       db.get_scrooge_transactionDB().insertOne(payload)
     );
+
+    let query = {
+      "userId._id": ObjectId(req.user._id),
+      transactionType: "spin",
+    };
+
+    const getLastDaySpin = await db
+      .get_scrooge_transactionDB()
+      .findOne(query, { sort: { _id: -1 } });
+
+    if (getLastDaySpin) {
+      const prevDt = new Date();
+      prevDt.setDate(prevDt.getDate() - 1);
+      prevDt.setHours(0, 0, 0, 0);
+      console.log(
+        "preDtTime ==>",
+        prevDt.getTime(),
+        "spin time ==>",
+        new Date(getLastDaySpin.createdAt).getTime(),
+        prevDt.getTime() <= new Date(getLastDaySpin.createdAt).getTime()
+      );
+      if (prevDt.getTime() <= new Date(getLastDaySpin.createdAt).getTime()) {
+        await db.get_scrooge_usersDB().updateOne(
+          { _id: ObjectId(req.user._id) },
+          {
+            $inc: {
+              loyalitySpinCount: 1,
+            },
+          }
+        );
+      } else {
+        await db.get_scrooge_usersDB().updateOne(
+          { _id: ObjectId(req.user._id) },
+          {
+            $set: {
+              loyalitySpinCount: 0,
+            },
+          }
+        );
+      }
+    }
+
+    // console.log("getLastDaySpin", getLastDaySpin);
   } catch (error) {
     console.log("error", error);
   }
