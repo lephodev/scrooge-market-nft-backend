@@ -45,9 +45,11 @@ export async function addChips(
   transactionType,
   gc = 0,
   recipt = {},
-  bonusToken
+  bonusToken,
+  prchAmt
 ) {
   console.log("bonusToken", bonusToken);
+  const multiplier = getRolloverMultiplier(Math.floor(prchAmt));
   try {
     let query = {};
     // For Rollover
@@ -59,13 +61,25 @@ export async function addChips(
         nonWithdrawableAmt: _qty,
       };
     } else {
-      query = {
-        goldCoin: gc,
-        wallet: _qty,
-        dailySpinBonus: _qty - bonusToken,
-        nonWithdrawableAmt: _qty,
-        monthlyClaimBonus: bonusToken,
-      };
+      console.log("prchAmt", Math.floor(prchAmt));
+
+      if (prchAmt > 10) {
+        query = {
+          goldCoin: gc,
+          wallet: _qty,
+          dailySpinBonus: _qty - bonusToken,
+          nonWithdrawableAmt: _qty,
+          monthlyClaimBonus: bonusToken,
+        };
+      } else {
+        query = {
+          goldCoin: gc,
+          wallet: _qty,
+          dailySpinBonus: _qty,
+          nonWithdrawableAmt: _qty,
+          // monthlyClaimBonus: bonusToken,
+        };
+      }
     }
     console.log("query", query);
     const { value: user } = await db.get_scrooge_usersDB().findOneAndUpdate(
@@ -75,7 +89,7 @@ export async function addChips(
       },
       { new: true }
     );
-    if (bonusToken > 0) {
+    if (bonusToken > 0 && multiplier > 1) {
       const exprDate = new Date();
       exprDate.setHours(24 * 30 + exprDate.getHours());
       exprDate.setSeconds(0);
@@ -86,8 +100,8 @@ export async function addChips(
         bonusType: "monthly",
         bonusAmount: bonusToken,
         bonusExpirationTime: exprDate,
-        wagerLimit: bonusToken * 10,
-        rollOverTimes: 10,
+        wagerLimit: bonusToken * multiplier,
+        rollOverTimes: multiplier,
         createdAt: new Date(),
         updatedAt: new Date(),
         isExpired: false,
@@ -188,6 +202,18 @@ export async function addChips(
     return { code: 400, message: "token buy faild" };
   }
 }
+
+const getRolloverMultiplier = (prchAmt) => {
+  if (Math.floor(prchAmt) === 25) {
+    return 4;
+  } else if (Math.floor(prchAmt) == 50) {
+    return 6;
+  } else if (Math.floor(prchAmt) == 100) {
+    return 10;
+  } else {
+    return 1;
+  }
+};
 
 export async function getNextClaimDate(req, res) {
   let resp;
@@ -1594,7 +1620,8 @@ export async function convertCryptoToGoldCoin(req, res) {
             (parseFloat(findPromoData?.discountInPercent) / 100)
         : findPromoData?.coupanType === "2X"
         ? parseInt(data.freeTokenAmount)
-        : 0
+        : 0,
+      amt
     );
     const reciptPayload = {
       username: username,
