@@ -45,11 +45,9 @@ export async function addChips(
   transactionType,
   gc = 0,
   recipt = {},
-  bonusToken,
-  prchAmt
+  bonusToken
 ) {
   console.log("bonusToken", bonusToken);
-  const multiplier = getRolloverMultiplier(Math.floor(prchAmt));
   try {
     let query = {};
     // For Rollover
@@ -61,28 +59,13 @@ export async function addChips(
         nonWithdrawableAmt: _qty,
       };
     } else {
-      console.log("prchAmt", Math.floor(prchAmt));
-
-      if(prchAmt > 10){
-        query = {
-          goldCoin: gc,
-          wallet: _qty,
-          dailySpinBonus: _qty - bonusToken,
-          nonWithdrawableAmt: _qty,
-          monthlyClaimBonus: bonusToken,
-        };
-      }else{
-        query = {
-          goldCoin: gc,
-          wallet: _qty,
-          dailySpinBonus: _qty,
-          nonWithdrawableAmt: _qty,
-          // monthlyClaimBonus: bonusToken,
-        };
-      }
-
-      
-
+      query = {
+        goldCoin: gc,
+        wallet: _qty,
+        dailySpinBonus: _qty - bonusToken,
+        nonWithdrawableAmt: _qty,
+        monthlyClaimBonus: bonusToken,
+      };
     }
     console.log("query", query);
     const { value: user } = await db.get_scrooge_usersDB().findOneAndUpdate(
@@ -92,7 +75,7 @@ export async function addChips(
       },
       { new: true }
     );
-    if (bonusToken > 0 && multiplier > 1) {
+    if (bonusToken > 0) {
       const exprDate = new Date();
       exprDate.setHours(24 * 30 + exprDate.getHours());
       exprDate.setSeconds(0);
@@ -103,8 +86,8 @@ export async function addChips(
         bonusType: "monthly",
         bonusAmount: bonusToken,
         bonusExpirationTime: exprDate,
-        wagerLimit: bonusToken * multiplier,
-        rollOverTimes: multiplier,
+        wagerLimit: bonusToken * 10,
+        rollOverTimes: 10,
         createdAt: new Date(),
         updatedAt: new Date(),
         isExpired: false,
@@ -203,18 +186,6 @@ export async function addChips(
   } catch (error) {
     console.log("errrr", error);
     return { code: 400, message: "token buy faild" };
-  }
-}
-
-const getRolloverMultiplier = (prchAmt)=>{
-  if(Math.floor(prchAmt) === 25){
-    return 4
-  }else if(Math.floor(prchAmt) == 50){
-    return 6;
-  }else if(Math.floor(prchAmt) == 100){
-    return 10;
-  }else{
-    return 1;
   }
 }
 
@@ -1024,7 +995,7 @@ export async function redeemPrize(req, res) {
                   lastName,
                   profile,
                   ipAddress,
-                  refrenceId,
+                  // refrenceId,
                 },
                 // updatedTicket: getUserData?.ticket,
 
@@ -1047,7 +1018,13 @@ export async function redeemPrize(req, res) {
                 .catch((e) => {
                   console.log("e", e);
                 });
-              emailSend.ApproveRedeemRequestEmail(email, username, hash, from);
+              emailSend.ApproveRedeemRequestEmail(
+                email,
+                prize_price,
+                username,
+                hash,
+                from
+              );
 
               if (refrenceId) {
                 let getUserdetails = await db
@@ -1617,7 +1594,7 @@ export async function convertCryptoToGoldCoin(req, res) {
             (parseFloat(findPromoData?.discountInPercent) / 100)
         : findPromoData?.coupanType === "2X"
         ? parseInt(data.freeTokenAmount)
-        : 0, amt
+        : 0
     );
     const reciptPayload = {
       username: username,
@@ -2037,7 +2014,7 @@ export async function WithdrawRequest(req, res) {
   console.log("updtdUser===>>>", updtdUser);
   let user_id = updtdUser?._id;
   // let token = updtdUser?.wallet;
-  let totalwallet = updtdUser?.wallet - updtdUser?.nonWithdrawableAmt;
+  let totalwallet = updtdUser?.wallet;
 
   // console.log("token--->>>", token);
 
@@ -2142,7 +2119,7 @@ export async function FastWithdrawRequest(req, res) {
   console.log("updtdUser===>>>", updtdUser);
   let user_id = updtdUser?._id;
   // let token = updtdUser?.wallet;
-  let totalwallet = updtdUser?.wallet - updtdUser?.nonWithdrawableAmt;
+  let totalwallet = updtdUser?.wallet;
 
   // console.log("token--->>>", token);
 
@@ -2559,5 +2536,33 @@ export async function FastWithdrawRedeem(req, res) {
     return res
       .status(500)
       .send({ success: false, message: "Error in Request Process" });
+  }
+}
+
+export async function getWeeklyWheel(req, res) {
+  try {
+    const { _id: userId } = req.user;
+    let query = {
+      "userId._id": ObjectId(userId),
+      transactionType: { $in: ["Crypto To Gold Coin", "CC To Gold Coin"] },
+    };
+
+    const getWeeklyPurchase = await db
+      .get_scrooge_transactionDB()
+      .findOne(query, { sort: { _id: -1 } });
+    if (getWeeklyPurchase) {
+      const prevDt = new Date();
+      prevDt.setDate(prevDt.getDate() - 6);
+      prevDt.setHours(0, 0, 0, 0);
+      if (prevDt.getTime() <= new Date(getWeeklyPurchase.createdAt).getTime()) {
+        return res.send({ success: true, isWeeklySpin: true });
+      } else {
+        return res.send({ success: false, isWeeklySpin: false });
+      }
+    }
+
+    return res.send({ success: true, userId });
+  } catch (error) {
+    console.log("error in getWeeklyWheel", error);
   }
 }

@@ -1139,6 +1139,8 @@ const loyalitygameResultWheel = async (req, res) => {
   }
 };
 
+app.get("/api/getWeeklyWheel", auth(), rewards.getWeeklyWheel);
+
 app.listen(PORT, () => {
   console.log("Server is running.", PORT);
 });
