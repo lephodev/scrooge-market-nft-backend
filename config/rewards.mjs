@@ -63,7 +63,7 @@ export async function addChips(
     } else {
       console.log("prchAmt", Math.floor(prchAmt));
 
-      if(prchAmt > 10){
+      if (prchAmt > 10) {
         query = {
           goldCoin: gc,
           wallet: _qty,
@@ -71,7 +71,7 @@ export async function addChips(
           nonWithdrawableAmt: _qty,
           monthlyClaimBonus: bonusToken,
         };
-      }else{
+      } else {
         query = {
           goldCoin: gc,
           wallet: _qty,
@@ -80,9 +80,6 @@ export async function addChips(
           // monthlyClaimBonus: bonusToken,
         };
       }
-
-      
-
     }
     console.log("query", query);
     const { value: user } = await db.get_scrooge_usersDB().findOneAndUpdate(
@@ -206,17 +203,17 @@ export async function addChips(
   }
 }
 
-const getRolloverMultiplier = (prchAmt)=>{
-  if(Math.floor(prchAmt) === 25){
-    return 4
-  }else if(Math.floor(prchAmt) == 50){
+const getRolloverMultiplier = (prchAmt) => {
+  if (Math.floor(prchAmt) === 25) {
+    return 4;
+  } else if (Math.floor(prchAmt) == 50) {
     return 6;
-  }else if(Math.floor(prchAmt) == 100){
+  } else if (Math.floor(prchAmt) == 100) {
     return 10;
-  }else{
+  } else {
     return 1;
   }
-}
+};
 
 export async function getNextClaimDate(req, res) {
   let resp;
@@ -1024,7 +1021,7 @@ export async function redeemPrize(req, res) {
                   lastName,
                   profile,
                   ipAddress,
-                  refrenceId,
+                  // refrenceId,
                 },
                 // updatedTicket: getUserData?.ticket,
 
@@ -1047,7 +1044,13 @@ export async function redeemPrize(req, res) {
                 .catch((e) => {
                   console.log("e", e);
                 });
-              emailSend.ApproveRedeemRequestEmail(email, username, hash, from);
+              emailSend.ApproveRedeemRequestEmail(
+                email,
+                prize_price,
+                username,
+                hash,
+                from
+              );
 
               if (refrenceId) {
                 let getUserdetails = await db
@@ -1617,7 +1620,8 @@ export async function convertCryptoToGoldCoin(req, res) {
             (parseFloat(findPromoData?.discountInPercent) / 100)
         : findPromoData?.coupanType === "2X"
         ? parseInt(data.freeTokenAmount)
-        : 0, amt
+        : 0,
+      amt
     );
     const reciptPayload = {
       username: username,
@@ -2037,7 +2041,7 @@ export async function WithdrawRequest(req, res) {
   console.log("updtdUser===>>>", updtdUser);
   let user_id = updtdUser?._id;
   // let token = updtdUser?.wallet;
-  let totalwallet = updtdUser?.wallet - updtdUser?.nonWithdrawableAmt;
+  let totalwallet = updtdUser?.wallet;
 
   // console.log("token--->>>", token);
 
@@ -2142,7 +2146,7 @@ export async function FastWithdrawRequest(req, res) {
   console.log("updtdUser===>>>", updtdUser);
   let user_id = updtdUser?._id;
   // let token = updtdUser?.wallet;
-  let totalwallet = updtdUser?.wallet - updtdUser?.nonWithdrawableAmt;
+  let totalwallet = updtdUser?.wallet;
 
   // console.log("token--->>>", token);
 
@@ -2559,5 +2563,33 @@ export async function FastWithdrawRedeem(req, res) {
     return res
       .status(500)
       .send({ success: false, message: "Error in Request Process" });
+  }
+}
+
+export async function getWeeklyWheel(req, res) {
+  try {
+    const { _id: userId } = req.user;
+    let query = {
+      "userId._id": ObjectId(userId),
+      transactionType: { $in: ["Crypto To Gold Coin", "CC To Gold Coin"] },
+    };
+
+    const getWeeklyPurchase = await db
+      .get_scrooge_transactionDB()
+      .findOne(query, { sort: { _id: -1 } });
+    if (getWeeklyPurchase) {
+      const prevDt = new Date();
+      prevDt.setDate(prevDt.getDate() - 6);
+      prevDt.setHours(0, 0, 0, 0);
+      if (prevDt.getTime() <= new Date(getWeeklyPurchase.createdAt).getTime()) {
+        return res.send({ success: true, isWeeklySpin: true });
+      } else {
+        return res.send({ success: false, isWeeklySpin: false });
+      }
+    }
+
+    return res.send({ success: true, userId });
+  } catch (error) {
+    console.log("error in getWeeklyWheel", error);
   }
 }
