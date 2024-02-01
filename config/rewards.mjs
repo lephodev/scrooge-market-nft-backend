@@ -63,7 +63,7 @@ export async function addChips(
     } else {
       console.log("prchAmt", Math.floor(prchAmt));
 
-      if(prchAmt > 10){
+      if (prchAmt > 10) {
         query = {
           goldCoin: gc,
           wallet: _qty,
@@ -71,7 +71,7 @@ export async function addChips(
           nonWithdrawableAmt: _qty,
           monthlyClaimBonus: bonusToken,
         };
-      }else{
+      } else {
         query = {
           goldCoin: gc,
           wallet: _qty,
@@ -80,9 +80,6 @@ export async function addChips(
           // monthlyClaimBonus: bonusToken,
         };
       }
-
-      
-
     }
     console.log("query", query);
     const { value: user } = await db.get_scrooge_usersDB().findOneAndUpdate(
@@ -147,6 +144,8 @@ export async function addChips(
         updatedAt: new Date(),
         transactionDetails: recipt,
         prevTicket: user.ticket,
+        purchasedAmountInUSD: prchAmt,
+        purchasedToken: _qty,
       };
       const trans_id = await db
         .get_scrooge_transactionDB()
@@ -206,17 +205,17 @@ export async function addChips(
   }
 }
 
-const getRolloverMultiplier = (prchAmt)=>{
-  if(Math.floor(prchAmt) === 25){
-    return 4
-  }else if(Math.floor(prchAmt) == 50){
+const getRolloverMultiplier = (prchAmt) => {
+  if (Math.floor(prchAmt) === 25) {
+    return 4;
+  } else if (Math.floor(prchAmt) == 50) {
     return 6;
-  }else if(Math.floor(prchAmt) == 100){
+  } else if (Math.floor(prchAmt) == 100) {
     return 10;
-  }else{
+  } else {
     return 1;
   }
-}
+};
 
 export async function getNextClaimDate(req, res) {
   let resp;
@@ -1617,7 +1616,8 @@ export async function convertCryptoToGoldCoin(req, res) {
             (parseFloat(findPromoData?.discountInPercent) / 100)
         : findPromoData?.coupanType === "2X"
         ? parseInt(data.freeTokenAmount)
-        : 0, amt
+        : 0,
+      amt
     );
     const reciptPayload = {
       username: username,
