@@ -219,12 +219,12 @@ export function getAnAcceptPaymentPage(body, user, callback) {
 
   const customerProfileIdType = new ApiContracts.CustomerProfileIdType();
   const customerType = new ApiContracts.CustomerType();
+  var billTo = new ApiContracts.CustomerAddressType();
 
   const concatenatedEmail = `${user?._id}_${body?.promoCode}_${user?.refrenceId}`;
 
   customerType.setEmail(concatenatedEmail); // set from  user middle ware email
-  customerType.firstName(user.username); // set from  user middle ware email
-  customerType.lastName(user.username); // set from  user middle ware email
+  billTo.firstName(user.username); // set from  user middle ware email
 
   transactionRequestType.setCustomer(customerType);
   transactionRequestType.setProfile(customerProfileIdType);
