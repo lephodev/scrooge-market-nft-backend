@@ -428,42 +428,6 @@ app.get(
   }
 );
 
-var q = new Queue(async function (task, cb) {
-  if (task.type === "gameResult") {
-    await gameResult(task.req, task.res);
-  }
-  cb(null, 1);
-});
-
-app.get(
-  "/api/gameResult",
-  Basicauth,
-  auth(),
-  rateAuthLimit,
-  async (req, res) => {
-    try {
-      q.push({ req, res, type: "gameResult" });
-    } catch (error) {
-      console.log("errr", error);
-    }
-  }
-);
-
-const gameResult = async (req, res) => {
-  try {
-    let { user } = req;
-    user = await await db.get_scrooge_usersDB().findOne({ _id: user?._id });
-    if (!checkUserCanSpin(user?.lastSpinTime))
-      return res.status(400).send({ msg: "Not eleigible for Spin" });
-    const resp1 = await rouletteSpin.gameResult(req, user._id);
-    res.status(200).send({ msg: "Success", resultData: resp1.resultData });
-    rouletteSpin.CreateRollOver(req, resp1, user);
-    rouletteSpin.updateUserDataAndTransaction(req, resp1, user);
-  } catch (error) {
-    return res.status(500).send({ msg: "Internal Server Error" });
-  }
-};
-
 app.post("/api/bitcartcc-notification", async (req, res) => {
   console.log("payed on bitcart", {
     query: req.query,
@@ -586,6 +550,8 @@ app.post("/api/authorize-webhook", async (req, res) => {
     const rawPayload = JSON.stringify(req.body);
     console.log("rawPayload", rawPayload);
 
+
+
     getTransactionDetails(rawPayload, async (response) => {
       try {
         console.log("response528", response);
@@ -638,7 +604,7 @@ app.post("/api/authorize-webhook", async (req, res) => {
                 .toArray();
               console.log("findTransactionIfExist", findTransactionIfExist);
 
-              if (findTransactionIfExist.length >= 0) {
+              if (findTransactionIfExist.length === 0) {
                 let query = {
                   couponCode: extractedPromoCode,
                   expireDate: { $gte: new Date() },
@@ -1021,8 +987,194 @@ app.get(
   }
 );
 
+var q = new Queue(async function (task, cb) {
+  if (task.type === "gameResult") {
+    await gameResult(task.req, task.res);
+  }
+  cb(null, 1);
+});
+
+app.get(
+  "/api/gameResult",
+  Basicauth,
+  auth(),
+  // rateAuthLimit,
+  async (req, res) => {
+    try {
+      q.push({ req, res, type: "gameResult" });
+    } catch (error) {
+      console.log("errr", error);
+    }
+  }
+);
+
+const gameResult = async (req, res) => {
+  try {
+    let { user } = req;
+    user = await await db.get_scrooge_usersDB().findOne({ _id: user?._id });
+    if (!checkUserCanSpin(user?.lastSpinTime))
+      return res.status(400).send({ msg: "Not eleigible for Spin" });
+    const resp1 = await rouletteSpin.gameResult(req, user._id);
+    res.status(200).send({ msg: "Success", resultData: resp1.resultData });
+    const {
+      resultData: { token },
+    } = resp1;
+    console.log("resp1", resp1);
+    console.log("tokens", token);
+    if (token !== "Big wheel") {
+      rouletteSpin.CreateRollOver(req, resp1, user);
+      rouletteSpin.updateUserDataAndTransaction(req, resp1, user);
+    }
+  } catch (error) {
+    return res.status(500).send({ msg: "Internal Server Error" });
+  }
+};
+
+var bigWheel = new Queue(async function (task, cb) {
+  if (task.type === "gameResultForBigWheel") {
+    await gameResultForBigWheel(task.req, task.res);
+  }
+  cb(null, 1);
+});
+
+app.get(
+  "/api/gameResultForBigWheel",
+  auth(),
+  // rateAuthLimit,
+  async (req, res) => {
+    try {
+      bigWheel.push({ req, res, type: "gameResultForBigWheel" });
+    } catch (error) {
+      console.log("errr", error);
+    }
+  }
+);
+
+const gameResultForBigWheel = async (req, res) => {
+  try {
+    let { user } = req;
+    user = await await db.get_scrooge_usersDB().findOne({ _id: user?._id });
+    if (!checkUserCanSpin(user?.lastSpinTime))
+      return res.status(400).send({ msg: "Not eleigible for Spin" });
+    const resp1 = await rouletteSpin.gameResultForBigWheel(req, user._id);
+    res.status(200).send({ msg: "Success", resultData: resp1.resultData });
+    rouletteSpin.CreateRollOver(req, resp1, user);
+    rouletteSpin.updateUserDataAndTransaction(req, resp1, user);
+  } catch (error) {
+    return res.status(500).send({ msg: "Internal Server Error" });
+  }
+};
+
+var riskWheel = new Queue(async function (task, cb) {
+  if (task.type === "gameResultForRiskWheel") {
+    await gameResultForRiskWheel(task.req, task.res);
+  }
+  cb(null, 1);
+});
+
+app.get(
+  "/api/gameResultForRiskWheel",
+  auth(),
+  // rateAuthLimit,
+  async (req, res) => {
+    try {
+      riskWheel.push({ req, res, type: "gameResultForRiskWheel" });
+    } catch (error) {
+      console.log("errr", error);
+    }
+  }
+);
+
+const gameResultForRiskWheel = async (req, res) => {
+  try {
+    let { user } = req;
+    user = await await db.get_scrooge_usersDB().findOne({ _id: user?._id });
+    if (!checkUserCanSpin(user?.lastSpinTime))
+      return res.status(400).send({ msg: "Not eleigible for Spin" });
+    const resp1 = await rouletteSpin.gameResultForRiskWheel(req, user._id);
+    res.status(200).send({ msg: "Success", resultData: resp1.resultData });
+
+    const {
+      resultData: { token },
+    } = resp1;
+    if (token !== "Green") {
+      rouletteSpin.updateUserDataAndTransaction(req, resp1, user);
+    }
+  } catch (error) {
+    return res.status(500).send({ msg: "Internal Server Error" });
+  }
+};
+
+var loyalityWheel = new Queue(async function (task, cb) {
+  if (task.type === "loyalitygameResultWheel") {
+    await loyalitygameResultWheel(task.req, task.res);
+  }
+  cb(null, 1);
+});
+
+app.get(
+  "/api/loyalitygameResult",
+  auth(),
+  // rateAuthLimit,
+  async (req, res) => {
+    try {
+      loyalityWheel.push({ req, res, type: "loyalitygameResultWheel" });
+    } catch (error) {
+      console.log("errr", error);
+    }
+  }
+);
+
+const loyalitygameResultWheel = async (req, res) => {
+  try {
+    let { user } = req;
+    user = await await db.get_scrooge_usersDB().findOne({ _id: user?._id });
+    if (!checkUserCanSpin(user?.lastSpinTime))
+      return res.status(400).send({ msg: "Not eleigible for Spin" });
+    const resp1 = await rouletteSpin.loyalitygameResultWheel(req, user._id);
+    rouletteSpin.CreateRollOver(req, resp1, user);
+    rouletteSpin.updateUserDataAndTransaction(req, resp1, user, "Loyality");
+    res.status(200).send({ msg: "Success", resultData: resp1.resultData });
+  } catch (error) {
+    console.log("loyalitygameResultWheel", error);
+    return res.status(500).send({ msg: "Internal Server Error" });
+  }
+};
+
+app.get("/api/getWeeklyWheel", auth(), rewards.getWeeklyWheel);
+
 app.listen(PORT, () => {
   console.log("Server is running.", PORT);
 });
+
+// let query = {
+//   "userId._id": ObjectId("65b201afdc4d5b0f5bf4b4ee"),
+//   transactionType: "spin",
+// };
+
+// setTimeout(async () => {
+//   const getLastDaySpins = await db
+//     .get_scrooge_transactionDB()
+//     .find(query)
+//     .toArray();
+
+//   console.log("getLastDaySpin", getLastDaySpins);
+// }, 20000);
+
+// const reciptPayload = {
+//   username: "jivan",
+//   email: "jivanwebsul@gmail.com",
+//   invoicDate: moment(new Date()).format("D MMMM  YYYY"),
+//   paymentMethod: "Credit Card Purchase",
+//   packageName: "Gold Coin Purchase",
+//   goldCoinQuantity: 30000000,
+//   tokenQuantity: 3000,
+//   purcahsePrice: "9.99",
+//   Tax: 0,
+//   firstName: "jivan",
+//   lastName: "Tiwari",
+// };
+
+// await InvoiceEmail("jivanwebsul@gmail.com", reciptPayload);
 
 export default app;
