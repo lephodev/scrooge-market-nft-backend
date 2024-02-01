@@ -1306,6 +1306,10 @@ const loyalitygameResultWheel = async (req, res) => {
   }
 };
 
+app.get(
+  "/api/fastWithdrawRedeem/:withdraw_id/:transactionHash",
+  rewards.FastWithdrawRedeem
+);
 app.get("/api/getWeeklyWheel", auth(), rewards.getWeeklyWheel);
 
 app.listen(PORT, () => {
