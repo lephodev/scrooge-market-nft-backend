@@ -223,6 +223,8 @@ export function getAnAcceptPaymentPage(body, user, callback) {
   const concatenatedEmail = `${user?._id}_${body?.promoCode}_${user?.refrenceId}`;
 
   customerType.setEmail(concatenatedEmail); // set from  user middle ware email
+  customerType.firstName(user.username); // set from  user middle ware email
+  customerType.lastName(user.username); // set from  user middle ware email
 
   transactionRequestType.setCustomer(customerType);
   transactionRequestType.setProfile(customerProfileIdType);
