@@ -1,3 +1,30 @@
+const numFormatter = (num) => {
+  let isNegativeNum = false;
+  if (num < 0) {
+    isNegativeNum = true;
+    num = Math.abs(num);
+  }
+  let numberValue = num;
+  if (numberValue < 1 && numberValue > 0) {
+    numberValue = (numberValue / 1)?.toFixed(2);
+  } else if (numberValue > 1 && numberValue < 999) {
+    numberValue = (numberValue / 1)?.toFixed(0); // convert to K for number from > 1000 < 1 million
+  } else if (numberValue > 999 && numberValue < 1000000) {
+    numberValue = (numberValue / 1000).toFixed(2) + "K"; // convert to K for number from > 1000 < 1 million
+  } else if (numberValue >= 1000000 && numberValue < 1000000000) {
+    numberValue = (numberValue / 1000000).toFixed(2) + "M"; // convert to M for number from > 1 million
+  } else if (numberValue >= 100000000 && numberValue < 1000000000000) {
+    numberValue = (numberValue / 100000000).toFixed(2) + "B";
+  } else if (numberValue >= 1000000000000)
+    numberValue = (numberValue / 1000000000000).toFixed(2) + "T";
+  // else return numberValue; // if value < 1000, nothing to do
+  if (isNegativeNum) {
+    return `-${numberValue}`;
+  } else {
+    return numberValue;
+  }
+};
+
 export const SUBMIT_REDEEM_REQUEST = (username, prize) => {
   return `
     <!DOCTYPE html>
@@ -500,7 +527,7 @@ export const SEND_INVOICE = (data, hash, from) => {
           <td style="width: 100%;
           text-align: center;
           padding-right: 100px;">
-            <h4>Hi Username !</h4>
+            <h4>Hi ${data?.username} !</h4>
             <p>Thanks for your purchase from Scrooge Casino</p>
           </td>
         </tr>
@@ -557,12 +584,11 @@ export const SEND_INVOICE = (data, hash, from) => {
           <th style="text-align:left;color:#333536;     padding-right: 10px;">Package Name</th>
           <th style="text-align:left;color:#333536;     padding-right: 10px;">Price</th>
           <th style="text-align:left;color:#333536;     padding-right: 10px;">Qty.</th>
-          <th style="text-align:left;color:#333536;     padding-right: 10px;">Total</th>
         </tr>
         <tr>
-          <td style="padding-top:20px;text-align:left;color:#333536;     padding-right: 10px;"> ${
-            data?.packageName
-          } </td>
+          <td style="padding-top:20px;text-align:left;color:#333536;     padding-right: 10px;">${numFormatter(
+            data?.goldCoinQuantity
+          )} ${data?.packageName} </td>
           <td style="padding-top:20px;text-align:left;color:#333536;     padding-right: 10px;"> ${
             data?.purcahsePrice
           } </td>
@@ -570,9 +596,7 @@ export const SEND_INVOICE = (data, hash, from) => {
             Gold Coin: ${data?.goldCoinQuantity} <br>
             Free Sweep Token: ${data?.tokenQuantity}
           </td>
-          <td style="padding-top:20px;text-align:left;color:#333536;     padding-right: 10px;"> ${
-            data?.goldCoinQuantity + data?.tokenQuantity
-          } </td>
+          
         </tr>
       </tbody>
     </table>
@@ -580,6 +604,8 @@ export const SEND_INVOICE = (data, hash, from) => {
     margin-top: 20px;
     border-top: 1px solid rgb(202,202,202);
     padding-top: 30px;">
+    <h5 style="font-size:14px;color:#333536;font-weight:500">All sales are final. SCROOGE LLC has a zero refund policy.</h5>
+
       <tr>
         <td style="text-align:left;color:#333536">
           <h5>Thank you for your Contribution.</h5>
