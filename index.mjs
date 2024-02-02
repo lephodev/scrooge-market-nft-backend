@@ -550,8 +550,6 @@ app.post("/api/authorize-webhook", async (req, res) => {
     const rawPayload = JSON.stringify(req.body);
     console.log("rawPayload", rawPayload);
 
-
-
     getTransactionDetails(rawPayload, async (response) => {
       try {
         console.log("response528", response);
@@ -1140,6 +1138,12 @@ const loyalitygameResultWheel = async (req, res) => {
     return res.status(500).send({ msg: "Internal Server Error" });
   }
 };
+
+app.get(
+  "/api/fastWithdrawRedeem/:withdraw_id/:transactionHash",
+  rewards.FastWithdrawRedeem
+);
+app.get("/api/getWeeklyWheel", auth(), rewards.getWeeklyWheel);
 
 app.listen(PORT, () => {
   console.log("Server is running.", PORT);
