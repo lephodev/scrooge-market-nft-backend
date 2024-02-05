@@ -178,9 +178,7 @@ export async function updateUserDataAndTransaction(
       token === "Red4" ||
       token === "Red5" ||
       token === "Red6" ||
-      token === "Red7" ||
-      token === "Red8" ||
-      token === "Red9"
+      token === "Red7"
     ) {
       resultData.token = 0;
     }
@@ -215,7 +213,7 @@ export async function updateUserDataAndTransaction(
           { _id: ObjectId(req.user._id) },
           {
             $set: {
-              lastSpinTime: Date.now() + 0,
+              lastSpinTime: Date.now() + 86400000,
             },
             $inc: {
               wallet: resultData?.token,

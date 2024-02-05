@@ -1095,8 +1095,10 @@ const gameResultForRiskWheel = async (req, res) => {
     const {
       resultData: { token },
     } = resp1;
-    if (token !== "Green") {
+    console.log("tokentokentoken", token);
+    if (token !== "Green1" && token !== "Green2" && token !== "Green3") {
       rouletteSpin.updateUserDataAndTransaction(req, resp1, user);
+      console.log("helloooo");
     }
   } catch (error) {
     return res.status(500).send({ msg: "Internal Server Error" });
