@@ -1,7 +1,12 @@
 import { ObjectId } from "mongodb";
 import * as db from "../config/mongodb.mjs";
 import spinGameModel from "../models/spinGameModel.mjs";
-import { places } from "./roulleteArray.mjs";
+import {
+  BigWheelPlaces,
+  LoyaltyWheelPlaces,
+  RiskWheelPlaces,
+  places,
+} from "./roulleteArray.mjs";
 import { generateServerSeed, verifyResult } from "./rouletteUtils.mjs";
 
 export async function gameResult(req, userId) {
@@ -42,11 +47,147 @@ export async function gameResult(req, userId) {
   }
 }
 
-export async function updateUserDataAndTransaction(req, responseData, user) {
+export async function gameResultForRiskWheel(req, userId) {
+  try {
+    const { clientSeed } = req.query;
+    let container = [];
+    RiskWheelPlaces.forEach((el) => {
+      for (let i = 0.0; i < el.chances; i = i + 0.1) {
+        container.push(el);
+      }
+    });
+    let nonce = await db.get_scrooge_spinGameDB().countDocuments({ userId });
+    if (!nonce) nonce = 0;
+    const serverSeed = generateServerSeed();
+    const resultIndex = verifyResult(
+      serverSeed,
+      clientSeed,
+      nonce + 1,
+      container.length
+    );
+    const resultData = container[resultIndex];
+    return {
+      code: 200,
+      resultData,
+      gameModelData: {
+        serverSeed,
+        clientSeed,
+        nonce: nonce + 1,
+        userId,
+        resultIndex,
+        rouletteItems: places,
+        containerLength: container.length,
+        winItem: resultData,
+      },
+    };
+  } catch (error) {
+    console.log("error", error);
+  }
+}
+
+export async function gameResultForBigWheel(req, userId) {
+  try {
+    const { clientSeed } = req.query;
+    let container = [];
+    BigWheelPlaces.forEach((el) => {
+      for (let i = 0.0; i < el.chances; i = i + 0.1) {
+        container.push(el);
+      }
+    });
+    let nonce = await db.get_scrooge_spinGameDB().countDocuments({ userId });
+    if (!nonce) nonce = 0;
+    const serverSeed = generateServerSeed();
+    const resultIndex = verifyResult(
+      serverSeed,
+      clientSeed,
+      nonce + 1,
+      container.length
+    );
+    const resultData = container[resultIndex];
+    return {
+      code: 200,
+      resultData,
+      gameModelData: {
+        serverSeed,
+        clientSeed,
+        nonce: nonce + 1,
+        userId,
+        resultIndex,
+        rouletteItems: places,
+        containerLength: container.length,
+        winItem: resultData,
+      },
+    };
+  } catch (error) {
+    console.log("error", error);
+  }
+}
+
+export async function loyalitygameResultWheel(req, userId) {
+  try {
+    const { clientSeed } = req.query;
+    let container = [];
+    LoyaltyWheelPlaces.forEach((el) => {
+      for (let i = 0.0; i < el.chances; i = i + 0.1) {
+        container.push(el);
+      }
+    });
+    let nonce = await db.get_scrooge_spinGameDB().countDocuments({ userId });
+    if (!nonce) nonce = 0;
+    const serverSeed = generateServerSeed();
+    const resultIndex = verifyResult(
+      serverSeed,
+      clientSeed,
+      nonce + 1,
+      container.length
+    );
+    const resultData = container[resultIndex];
+    return {
+      code: 200,
+      resultData,
+      gameModelData: {
+        serverSeed,
+        clientSeed,
+        nonce: nonce + 1,
+        userId,
+        resultIndex,
+        rouletteItems: places,
+        containerLength: container.length,
+        winItem: resultData,
+      },
+    };
+  } catch (error) {
+    console.log("error", error);
+  }
+}
+
+export async function updateUserDataAndTransaction(
+  req,
+  responseData,
+  user,
+  type
+) {
   try {
     const { resultData, gameModelData } = responseData;
+
+    const { token } = resultData;
+    if (
+      token === "Red1" ||
+      token === "Red2" ||
+      token === "Red3" ||
+      token === "Red4" ||
+      token === "Red5" ||
+      token === "Red6" ||
+      token === "Red7" ||
+      token === "Red8" ||
+      token === "Red9"
+    ) {
+      resultData.token = 0;
+    }
+
     const { _id, username, email, firstName, lastName, profile, ipAddress } =
       user;
+
     const payload = {
       userId: {
         _id,
@@ -60,15 +201,15 @@ export async function updateUserDataAndTransaction(req, responseData, user) {
       transactionType: "spin",
       status: "spin-win",
       prevWallet: user.wallet,
-      previousTickets: user.ticket,
       prevGoldCoin: user.goldCoin,
-      updatedGoldCoin: user.goldCoin + resultData?.gc,
+      updatedGoldCoin: user?.goldCoin,
       updatedWallet: user.wallet + resultData?.token,
-      updatedTicket: user.ticket,
-      amount: resultData?.gc + resultData?.token,
+      amount: resultData?.token,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
+
+    console.log("payload", payload);
 
     await Promise.allSettled(
       [
@@ -80,12 +221,12 @@ export async function updateUserDataAndTransaction(req, responseData, user) {
             },
             $inc: {
               wallet: resultData?.token,
-              goldCoin: resultData?.gc,
               dailySpinBonus: resultData?.token,
               nonWithdrawableAmt: resultData?.token,
             },
           }
         ),
+
         db.get_scrooge_spinGameDB().insert({
           ...gameModelData,
           createdAt: new Date(),
@@ -94,6 +235,60 @@ export async function updateUserDataAndTransaction(req, responseData, user) {
       ],
       db.get_scrooge_transactionDB().insertOne(payload)
     );
+
+    let query = {
+      "userId._id": ObjectId(req.user._id),
+      transactionType: "spin",
+    };
+
+    const getLastDaySpin = await db
+      .get_scrooge_transactionDB()
+      .findOne(query, { sort: { _id: -1 } });
+    if (type === "Loyality") {
+      console.log("Loyality");
+      await db.get_scrooge_usersDB().updateOne(
+        { _id: ObjectId(req.user._id) },
+        {
+          $set: {
+            loyalitySpinCount: 0,
+          },
+        }
+      );
+    } else {
+      if (getLastDaySpin) {
+        const prevDt = new Date();
+        prevDt.setDate(prevDt.getDate() - 1);
+        prevDt.setHours(0, 0, 0, 0);
+        // console.log(
+        //   "preDtTime ==>",
+        //   prevDt.getTime(),
+        //   "spin time ==>",
+        //   new Date(getLastDaySpin.createdAt).getTime(),
+        //   prevDt.getTime() <= new Date(getLastDaySpin.createdAt).getTime()
+        // );
+        if (prevDt.getTime() <= new Date(getLastDaySpin.createdAt).getTime()) {
+          await db.get_scrooge_usersDB().updateOne(
+            { _id: ObjectId(req.user._id) },
+            {
+              $inc: {
+                loyalitySpinCount: 1,
+              },
+            }
+          );
+        } else {
+          await db.get_scrooge_usersDB().updateOne(
+            { _id: ObjectId(req.user._id) },
+            {
+              $set: {
+                loyalitySpinCount: 0,
+              },
+            }
+          );
+        }
+      }
+    }
+
+    // console.log("getLastDaySpin", getLastDaySpin);
   } catch (error) {
     console.log("error", error);
   }
@@ -120,7 +315,11 @@ export async function CreateRollOver(req, responseData, user) {
       createdAt: new Date(),
       updatedAt: new Date(),
       isExpired: false,
-      wageredAmount: 0
+      wageredAmount: 0,
+      subCategory: "Daily Spin",
+      restAmount: resultData?.token,
+      expiredAmount: resultData?.token,
+      executing: false,
     });
   } catch (error) {
     console.log("error", error);
