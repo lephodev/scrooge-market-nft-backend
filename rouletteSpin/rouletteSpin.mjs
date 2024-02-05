@@ -209,7 +209,11 @@ export async function updateUserDataAndTransaction(
       updatedAt: new Date(),
     };
 
-    console.log("payload", payload);
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(now.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0); // Set to midnight of the next day
+    let spinTime = tomorrow - now;
 
     await Promise.allSettled(
       [
@@ -217,7 +221,7 @@ export async function updateUserDataAndTransaction(
           { _id: ObjectId(req.user._id) },
           {
             $set: {
-              lastSpinTime: Date.now() + 86400000,
+              lastSpinTime: Date.now() + spinTime,
             },
             $inc: {
               wallet: resultData?.token,
