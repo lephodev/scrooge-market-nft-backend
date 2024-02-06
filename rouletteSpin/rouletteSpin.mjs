@@ -219,6 +219,9 @@ export async function updateUserDataAndTransaction(
     tomorrowEst.setDate(tomorrowEst.getDate() + 1);
     tomorrowEst.setHours(0, 0, 0, 0);
     let spinTime = tomorrowEst - nowEst;
+    console.log("Current date and time (EST):", nowEst);
+    console.log("Midnight of the next day (EST):", tomorrowEst);
+    console.log("Time difference (milliseconds):", spinTime);
 
     await Promise.allSettled(
       [
