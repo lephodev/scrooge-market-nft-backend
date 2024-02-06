@@ -1095,8 +1095,10 @@ const gameResultForRiskWheel = async (req, res) => {
     const {
       resultData: { token },
     } = resp1;
-    if (token !== "Green") {
+    console.log("tokentokentoken", token);
+    if (token !== "Green1" && token !== "Green2" && token !== "Green3") {
       rouletteSpin.updateUserDataAndTransaction(req, resp1, user);
+      console.log("helloooo");
     }
   } catch (error) {
     return res.status(500).send({ msg: "Internal Server Error" });
@@ -1144,6 +1146,23 @@ app.get(
   rewards.FastWithdrawRedeem
 );
 app.get("/api/getWeeklyWheel", auth(), rewards.getWeeklyWheel);
+
+const now = new Date();
+const tomorrow = new Date(now);
+tomorrow.setDate(now.getDate() + 1);
+tomorrow.setHours(0, 0, 0, 0); // Set to midnight of the next day
+
+// Convert to Eastern Standard Time (EST)
+const estOffset = -5 * 60; // EST is UTC-5
+const nowEst = new Date(now.getTime() + estOffset * 60 * 1000);
+const tomorrowEst = new Date(now.getTime() + estOffset * 60 * 1000);
+tomorrowEst.setDate(tomorrowEst.getDate() + 1);
+tomorrowEst.setHours(0, 0, 0, 0);
+let spinTime = tomorrowEst - nowEst;
+
+console.log("Current date and time (EST):", nowEst);
+console.log("Midnight of the next day (EST):", tomorrowEst);
+console.log("Time difference (milliseconds):", spinTime);
 
 app.listen(PORT, () => {
   console.log("Server is running.", PORT);

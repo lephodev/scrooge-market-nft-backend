@@ -178,9 +178,7 @@ export async function updateUserDataAndTransaction(
       token === "Red4" ||
       token === "Red5" ||
       token === "Red6" ||
-      token === "Red7" ||
-      token === "Red8" ||
-      token === "Red9"
+      token === "Red7"
     ) {
       resultData.token = 0;
     }
@@ -209,13 +207,26 @@ export async function updateUserDataAndTransaction(
       updatedAt: new Date(),
     };
 
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(now.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0); // Set to midnight of the next day
+
+    // Convert to Eastern Standard Time (EST)
+    const estOffset = -5 * 60; // EST is UTC-5
+    const nowEst = new Date(now.getTime() + estOffset * 60 * 1000);
+    const tomorrowEst = new Date(now.getTime() + estOffset * 60 * 1000);
+    tomorrowEst.setDate(tomorrowEst.getDate() + 1);
+    tomorrowEst.setHours(0, 0, 0, 0);
+    let spinTime = tomorrowEst - nowEst;
+
     await Promise.allSettled(
       [
         db.get_scrooge_usersDB().updateOne(
           { _id: ObjectId(req.user._id) },
           {
             $set: {
-              lastSpinTime: Date.now() + 86400000,
+              lastSpinTime: Date.now() + spinTime,
             },
             $inc: {
               wallet: resultData?.token,
