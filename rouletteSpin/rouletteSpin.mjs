@@ -211,7 +211,14 @@ export async function updateUserDataAndTransaction(
     const tomorrow = new Date(now);
     tomorrow.setDate(now.getDate() + 1);
     tomorrow.setHours(0, 0, 0, 0); // Set to midnight of the next day
-    let spinTime = tomorrow - now;
+
+    // Convert to Eastern Standard Time (EST)
+    const estOffset = -5 * 60; // EST is UTC-5
+    const nowEst = new Date(now.getTime() + estOffset * 60 * 1000);
+    const tomorrowEst = new Date(tomorrow.getTime() + estOffset * 60 * 1000);
+
+    let spinTime = tomorrowEst - nowEst;
+
     await Promise.allSettled(
       [
         db.get_scrooge_usersDB().updateOne(
