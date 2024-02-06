@@ -215,8 +215,9 @@ export async function updateUserDataAndTransaction(
     // Convert to Eastern Standard Time (EST)
     const estOffset = -5 * 60; // EST is UTC-5
     const nowEst = new Date(now.getTime() + estOffset * 60 * 1000);
-    const tomorrowEst = new Date(tomorrow.getTime() + estOffset * 60 * 1000);
-
+    const tomorrowEst = new Date(now.getTime() + estOffset * 60 * 1000);
+    tomorrowEst.setDate(tomorrowEst.getDate() + 1);
+    tomorrowEst.setHours(0, 0, 0, 0);
     let spinTime = tomorrowEst - nowEst;
 
     await Promise.allSettled(
