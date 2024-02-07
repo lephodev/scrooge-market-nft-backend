@@ -1264,7 +1264,7 @@ const gameResultForRiskWheel = async (req, res) => {
     } = resp1;
     console.log("tokentokentoken", token);
     if (token !== "Green1" && token !== "Green2" && token !== "Green3") {
-      rouletteSpin.updateUserDataAndTransaction(req, resp1, user);
+      await rouletteSpin.updateUserDataAndTransaction(req, resp1, user);
       console.log("helloooo");
     }
   } catch (error) {

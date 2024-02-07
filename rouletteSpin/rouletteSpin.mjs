@@ -65,6 +65,7 @@ export async function gameResultForRiskWheel(req, userId) {
       nonce + 1,
       container.length
     );
+
     const resultData = container[resultIndex];
     return {
       code: 200,
@@ -168,9 +169,13 @@ export async function updateUserDataAndTransaction(
   type
 ) {
   try {
-    const { resultData, gameModelData } = responseData;
+    const tempData = { ...responseData };
 
-    const { token } = resultData;
+    const { resultData, gameModelData } = tempData;
+
+    const reslt = { ...resultData };
+
+    const { token } = reslt;
     if (
       token === "Red1" ||
       token === "Red2" ||
@@ -180,7 +185,7 @@ export async function updateUserDataAndTransaction(
       token === "Red6" ||
       token === "Red7"
     ) {
-      resultData.token = 0;
+      reslt.token = 0;
     }
 
     const { _id, username, email, firstName, lastName, profile, ipAddress } =
@@ -201,8 +206,8 @@ export async function updateUserDataAndTransaction(
       prevWallet: user.wallet,
       prevGoldCoin: user.goldCoin,
       updatedGoldCoin: user?.goldCoin,
-      updatedWallet: user.wallet + resultData?.token,
-      amount: resultData?.token,
+      updatedWallet: user.wallet + reslt?.token,
+      amount: reslt?.token,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -229,9 +234,9 @@ export async function updateUserDataAndTransaction(
               lastSpinTime: Date.now() + spinTime,
             },
             $inc: {
-              wallet: resultData?.token,
-              dailySpinBonus: resultData?.token,
-              nonWithdrawableAmt: resultData?.token,
+              wallet: reslt?.token,
+              dailySpinBonus: reslt?.token,
+              nonWithdrawableAmt: reslt?.token,
             },
           }
         ),
