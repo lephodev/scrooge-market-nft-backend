@@ -2044,6 +2044,7 @@ export async function WithdrawRequest(req, res) {
   let user_id = updtdUser?._id;
   // let token = updtdUser?.wallet;
   let totalwallet = updtdUser?.wallet;
+  let nonWithdrawableAmt = updtdUser?.nonWithdrawableAmt;
 
   // console.log("token--->>>", token);
 
@@ -2066,7 +2067,7 @@ export async function WithdrawRequest(req, res) {
       .findOne({ _id: ObjectId(prize_id) });
     // console.log("prize", prize);
 
-    if (totalwallet < prize?.price) {
+    if (totalwallet - nonWithdrawableAmt < prize?.price) {
       return res.send({ success: false, message: "Not Enough Tokens" });
     }
     await db.get_scrooge_usersDB().findOneAndUpdate(
