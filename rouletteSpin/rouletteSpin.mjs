@@ -249,15 +249,22 @@ export async function updateUserDataAndTransaction(
       ],
       db.get_scrooge_transactionDB().insertOne(payload)
     );
-
     let query = {
       "userId._id": ObjectId(req.user._id),
       transactionType: "spin",
     };
 
-    const getLastDaySpin = await db
+    let getLastDaySpin = await db
       .get_scrooge_transactionDB()
-      .findOne(query, { sort: { _id: -1 } });
+      .find(query)
+      .sort({ _id: -1 })
+      .skip(1)
+      .limit(1)
+      .toArray();
+
+    getLastDaySpin = getLastDaySpin[0];
+    console.log("getLastDaySpin", getLastDaySpin);
+
     if (type === "Loyality") {
       console.log("Loyality");
       await db.get_scrooge_usersDB().updateOne(
@@ -273,14 +280,22 @@ export async function updateUserDataAndTransaction(
         const prevDt = new Date();
         prevDt.setDate(prevDt.getDate() - 1);
         prevDt.setHours(0, 0, 0, 0);
-        // console.log(
-        //   "preDtTime ==>",
-        //   prevDt.getTime(),
-        //   "spin time ==>",
-        //   new Date(getLastDaySpin.createdAt).getTime(),
-        //   prevDt.getTime() <= new Date(getLastDaySpin.createdAt).getTime()
-        // );
-        if (prevDt.getTime() <= new Date(getLastDaySpin.createdAt).getTime()) {
+
+        // const estOffset = -5 * 60; // EST is UTC-5
+        // const nowEst = new Date(now.getTime() + estOffset * 60 * 1000);
+        // console.log("nowEst", nowEst);
+
+        console.log(
+          "preDtTime ==>",
+          prevDt.getTime(),
+          "spin time ==>",
+          new Date(getLastDaySpin.createdAt),
+          new Date(getLastDaySpin.createdAt).getTime(),
+          prevDt.getTime() <= new Date(getLastDaySpin.createdAt).getTime()
+        );
+
+        if (nowEst.getTime() <= new Date(getLastDaySpin.createdAt).getTime()) {
+          console.log("helloooooooooo1");
           await db.get_scrooge_usersDB().updateOne(
             { _id: ObjectId(req.user._id) },
             {
@@ -290,6 +305,7 @@ export async function updateUserDataAndTransaction(
             }
           );
         } else {
+          console.log("helloooooooooo2");
           await db.get_scrooge_usersDB().updateOne(
             { _id: ObjectId(req.user._id) },
             {
