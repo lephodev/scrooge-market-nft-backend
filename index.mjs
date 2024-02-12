@@ -1151,6 +1151,14 @@ app.listen(PORT, () => {
   console.log("Server is running.", PORT);
 });
 
+const prevDt = new Date();
+prevDt.setDate(prevDt.getDate() - 1);
+prevDt.setHours(0, 0, 0, 0);
+const estOffset = -5 * 60; // EST is UTC-5
+const nowEst = new Date(prevDt.getTime() + estOffset * 60 * 1000);
+console.log("prevDt", prevDt);
+
+console.log("nowEst", nowEst);
 // let query = {
 //   "userId._id": ObjectId("65b201afdc4d5b0f5bf4b4ee"),
 //   transactionType: "spin",
