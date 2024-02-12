@@ -310,7 +310,7 @@ export async function updateUserDataAndTransaction(
             { _id: ObjectId(req.user._id) },
             {
               $set: {
-                loyalitySpinCount: 0,
+                loyalitySpinCount: 1,
               },
             }
           );
