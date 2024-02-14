@@ -65,6 +65,7 @@ export async function gameResultForRiskWheel(req, userId) {
       nonce + 1,
       container.length
     );
+
     const resultData = container[resultIndex];
     return {
       code: 200,
@@ -168,9 +169,13 @@ export async function updateUserDataAndTransaction(
   type
 ) {
   try {
-    const { resultData, gameModelData } = responseData;
+    const tempData = { ...responseData };
 
-    const { token } = resultData;
+    const { resultData, gameModelData } = tempData;
+
+    const reslt = { ...resultData };
+
+    const { token } = reslt;
     if (
       token === "Red1" ||
       token === "Red2" ||
@@ -178,11 +183,9 @@ export async function updateUserDataAndTransaction(
       token === "Red4" ||
       token === "Red5" ||
       token === "Red6" ||
-      token === "Red7" ||
-      token === "Red8" ||
-      token === "Red9"
+      token === "Red7"
     ) {
-      resultData.token = 0;
+      reslt.token = 0;
     }
 
     const { _id, username, email, firstName, lastName, profile, ipAddress } =
@@ -203,11 +206,24 @@ export async function updateUserDataAndTransaction(
       prevWallet: user.wallet,
       prevGoldCoin: user.goldCoin,
       updatedGoldCoin: user?.goldCoin,
-      updatedWallet: user.wallet + resultData?.token,
-      amount: resultData?.token,
+      updatedWallet: user.wallet + reslt?.token,
+      amount: reslt?.token,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
+
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(now.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0); // Set to midnight of the next day
+
+    // Convert to Eastern Standard Time (EST)
+    const estOffset = -5 * 60; // EST is UTC-5
+    const nowEst = new Date(now.getTime() + estOffset * 60 * 1000);
+    const tomorrowEst = new Date(now.getTime() + estOffset * 60 * 1000);
+    tomorrowEst.setDate(tomorrowEst.getDate() + 1);
+    tomorrowEst.setHours(0, 0, 0, 0);
+    let spinTime = tomorrowEst - nowEst;
 
     await Promise.allSettled(
       [
@@ -215,12 +231,12 @@ export async function updateUserDataAndTransaction(
           { _id: ObjectId(req.user._id) },
           {
             $set: {
-              lastSpinTime: Date.now() + 86400000,
+              lastSpinTime: Date.now() + spinTime,
             },
             $inc: {
-              wallet: resultData?.token,
-              dailySpinBonus: resultData?.token,
-              nonWithdrawableAmt: resultData?.token,
+              wallet: reslt?.token,
+              dailySpinBonus: reslt?.token,
+              nonWithdrawableAmt: reslt?.token,
             },
           }
         ),
@@ -233,15 +249,22 @@ export async function updateUserDataAndTransaction(
       ],
       db.get_scrooge_transactionDB().insertOne(payload)
     );
-
     let query = {
       "userId._id": ObjectId(req.user._id),
       transactionType: "spin",
     };
 
-    const getLastDaySpin = await db
+    let getLastDaySpin = await db
       .get_scrooge_transactionDB()
-      .findOne(query, { sort: { _id: -1 } });
+      .find(query)
+      .sort({ _id: -1 })
+      .skip(1)
+      .limit(1)
+      .toArray();
+
+    getLastDaySpin = getLastDaySpin[0];
+    console.log("getLastDaySpin", getLastDaySpin);
+
     if (type === "Loyality") {
       console.log("Loyality");
       await db.get_scrooge_usersDB().updateOne(
@@ -257,14 +280,22 @@ export async function updateUserDataAndTransaction(
         const prevDt = new Date();
         prevDt.setDate(prevDt.getDate() - 1);
         prevDt.setHours(0, 0, 0, 0);
-        // console.log(
-        //   "preDtTime ==>",
-        //   prevDt.getTime(),
-        //   "spin time ==>",
-        //   new Date(getLastDaySpin.createdAt).getTime(),
-        //   prevDt.getTime() <= new Date(getLastDaySpin.createdAt).getTime()
-        // );
-        if (prevDt.getTime() <= new Date(getLastDaySpin.createdAt).getTime()) {
+
+        const estOffset = -5 * 60; // EST is UTC-5
+        const nowEst = new Date(now.getTime() + estOffset * 60 * 1000);
+        console.log("nowEst", nowEst);
+
+        console.log(
+          "preDtTime ==>",
+          prevDt.getTime(),
+          "spin time ==>",
+          new Date(getLastDaySpin.createdAt),
+          new Date(getLastDaySpin.createdAt).getTime(),
+          prevDt.getTime() <= new Date(getLastDaySpin.createdAt).getTime()
+        );
+
+        if (nowEst.getTime() <= new Date(getLastDaySpin.createdAt).getTime()) {
+          console.log("helloooooooooo1");
           await db.get_scrooge_usersDB().updateOne(
             { _id: ObjectId(req.user._id) },
             {
@@ -274,11 +305,12 @@ export async function updateUserDataAndTransaction(
             }
           );
         } else {
+          console.log("helloooooooooo2");
           await db.get_scrooge_usersDB().updateOne(
             { _id: ObjectId(req.user._id) },
             {
               $set: {
-                loyalitySpinCount: 0,
+                loyalitySpinCount: 1,
               },
             }
           );
