@@ -282,19 +282,19 @@ export async function updateUserDataAndTransaction(
         prevDt.setHours(0, 0, 0, 0);
 
         const estOffset = -5 * 60; // EST is UTC-5
-        const nowEst = new Date(now.getTime() + estOffset * 60 * 1000);
-        console.log("nowEst", nowEst);
+        const prevEst = new Date(prevDt.getTime() + estOffset * 60 * 1000);
+        console.log("prevEst", prevEst);
 
         console.log(
           "preDtTime ==>",
-          prevDt.getTime(),
+          prevEst.getTime(),
           "spin time ==>",
           new Date(getLastDaySpin.createdAt),
           new Date(getLastDaySpin.createdAt).getTime(),
           prevDt.getTime() <= new Date(getLastDaySpin.createdAt).getTime()
         );
 
-        if (nowEst.getTime() <= new Date(getLastDaySpin.createdAt).getTime()) {
+        if (prevEst.getTime() <= new Date(getLastDaySpin.createdAt).getTime()) {
           console.log("helloooooooooo1");
           await db.get_scrooge_usersDB().updateOne(
             { _id: ObjectId(req.user._id) },
@@ -315,6 +315,15 @@ export async function updateUserDataAndTransaction(
             }
           );
         }
+      }else{
+        await db.get_scrooge_usersDB().updateOne(
+          { _id: ObjectId(req.user._id) },
+          {
+            $set: {
+              loyalitySpinCount: 1,
+            },
+          }
+        );
       }
     }
 
