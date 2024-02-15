@@ -1230,6 +1230,53 @@ const gameResultForBigWheel = async (req, res) => {
   }
 };
 
+var RegularRiskWheel = new Queue(async function (task, cb) {
+  if (task.type === "gameResultForRegularRiskWheel") {
+    await gameResultForRegularRiskWheel(task.req, task.res);
+  }
+  cb(null, 1);
+});
+
+app.get(
+  "/api/gameResultForRegularRiskWheel",
+  auth(),
+  // rateAuthLimit,
+  async (req, res) => {
+    try {
+      RegularRiskWheel.push({
+        req,
+        res,
+        type: "gameResultForRegularRiskWheel",
+      });
+    } catch (error) {
+      console.log("errr", error);
+    }
+  }
+);
+
+const gameResultForRegularRiskWheel = async (req, res) => {
+  try {
+    let { user } = req;
+    user = await await db.get_scrooge_usersDB().findOne({ _id: user?._id });
+    if (!checkUserCanSpin(user?.lastSpinTime))
+      return res.status(400).send({ msg: "Not eleigible for Spin" });
+    const resp1 = await rouletteSpin.gameResultForRegularRiskWheel(
+      req,
+      user._id
+    );
+    res.status(200).send({ msg: "Success", resultData: resp1.resultData });
+
+    const {
+      resultData: { token },
+    } = resp1;
+    if (token !== "Green1" && token !== "Green2" && token !== "Green3") {
+      await rouletteSpin.updateUserDataAndTransaction(req, resp1, user);
+    }
+  } catch (error) {
+    return res.status(500).send({ msg: "Internal Server Error" });
+  }
+};
+
 var riskWheel = new Queue(async function (task, cb) {
   if (task.type === "gameResultForRiskWheel") {
     await gameResultForRiskWheel(task.req, task.res);
@@ -1263,7 +1310,7 @@ const gameResultForRiskWheel = async (req, res) => {
       resultData: { token },
     } = resp1;
     console.log("tokentokentoken", token);
-    if (token !== "Green1" && token !== "Green2" && token !== "Green3") {
+    if (token !== "Green1" && token !== "Green2") {
       await rouletteSpin.updateUserDataAndTransaction(req, resp1, user);
       console.log("helloooo");
     }
@@ -1304,6 +1351,41 @@ const loyalitygameResultWheel = async (req, res) => {
     res.status(200).send({ msg: "Success", resultData: resp1.resultData });
   } catch (error) {
     console.log("loyalitygameResultWheel", error);
+    return res.status(500).send({ msg: "Internal Server Error" });
+  }
+};
+
+var MegaWheel = new Queue(async function (task, cb) {
+  if (task.type === "MegaWheelgameResult") {
+    await MegaWheelgameResult(task.req, task.res);
+  }
+  cb(null, 1);
+});
+app.get(
+  "/api/MegaWheelgameResult",
+  auth(),
+  // rateAuthLimit,
+  async (req, res) => {
+    try {
+      MegaWheel.push({ req, res, type: "MegaWheelgameResult" });
+    } catch (error) {
+      console.log("errr", error);
+    }
+  }
+);
+
+const MegaWheelgameResult = async (req, res) => {
+  try {
+    let { user } = req;
+    user = await await db.get_scrooge_usersDB().findOne({ _id: user?._id });
+    if (!checkUserCanSpin(user?.lastSpinTime))
+      return res.status(400).send({ msg: "Not eleigible for Spin" });
+    const resp1 = await rouletteSpin.MegaWheelgameResult(req, user._id);
+    rouletteSpin.CreateRollOver(req, resp1, user);
+    rouletteSpin.updateUserDataAndTransaction(req, resp1, user, "Megawheel");
+    res.status(200).send({ msg: "Success", resultData: resp1.resultData });
+  } catch (error) {
+    console.log("MegaWheelgameResult", error);
     return res.status(500).send({ msg: "Internal Server Error" });
   }
 };
