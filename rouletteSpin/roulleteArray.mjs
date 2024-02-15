@@ -11,7 +11,7 @@ export const places = [
   { token: 25, chances: 11 },
 ];
 
-export const RiskWheelPlaces = [
+export const RegularRiskWheelPlaces = [
   { token: "Green1", chances: 10 },
   { token: "Green2", chances: 10 },
   { token: "Red7", chances: 10 },
@@ -22,6 +22,19 @@ export const RiskWheelPlaces = [
   { token: "Red5", chances: 10 },
   { token: "Red6", chances: 10 },
   { token: "Green3", chances: 10 },
+];
+
+export const RiskWheelPlaces = [
+  { token: "Green1", chances: 10 },
+  { token: "Red1", chances: 10 },
+  { token: "Red2", chances: 10 },
+  { token: "Red3", chances: 10 },
+  { token: "Red4", chances: 10 },
+  { token: "Green2", chances: 10 },
+  { token: "Red5", chances: 10 },
+  { token: "Red6", chances: 10 },
+  { token: "Red7", chances: 10 },
+  { token: "red8", chances: 10 },
 ];
 
 export const BigWheelPlaces = [
@@ -48,4 +61,17 @@ export const LoyaltyWheelPlaces = [
   { token: 200, chances: 12.375 },
   { token: 225, chances: 12.375 },
   { token: 250, chances: 12.375 },
+];
+
+export const MegaWheelPlaces = [
+  { token: 500, chances: 10 },
+  { token: 200, chances: 10 },
+  { token: 225, chances: 10 },
+  { token: 250, chances: 10 },
+  { token: 275, chances: 10 },
+  { token: 350, chances: 10 },
+  { token: 200, chances: 10 },
+  { token: 225, chances: 10 },
+  { token: 250, chances: 10 },
+  { token: 275, chances: 10 },
 ];
