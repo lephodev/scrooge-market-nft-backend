@@ -417,7 +417,7 @@ export async function CreateRollOver(req, responseData, user) {
   const { resultData } = responseData;
   const { _id } = user;
   const exprDate = new Date();
-  exprDate.setHours(24 + exprDate.getHours());
+  exprDate.setHours(24 * 7 + exprDate.getHours());
   exprDate.setSeconds(0);
   exprDate.setMilliseconds(0);
 
