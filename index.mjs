@@ -1262,8 +1262,10 @@ const gameResultForRiskWheel = async (req, res) => {
     const {
       resultData: { token },
     } = resp1;
-    if (token !== "Green") {
-      rouletteSpin.updateUserDataAndTransaction(req, resp1, user);
+    console.log("tokentokentoken", token);
+    if (token !== "Green1" && token !== "Green2" && token !== "Green3") {
+      await rouletteSpin.updateUserDataAndTransaction(req, resp1, user);
+      console.log("helloooo");
     }
   } catch (error) {
     return res.status(500).send({ msg: "Internal Server Error" });
@@ -1316,6 +1318,14 @@ app.listen(PORT, () => {
   console.log("Server is running.", PORT);
 });
 
+const prevDt = new Date();
+prevDt.setDate(prevDt.getDate() - 1);
+prevDt.setHours(0, 0, 0, 0);
+const estOffset = -5 * 60; // EST is UTC-5
+const nowEst = new Date(prevDt.getTime() + estOffset * 60 * 1000);
+console.log("prevDt", prevDt);
+
+console.log("nowEst", nowEst);
 // let query = {
 //   "userId._id": ObjectId("65b201afdc4d5b0f5bf4b4ee"),
 //   transactionType: "spin",
