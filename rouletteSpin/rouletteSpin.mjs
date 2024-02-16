@@ -311,7 +311,7 @@ export async function updateUserDataAndTransaction(
           { _id: ObjectId(req.user._id) },
           {
             $set: {
-              lastSpinTime: Date.now() + 0,
+              lastSpinTime: Date.now() + spinTime,
             },
             $inc: {
               wallet: reslt?.token,
@@ -420,7 +420,7 @@ export async function CreateRollOver(req, responseData, user) {
   const { resultData } = responseData;
   const { _id } = user;
   const exprDate = new Date();
-  exprDate.setHours(24 + exprDate.getHours());
+  exprDate.setHours(24 * 7 + exprDate.getHours());
   exprDate.setSeconds(0);
   exprDate.setMilliseconds(0);
 
