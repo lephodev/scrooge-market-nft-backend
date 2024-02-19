@@ -311,7 +311,7 @@ export async function updateUserDataAndTransaction(
           { _id: ObjectId(req.user._id) },
           {
             $set: {
-              lastSpinTime: Date.now() + spinTime,
+              lastSpinTime: Date.now() + 0,
             },
             $inc: {
               wallet: reslt?.token,
@@ -375,7 +375,9 @@ export async function updateUserDataAndTransaction(
         // );
 
         const lastSpintDt = new Date(getLastDaySpin.createdAt);
-        const lastSpintESTDt = new Date(lastSpintDt.getTime() + estOffset * 60 * 1000);
+        const lastSpintESTDt = new Date(
+          lastSpintDt.getTime() + estOffset * 60 * 1000
+        );
 
         if (prevEst.getTime() <= lastSpintESTDt.getTime()) {
           await db.get_scrooge_usersDB().updateOne(
