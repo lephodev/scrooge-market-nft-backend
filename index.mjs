@@ -1131,7 +1131,7 @@ const gameResultForRegularRiskWheel = async (req, res) => {
       resultData.token === "Green3"
     ) {
       console.log("inside update");
-      db.get_scrooge_usersDB().updateOne(
+      await db.get_scrooge_usersDB().updateOne(
         { _id: ObjectId(req.user._id) },
         {
           $set: {
