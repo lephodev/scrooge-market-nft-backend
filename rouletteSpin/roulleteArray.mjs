@@ -1,5 +1,5 @@
 export const places = [
-  { token: "Big wheel", chances: 55 },
+  { token: "Big wheel", chances: 90 },
   { token: 10, chances: 5 },
   { token: 15, chances: 5 },
   { token: 20, chances: 5 },
