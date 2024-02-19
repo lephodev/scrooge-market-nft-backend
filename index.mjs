@@ -1008,8 +1008,9 @@ app.get(
 
 const gameResult = async (req, res) => {
   try {
+    let abc;
     let { user } = req;
-    user = await await db.get_scrooge_usersDB().findOne({ _id: user?._id });
+    user = await db.get_scrooge_usersDB().findOne({ _id: user?._id });
     if (!checkUserCanSpin(user?.lastSpinTime))
       return res.status(400).send({ msg: "Not eleigible for Spin" });
     const resp1 = await rouletteSpin.gameResult(req, user._id);
@@ -1017,11 +1018,11 @@ const gameResult = async (req, res) => {
       resultData: { token },
     } = resp1;
     if (token === "Big wheel") {
-      db.get_scrooge_usersDB().updateOne(
+      await db.get_scrooge_usersDB().updateOne(
         { _id: ObjectId(req.user._id) },
         {
           $set: {
-            wheelType: token,
+            wheelType: "Big wheel",
           },
         }
       );
@@ -1039,6 +1040,7 @@ const gameResult = async (req, res) => {
       rouletteSpin.updateUserDataAndTransaction(req, resp1, user);
     }
   } catch (error) {
+    console.log("error", error);
     return res.status(500).send({ msg: "Internal Server Error" });
   }
 };
