@@ -1013,12 +1013,27 @@ const gameResult = async (req, res) => {
     if (!checkUserCanSpin(user?.lastSpinTime))
       return res.status(400).send({ msg: "Not eleigible for Spin" });
     const resp1 = await rouletteSpin.gameResult(req, user._id);
-    res.status(200).send({ msg: "Success", resultData: resp1.resultData });
     const {
       resultData: { token },
     } = resp1;
-    console.log("resp1", resp1);
-    console.log("tokens", token);
+    if (token === "Big wheel") {
+      db.get_scrooge_usersDB().updateOne(
+        { _id: ObjectId(req.user._id) },
+        {
+          $set: {
+            wheelType: token,
+          },
+        }
+      );
+    }
+
+    let find = await db
+      .get_scrooge_usersDB()
+      .findOne({ _id: ObjectId(req?.user?._id) });
+    res
+      .status(200)
+      .send({ msg: "Success", resultData: resp1.resultData, user: find });
+
     if (token !== "Big wheel") {
       rouletteSpin.CreateRollOver(req, resp1, user);
       rouletteSpin.updateUserDataAndTransaction(req, resp1, user);
@@ -1056,6 +1071,14 @@ const gameResultForBigWheel = async (req, res) => {
       return res.status(400).send({ msg: "Not eleigible for Spin" });
     const resp1 = await rouletteSpin.gameResultForBigWheel(req, user._id);
     res.status(200).send({ msg: "Success", resultData: resp1.resultData });
+    db.get_scrooge_usersDB().updateOne(
+      { _id: ObjectId(req.user._id) },
+      {
+        $set: {
+          wheelType: "",
+        },
+      }
+    );
     rouletteSpin.CreateRollOver(req, resp1, user);
     rouletteSpin.updateUserDataAndTransaction(req, resp1, user);
   } catch (error) {
@@ -1091,13 +1114,37 @@ const gameResultForRegularRiskWheel = async (req, res) => {
   try {
     let { user } = req;
     user = await await db.get_scrooge_usersDB().findOne({ _id: user?._id });
+
     if (!checkUserCanSpin(user?.lastSpinTime))
       return res.status(400).send({ msg: "Not eleigible for Spin" });
     const resp1 = await rouletteSpin.gameResultForRegularRiskWheel(
       req,
       user._id
     );
-    res.status(200).send({ msg: "Success", resultData: resp1.resultData });
+    const { resultData } = resp1;
+
+    if (
+      resultData.token === "Green1" ||
+      resultData.token === "Green2" ||
+      resultData.token === "Green3"
+    ) {
+      console.log("inside update");
+      db.get_scrooge_usersDB().updateOne(
+        { _id: ObjectId(req.user._id) },
+        {
+          $set: {
+            wheelType: "Big wheel",
+          },
+        }
+      );
+    }
+    console.log("req?.user?._id", req?.user?._id);
+    let find = await db
+      .get_scrooge_usersDB()
+      .findOne({ _id: ObjectId(req?.user?._id) });
+    res
+      .status(200)
+      .send({ msg: "Success", resultData: resp1.resultData, user: find });
 
     const {
       resultData: { token },
