@@ -1,14 +1,14 @@
 export const places = [
-  { token: "Big wheel", chances: 1 },
-  { token: 10, chances: 11 },
-  { token: 15, chances: 11 },
-  { token: 20, chances: 11 },
-  { token: 25, chances: 11 },
-  { token: 30, chances: 11 },
-  { token: 10, chances: 11 },
-  { token: 15, chances: 11 },
-  { token: 20, chances: 11 },
-  { token: 25, chances: 11 },
+  { token: "Big wheel", chances: 55 },
+  { token: 10, chances: 5 },
+  { token: 15, chances: 5 },
+  { token: 20, chances: 5 },
+  { token: 25, chances: 5 },
+  { token: 30, chances: 5 },
+  { token: 10, chances: 5 },
+  { token: 15, chances: 5 },
+  { token: 20, chances: 5 },
+  { token: 25, chances: 5 },
 ];
 
 export const RegularRiskWheelPlaces = [
