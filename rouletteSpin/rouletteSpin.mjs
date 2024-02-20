@@ -245,8 +245,10 @@ export async function updateUserDataAndTransaction(
   req,
   responseData,
   user,
-  type
+  type,
+  spinType
 ) {
+  console.log("spinTypespinType", spinType);
   try {
     const tempData = { ...responseData };
 
@@ -290,6 +292,7 @@ export async function updateUserDataAndTransaction(
       amount: reslt?.token,
       createdAt: new Date(),
       updatedAt: new Date(),
+      transactionDetails: spinType,
     };
 
     const now = new Date();
@@ -311,7 +314,7 @@ export async function updateUserDataAndTransaction(
           { _id: ObjectId(req.user._id) },
           {
             $set: {
-              lastSpinTime: Date.now() + 0,
+              lastSpinTime: Date.now() + spinTime,
             },
             $inc: {
               wallet: reslt?.token,

@@ -1008,7 +1008,6 @@ app.get(
 
 const gameResult = async (req, res) => {
   try {
-    let abc;
     let { user } = req;
     user = await db.get_scrooge_usersDB().findOne({ _id: user?._id });
     if (!checkUserCanSpin(user?.lastSpinTime))
@@ -1037,7 +1036,9 @@ const gameResult = async (req, res) => {
 
     if (token !== "Big wheel") {
       rouletteSpin.CreateRollOver(req, resp1, user);
-      rouletteSpin.updateUserDataAndTransaction(req, resp1, user);
+      rouletteSpin.updateUserDataAndTransaction(req, resp1, user, "", {
+        spinType: "Regular wheel",
+      });
     }
   } catch (error) {
     console.log("error", error);
@@ -1082,7 +1083,9 @@ const gameResultForBigWheel = async (req, res) => {
       }
     );
     rouletteSpin.CreateRollOver(req, resp1, user);
-    rouletteSpin.updateUserDataAndTransaction(req, resp1, user);
+    rouletteSpin.updateUserDataAndTransaction(req, resp1, user, "", {
+      spinType: "Big wheel",
+    });
   } catch (error) {
     return res.status(500).send({ msg: "Internal Server Error" });
   }
@@ -1152,7 +1155,9 @@ const gameResultForRegularRiskWheel = async (req, res) => {
       resultData: { token },
     } = resp1;
     if (token !== "Green1" && token !== "Green2" && token !== "Green3") {
-      await rouletteSpin.updateUserDataAndTransaction(req, resp1, user);
+      await rouletteSpin.updateUserDataAndTransaction(req, resp1, user, "", {
+        spinType: "Regular Risk wheel",
+      });
     }
   } catch (error) {
     return res.status(500).send({ msg: "Internal Server Error" });
@@ -1193,7 +1198,9 @@ const gameResultForRiskWheel = async (req, res) => {
     } = resp1;
     console.log("tokentokentoken", token);
     if (token !== "Green1" && token !== "Green2") {
-      await rouletteSpin.updateUserDataAndTransaction(req, resp1, user);
+      await rouletteSpin.updateUserDataAndTransaction(req, resp1, user, "", {
+        spinType: "Risk wheel",
+      });
       console.log("helloooo");
     }
   } catch (error) {
@@ -1229,7 +1236,9 @@ const loyalitygameResultWheel = async (req, res) => {
       return res.status(400).send({ msg: "Not eleigible for Spin" });
     const resp1 = await rouletteSpin.loyalitygameResultWheel(req, user._id);
     rouletteSpin.CreateRollOver(req, resp1, user);
-    rouletteSpin.updateUserDataAndTransaction(req, resp1, user, "Loyality");
+    rouletteSpin.updateUserDataAndTransaction(req, resp1, user, "Loyality", {
+      spinType: "Loyality wheel",
+    });
     res.status(200).send({ msg: "Success", resultData: resp1.resultData });
   } catch (error) {
     console.log("loyalitygameResultWheel", error);
@@ -1264,7 +1273,9 @@ const MegaWheelgameResult = async (req, res) => {
       return res.status(400).send({ msg: "Not eleigible for Spin" });
     const resp1 = await rouletteSpin.MegaWheelgameResult(req, user._id);
     rouletteSpin.CreateRollOver(req, resp1, user);
-    rouletteSpin.updateUserDataAndTransaction(req, resp1, user, "Megawheel");
+    rouletteSpin.updateUserDataAndTransaction(req, resp1, user, "Megawheel", {
+      spinType: "Mega wheel",
+    });
     res.status(200).send({ msg: "Success", resultData: resp1.resultData });
   } catch (error) {
     console.log("MegaWheelgameResult", error);
