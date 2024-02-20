@@ -245,8 +245,10 @@ export async function updateUserDataAndTransaction(
   req,
   responseData,
   user,
-  type
+  type,
+  spinType
 ) {
+  console.log("spinTypespinType", spinType);
   try {
     const tempData = { ...responseData };
 
@@ -290,6 +292,7 @@ export async function updateUserDataAndTransaction(
       amount: reslt?.token,
       createdAt: new Date(),
       updatedAt: new Date(),
+      transactionDetails: spinType,
     };
 
     const now = new Date();
@@ -374,7 +377,12 @@ export async function updateUserDataAndTransaction(
         //   prevDt.getTime() <= new Date(getLastDaySpin.createdAt).getTime()
         // );
 
-        if (prevEst.getTime() <= new Date(getLastDaySpin.createdAt).getTime()) {
+        const lastSpintDt = new Date(getLastDaySpin.createdAt);
+        const lastSpintESTDt = new Date(
+          lastSpintDt.getTime() + estOffset * 60 * 1000
+        );
+
+        if (prevEst.getTime() <= lastSpintESTDt.getTime()) {
           await db.get_scrooge_usersDB().updateOne(
             { _id: ObjectId(req.user._id) },
             {
