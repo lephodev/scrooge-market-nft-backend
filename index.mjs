@@ -975,7 +975,6 @@ app.get(
     const findTransactionIfExist = await db
       .get_scrooge_transactionDB()
       .countDocuments(query);
-    console.log("findTransactionIfExist", findTransactionIfExist);
 
     return res.send({
       code: 200,
@@ -1288,6 +1287,35 @@ app.get(
   rewards.FastWithdrawRedeem
 );
 app.get("/api/getWeeklyWheel", auth(), rewards.getWeeklyWheel);
+
+app.get(
+  "/api/getMegaBuyPurcahseLimitPerDay",
+  Basicauth,
+  auth(),
+  async (req, res) => {
+    const { user } = req || {};
+    let userId = user._id;
+    const startOfDay = new Date();
+    startOfDay.setDate(startOfDay.getDate() - 1);
+    startOfDay.setHours(0, 0, 0, 0); // Set hours, minutes, seconds, and milliseconds to 0 for the start of the day
+    const query = {
+      transactionType: { $in: ["CC To Gold Coin", "Crypto To Gold Coin"] },
+      "userId._id": userId,
+      purchasedAmountInUSD: { $in: [9.99, 19.99, 24.99] },
+      createdAt: { $gt: startOfDay },
+    };
+
+    const findTransactionIfExist = await db
+      .get_scrooge_transactionDB()
+      .findOne(query, { sort: { _id: -1 } });
+
+    return res.send({
+      code: 200,
+      success: true,
+      toShowBuyMega: findTransactionIfExist ? false : true,
+    });
+  }
+);
 
 app.listen(PORT, () => {
   console.log("Server is running.", PORT);
