@@ -966,7 +966,9 @@ app.get(
     console.log("startOfDay-------", startOfDay);
     startOfDay.setHours(0, 0, 0, 0); // Set hours, minutes, seconds, and milliseconds to 0 for the start of the day
 
-    console.log("startOfDay", startOfDay);
+    console.log("estDate", estDate);
+    startOfDay.setHours(5, 0, 0, 0);
+    console.log("startOfDay limit ", startOfDay);
     const query = {
       transactionType: "CC To Gold Coin",
       "userId._id": userId,
