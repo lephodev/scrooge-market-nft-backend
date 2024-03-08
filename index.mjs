@@ -1130,8 +1130,21 @@ app.get(
 
     console.log("getGCPurcahseLimitPerDay", userId);
     const startOfDay = new Date();
-    console.log("startOfDay-------", startOfDay);
-    startOfDay.setHours(0, 0, 0, 0); // Set hours, minutes, seconds, and milliseconds to 0 for the start of the day
+    let crrHours = startOfDay.getHours();
+    let rnageDt = startOfDay.getDate();
+    console.log("startOfDay-------", startOfDay, rnageDt, crrHours);
+    if(crrHours < 5){
+      startOfDay.setDate(rnageDt - 1);
+      startOfDay.setHours(5, 0, 0, 0);
+    }else{
+      startOfDay.setHours(5, 0, 0, 0);
+    }
+    const endDate = new Date();
+    endDate.setHours(startOfDay.getHours() + 24);
+
+    console.log("startOfDay",startOfDay,"endDate",endDate);
+
+    // startOfDay.setHours(0, 0, 0, 0); // Set hours, minutes, seconds, and milliseconds to 0 for the start of the day
     // startOfDay.setHours(5, 0, 0, 0);
     console.log("startOfDay limit ", startOfDay);
     const query = {
