@@ -963,11 +963,13 @@ app.get(
 
     console.log("getGCPurcahseLimitPerDay", userId);
     const startOfDay = new Date();
-    console.log("startOfDay-------", startOfDay);
     let crrHours = startOfDay.getHours();
     let rnageDt = startOfDay.getDate();
+    console.log("startOfDay-------", startOfDay, rnageDt, crrHours);
     if(crrHours < 5){
       startOfDay.setDate(rnageDt - 1);
+      startOfDay.setHours(5, 0, 0, 0);
+    }else{
       startOfDay.setHours(5, 0, 0, 0);
     }
     const endDate = new Date();
