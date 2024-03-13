@@ -291,7 +291,7 @@ export async function updateUserDataAndTransaction(
       updatedWallet: user.wallet + reslt?.token,
       amount: reslt?.token,
       createdAt: new Date(),
-      updatedAt: new Date(),
+      updatedAt: new Date(),  
       transactionDetails: spinType,
     };
 
@@ -301,7 +301,7 @@ export async function updateUserDataAndTransaction(
     tomorrow.setHours(0, 0, 0, 0); // Set to midnight of the next day
 
     // Convert to Eastern Standard Time (EST)
-    const estOffset = -5 * 60; // EST is UTC-5
+    const estOffset = -4 * 60; // EST is UTC-5
     const nowEst = new Date(now.getTime() + estOffset * 60 * 1000);
     const tomorrowEst = new Date(now.getTime() + estOffset * 60 * 1000);
     tomorrowEst.setDate(tomorrowEst.getDate() + 1);
@@ -364,7 +364,7 @@ export async function updateUserDataAndTransaction(
         prevDt.setDate(prevDt.getDate() - 1);
         prevDt.setHours(0, 0, 0, 0);
 
-        const estOffset = -5 * 60; // EST is UTC-5
+        const estOffset = -4 * 60; // EST is UTC-5
         const prevEst = new Date(prevDt.getTime() + estOffset * 60 * 1000);
         // console.log("prevEst", prevEst);
 
