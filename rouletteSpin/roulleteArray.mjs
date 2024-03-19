@@ -14,13 +14,13 @@ export const places = [
 export const RegularRiskWheelPlaces = [
   { token: "Green1", chances: 10 },
   { token: "Green2", chances: 10 },
-  // { token: "Red7", chances: 10 },
-  // { token: "Red1", chances: 10 },
-  // { token: "Red2", chances: 10 },
-  // { token: "Red3", chances: 10 },
-  // { token: "Red4", chances: 10 },
-  // { token: "Red5", chances: 10 },
-  // { token: "Red6", chances: 10 },
+  { token: "Red7", chances: 10 },
+  { token: "Red1", chances: 10 },
+  { token: "Red2", chances: 10 },
+  { token: "Red3", chances: 10 },
+  { token: "Red4", chances: 10 },
+  { token: "Red5", chances: 10 },
+  { token: "Red6", chances: 10 },
   { token: "Green3", chances: 10 },
 ];
 
