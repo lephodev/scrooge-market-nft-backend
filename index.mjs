@@ -1133,16 +1133,16 @@ app.get(
     let crrHours = startOfDay.getHours();
     let rnageDt = startOfDay.getDate();
     console.log("startOfDay-------", startOfDay, rnageDt, crrHours);
-    if(crrHours < 5){
+    if (crrHours < 5) {
       startOfDay.setDate(rnageDt - 1);
       startOfDay.setHours(5, 0, 0, 0);
-    }else{
+    } else {
       startOfDay.setHours(5, 0, 0, 0);
     }
     const endDate = new Date();
     endDate.setHours(startOfDay.getHours() + 24);
 
-    console.log("startOfDay",startOfDay,"endDate",endDate);
+    console.log("startOfDay", startOfDay, "endDate", endDate);
 
     // startOfDay.setHours(0, 0, 0, 0); // Set hours, minutes, seconds, and milliseconds to 0 for the start of the day
     // startOfDay.setHours(5, 0, 0, 0);
@@ -1493,6 +1493,20 @@ app.get(
       code: 200,
       success: true,
       toShowBuyMega: findTransactionIfExist ? false : true,
+    });
+  }
+);
+
+app.get(
+  "/api/getAdminSettings",
+  Basicauth,
+
+  async (req, res) => {
+    let getAdminSettings = await db.get_db_admin_settingDB().findOne({});
+    return res.send({
+      code: 200,
+      success: true,
+      adminSettings: getAdminSettings,
     });
   }
 );

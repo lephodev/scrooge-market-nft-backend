@@ -291,7 +291,7 @@ export async function updateUserDataAndTransaction(
       updatedWallet: user.wallet + reslt?.token,
       amount: reslt?.token,
       createdAt: new Date(),
-      updatedAt: new Date(),  
+      updatedAt: new Date(),
       transactionDetails: spinType,
     };
 
