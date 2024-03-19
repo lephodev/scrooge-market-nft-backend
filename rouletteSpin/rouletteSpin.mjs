@@ -291,7 +291,7 @@ export async function updateUserDataAndTransaction(
       updatedWallet: user.wallet + reslt?.token,
       amount: reslt?.token,
       createdAt: new Date(),
-      updatedAt: new Date(),  
+      updatedAt: new Date(),
       transactionDetails: spinType,
     };
 
@@ -314,7 +314,7 @@ export async function updateUserDataAndTransaction(
           { _id: ObjectId(req.user._id) },
           {
             $set: {
-              lastSpinTime: Date.now() + spinTime,
+              lastSpinTime: Date.now() + 0,
             },
             $inc: {
               wallet: reslt?.token,
