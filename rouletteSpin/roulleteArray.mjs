@@ -64,14 +64,14 @@ export const LoyaltyWheelPlaces = [
 ];
 
 export const MegaWheelPlaces = [
-  { token: 500, chances: 11.11 },
-  { token: 200, chances: 11.11 },
-  { token: 225, chances: 11.11 },
-  { token: 250, chances: 11.11 },
-  { token: 275, chances: 11.11 },
-  { token: 4000, chances: 0.01 },
-  { token: 200, chances: 11.11 },
-  { token: 225, chances: 11.11 },
-  { token: 250, chances: 11.11 },
-  { token: 275, chances: 11.11 },
+  { token: 500, chances: 33.33 },
+  { token: 200, chances: 33.33 },
+  // { token: 225, chances: 11.11 },
+  // { token: 250, chances: 11.11 },
+  // { token: 275, chances: 11.11 },
+  { token: 4000, chances: 33.33 },
+  // { token: 200, chances: 11.11 },
+  // { token: 225, chances: 11.11 },
+  // { token: 250, chances: 11.11 },
+  // { token: 275, chances: 11.11 },
 ];
