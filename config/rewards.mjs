@@ -2689,14 +2689,13 @@ export async function redeemFreePromo(req, res) {
             console.log("e", e);
           });
       }
+      return res.send({
+        code: 200,
+        success: true,
+        getPromo,
+        message: "Token added successfully.",
+      });
     }
-
-    return res.send({
-      code: 200,
-      success: true,
-      getPromo,
-      message: "Token added successfully.",
-    });
   } catch (e) {
     console.log("outerCatch", e);
     return res
