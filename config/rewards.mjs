@@ -653,12 +653,38 @@ export async function claimHolderTokens(req) {
 
 export async function getCryptoToGCPackages(req, res) {
   const qry = {};
+  let averageValue = 0;
   const sort = { price: 1 };
+  const megaOffer = req?.user?.megaOffer;
+  console.log("megaOffer", megaOffer);
+
+  if (megaOffer?.length) {
+    const tranCount = db.get_scrooge_transactionDB().find({
+      "userId._id": ObjectId(req?.user?._id),
+      transactionType: "CC To Gold Coin",
+      purchasedAmountInUSD: { $nin: megaOffer },
+    });
+    const dr = await tranCount.toArray();
+    console.log("tran", dr);
+    let totalPurchasedAmountInUSD = 0;
+    dr.forEach((transaction) => {
+      totalPurchasedAmountInUSD += transaction.purchasedAmountInUSD;
+    });
+    averageValue = totalPurchasedAmountInUSD / dr.length;
+    console.log(
+      "Total Sum of purchasedAmountInUSD:",
+      totalPurchasedAmountInUSD,
+      averageValue
+    );
+
+    console.log("tranCount", dr.length);
+  }
   let resp;
   const cursor = db.get_marketplace_gcPackagesDB().find(qry).sort(sort);
 
-  const arr = await cursor.toArray().then((data) => {
-    resp = data;
+  const arr = await cursor.toArray().then((allPackages) => {
+    console.log("datatat", allPackages);
+    resp = { allPackages, averageValue };
   });
   return res.send(resp);
 }
