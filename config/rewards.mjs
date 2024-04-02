@@ -652,12 +652,38 @@ export async function claimHolderTokens(req) {
 
 export async function getCryptoToGCPackages(req, res) {
   const qry = {};
+  let averageValue = 0;
   const sort = { price: 1 };
+  const megaOffer = req?.user?.megaOffer;
+  console.log("megaOffer", megaOffer);
+
+  if (megaOffer?.length) {
+    const tranCount = db.get_scrooge_transactionDB().find({
+      "userId._id": ObjectId(req?.user?._id),
+      transactionType: "CC To Gold Coin",
+      purchasedAmountInUSD: { $nin: megaOffer },
+    });
+    const dr = await tranCount.toArray();
+    console.log("tran", dr);
+    let totalPurchasedAmountInUSD = 0;
+    dr.forEach((transaction) => {
+      totalPurchasedAmountInUSD += transaction.purchasedAmountInUSD;
+    });
+    averageValue = totalPurchasedAmountInUSD / dr.length;
+    console.log(
+      "Total Sum of purchasedAmountInUSD:",
+      totalPurchasedAmountInUSD,
+      averageValue
+    );
+
+    console.log("tranCount", dr.length);
+  }
   let resp;
   const cursor = db.get_marketplace_gcPackagesDB().find(qry).sort(sort);
 
-  const arr = await cursor.toArray().then((data) => {
-    resp = data;
+  const arr = await cursor.toArray().then((allPackages) => {
+    console.log("datatat", allPackages);
+    resp = { allPackages, averageValue };
   });
   return res.send(resp);
 }
@@ -2594,5 +2620,111 @@ export async function getWeeklyWheel(req, res) {
     return res.send({ success: true, userId });
   } catch (error) {
     console.log("error in getWeeklyWheel", error);
+  }
+}
+const promoSTQue = new Queue(async function (task, cb) {
+  if (task.type === "redeemFreePromo") {
+    await redeemFreePromo(task.req, task.res);
+  }
+  cb(null, 1);
+});
+
+export const redeemFreePromoST = async (req, res, next) => {
+  try {
+    promoSTQue.push({ req, res, type: "redeemFreePromo" });
+  } catch (error) {
+    console.log("error", error);
+  }
+};
+
+export async function redeemFreePromo(req, res) {
+  let user = req.user._id;
+  try {
+    const { promocode } = req.body;
+    let query = {
+      couponCode: promocode,
+      expireDate: { $gte: new Date() },
+    };
+    let getPromo = await db.get_scrooge_promoDB().findOne(query);
+    const { coupanInUse, claimedUser, token } = getPromo || {};
+    if (coupanInUse === "One Time") {
+      let findUser = claimedUser.find(
+        (el) => el.userId.toString() === user.toString()
+      );
+      if (findUser) {
+        return res.status(404).send({
+          code: 404,
+          success: false,
+          message: "Promo code already in use.",
+        });
+      } else {
+        let payload = {
+          userId: user,
+          claimedDate: new Date(),
+        };
+        let promoFind = await db
+          .get_scrooge_promoDB()
+          .findOne({ couponCode: promocode.trim() });
+        await db.get_scrooge_promoDB().findOneAndUpdate(
+          { couponCode: promocode.trim() },
+          {
+            $push: { claimedUser: payload },
+          },
+          {
+            new: true,
+          }
+        );
+        let updateUser = await db.get_scrooge_usersDB().findOneAndUpdate(
+          { _id: ObjectId(user) },
+          { $inc: { wallet: token } },
+          { new: true } // Specify the option outside the update object
+        );
+        const {
+          _id,
+          username,
+          email,
+          firstName,
+          lastName,
+          profile,
+          ipAddress,
+        } = updateUser?.value;
+        const transactionPayload = {
+          amount: token,
+          transactionType: "Free Promo ST",
+          prevWallet: parseFloat(updateUser?.value?.wallet),
+          updatedWallet: updateUser?.value?.wallet + parseFloat(token),
+          userId: {
+            _id,
+            username,
+            email,
+            firstName,
+            lastName,
+            profile,
+            ipAddress,
+          },
+          updatedGoldCoin: updateUser?.value?.goldCoin,
+          prevGoldCoin: updateUser?.value?.goldCoin,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        await db
+          .get_scrooge_transactionDB()
+          .insertOne(transactionPayload)
+          .catch((e) => {
+            console.log("e", e);
+          });
+      }
+      return res.send({
+        code: 200,
+        success: true,
+        getPromo,
+        message: "Token added successfully.",
+      });
+    }
+  } catch (e) {
+    console.log("outerCatch", e);
+    return res
+      .status(500)
+      .send({ success: false, message: "Error in Request Process" });
   }
 }

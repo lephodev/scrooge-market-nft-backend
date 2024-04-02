@@ -1510,6 +1510,12 @@ app.get(
     });
   }
 );
+app.post(
+  "/api/redeemFreePromoST",
+  Basicauth,
+  auth(),
+  rewards.redeemFreePromoST
+);
 
 app.listen(PORT, () => {
   console.log("Server is running.", PORT);
