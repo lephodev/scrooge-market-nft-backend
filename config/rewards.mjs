@@ -16,6 +16,7 @@ import { sendInvoice } from "../utils/sendx_send_invoice.mjs";
 import { getSigner } from "../utils/signer.mjs";
 import Queue from "better-queue";
 import { getAnAcceptPaymentPage } from "../utils/payment.mjs";
+import { compareArrays } from "./utilities.mjs";
 
 const { Schema } = mongoose;
 
@@ -657,36 +658,40 @@ export async function getCryptoToGCPackages(req, res) {
   const sort = { price: 1 };
   const megaOffer = req?.user?.megaOffer;
   console.log("megaOffer", megaOffer);
+  let arr = [9.99, 19.99, 24.99];
+  let isMatch = compareArrays(megaOffer, arr);
+  console.log("isMatch", isMatch);
 
-  if (megaOffer?.length) {
+  if (isMatch) {
     const tranCount = db.get_scrooge_transactionDB().find({
       "userId._id": ObjectId(req?.user?._id),
       transactionType: "CC To Gold Coin",
       purchasedAmountInUSD: { $nin: megaOffer },
     });
     const dr = await tranCount.toArray();
-    console.log("tran", dr);
+    // console.log("tran", dr);
     let totalPurchasedAmountInUSD = 0;
     dr.forEach((transaction) => {
       totalPurchasedAmountInUSD += transaction.purchasedAmountInUSD;
     });
     averageValue = totalPurchasedAmountInUSD / dr.length;
-    console.log(
-      "Total Sum of purchasedAmountInUSD:",
-      totalPurchasedAmountInUSD,
-      averageValue
-    );
+    let resp;
+    const cursor = db.get_marketplace_gcPackagesDB().find(qry).sort(sort);
 
-    console.log("tranCount", dr.length);
+    await cursor.toArray().then((allPackages) => {
+      resp = { allPackages, averageValue };
+    });
+
+    return res.send(resp);
+  } else {
+    let resp;
+    const cursor = db.get_marketplace_gcPackagesDB().find(qry).sort(sort);
+
+    await cursor.toArray().then((allPackages) => {
+      resp = { allPackages };
+    });
+    return res.send(resp);
   }
-  let resp;
-  const cursor = db.get_marketplace_gcPackagesDB().find(qry).sort(sort);
-
-  const arr = await cursor.toArray().then((allPackages) => {
-    console.log("datatat", allPackages);
-    resp = { allPackages, averageValue };
-  });
-  return res.send(resp);
 }
 
 export async function getTicketToToken(req, res) {
