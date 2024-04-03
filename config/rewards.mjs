@@ -1624,6 +1624,11 @@ export async function convertCryptoToGoldCoin(req, res) {
         ? parseInt(data.freeTokenAmount)
         : 0
     );
+    console.log("bonus amount ===>", 
+    findPromoData?.coupanType === "Percent"
+    ? parseInt(data.freeTokenAmount) *
+        (parseFloat(findPromoData?.discountInPercent) / 100): 0
+    )
     const trans = await addChips(
       userId,
       findPromoData?.coupanType === "Percent"
