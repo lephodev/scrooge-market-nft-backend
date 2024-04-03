@@ -90,7 +90,7 @@ export async function addChips(
       },
       { new: true }
     );
-    if (bonusToken > 0 && multiplier > 1) {
+    if (bonusToken > 0) {
       const exprDate = new Date();
       exprDate.setHours(24 * 30 + exprDate.getHours());
       exprDate.setSeconds(0);
