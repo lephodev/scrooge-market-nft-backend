@@ -2690,6 +2690,26 @@ export async function redeemFreePromo(req, res) {
           { $inc: { wallet: token } },
           { new: true } // Specify the option outside the update object
         );
+        const exprDate = new Date();
+        exprDate.setHours(24 * 30 + exprDate.getHours());
+        exprDate.setSeconds(0);
+        exprDate.setMilliseconds(0);
+        await db.get_scrooge_bonus().insert({
+          userId: ObjectId(user),
+          bonusType: "monthly",
+          bonusAmount: token,
+          bonusExpirationTime: exprDate,
+          wagerLimit: token,
+          rollOverTimes: 1,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          isExpired: false,
+          wageredAmount: 0,
+          subCategory: "Promo Bonus",
+          restAmount: token,
+          expiredAmount: token,
+          executing: false,
+        });
         const {
           _id,
           username,
