@@ -669,7 +669,7 @@ export async function getCryptoToGCPackages(req, res) {
       purchasedAmountInUSD: { $nin: megaOffer },
     });
     const dr = await tranCount.toArray();
-    // console.log("tran", dr);
+    console.log("tran---------------------", dr);
     let totalPurchasedAmountInUSD = 0;
     dr.forEach((transaction) => {
       totalPurchasedAmountInUSD += transaction.purchasedAmountInUSD;
