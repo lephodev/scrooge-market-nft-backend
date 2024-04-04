@@ -49,7 +49,7 @@ export function decrypt(req) {
 
 export const compareArrays = (arr, mega) => {
   for (let i = 0; i < mega.length; i++) {
-    if (!arr.includes(mega[i])) {
+    if (!arr?.includes(mega[i])) {
       return false;
     }
   }
