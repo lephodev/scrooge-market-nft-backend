@@ -912,43 +912,44 @@ app.get(
 );
 app.post("/api/getFormToken", Basicauth, auth(), async (req, res) => {
   const { user, body } = req || {};
-  // console.log("user", user);
+  console.log("user", user, body);
 
   if (user) {
-    // const query = {
-    //   transactionType: "CC To Gold Coin",
-    //   "userId._id": ObjectId(user?._id),
-    // };
+    var requestData = {
+      ANID: "",
+      AUTH: "",
+      CURR: "USD",
+      EMAL: user.email,
+      IPAD: user.ipAddress,
+      MACK: "Y",
+      MERC: "102119",
+      MODE: "Q",
+      PTOK: "4111111111111111",
+      PTYP: "CARD",
+      SESS: "zzzzzzzzzzwwwwwwwwww",
+      SITE: "DEFAULT",
+      VERS: "0720",
+      TOTL: body?.amount.toString(),
+      "PROD_DESC[0]": "CC To Gold Coin",
+      "PROD_ITEM[0]": "CC To Gold Coin",
+      "PROD_PRICE[0]": body?.amount?.toString(),
+      "PROD_QUANT[0]": 1,
+      "PROD_TYPE[0]": "CC To Gold Coin",
+    };
 
-    // const latestTransaction = await db
-    //   .get_scrooge_transactionDB()
-    //   .findOne(query, { sort: { _id: -1 } });
-    // console.log("latestTransaction", latestTransaction);
-
-    // if (
-    //   latestTransaction &&
-    //   // new Date() - latestTransaction.createdAt < 3 * 60 * 1000 // 60 seconds * 1000 milliseconds
-    // ) {
-
-    //   const crrDt = new Date();
-    //   const cretedDt = new Date(latestTransaction.createdAt);
-    //   crrDt.setMinutes(crrDt.getMinutes() - 1);
-    //   const crrTime = crrDt.getTime();
-    //   const cretedTime = cretedDt
-
-    //   return res.send({
-    //     code: 400,
-    //     success: false,
-    //     message: "You cannot make another transaction within a minute.",
-    //   });
-    // }
-
-    getAnAcceptPaymentPage(body, user, async (response) => {
-      return res.send({
-        code: 200,
-        success: true,
-        response,
-      });
+    utilities.makeApiRequest(requestData, function (err, response) {
+      if (err) {
+        console.error("Error:", err);
+      } else {
+        console.log("Response:", response);
+        getAnAcceptPaymentPage(body, user, async (response) => {
+          return res.send({
+            code: 200,
+            success: true,
+            response,
+          });
+        });
+      }
     });
   }
 });
