@@ -1308,9 +1308,17 @@ app.get(
   auth(),
   async (req, res) => {
     const { user } = req || {};
+
+    console.log("user", user.megaOffer);
     let userId = user._id;
     const startOfDay = new Date();
-    startOfDay.setDate(startOfDay.getDate() - 1);
+
+    startOfDay.setDate(
+      user?.megaOffer?.length >= 3
+        ? startOfDay.getDate() - 3
+        : startOfDay.getDate() - 1
+    );
+
     startOfDay.setHours(0, 0, 0, 0); // Set hours, minutes, seconds, and milliseconds to 0 for the start of the day
     const query = {
       transactionType: { $in: ["CC To Gold Coin", "Crypto To Gold Coin"] },
@@ -1320,6 +1328,8 @@ app.get(
       },
       createdAt: { $gt: startOfDay },
     };
+
+    console.log("startOfDay", startOfDay);
 
     const findTransactionIfExist = await db
       .get_scrooge_transactionDB()
