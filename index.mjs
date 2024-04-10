@@ -931,7 +931,7 @@ app.post("/api/getFormToken", Basicauth, auth(), async (req, res) => {
       PTOK: "4111111111111111",
       PTYP: "CARD",
       SESS: body?.sessionId,
-      SITE: "DEFAULT",
+      SITE: "SCROOGE",
       VERS: "0720",
       EPOC: firstTenDigits,
       TOTL: body?.amount.toString() * 100,
