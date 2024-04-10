@@ -914,25 +914,30 @@ app.post("/api/getFormToken", Basicauth, auth(), async (req, res) => {
   const { user, body } = req || {};
   console.log("user", user, body);
 
+  let number = new Date().getTime();
+  let firstTenDigits = number.toString().substring(0, 10);
+  console.log("firstTenDigits", firstTenDigits);
   if (user) {
     var requestData = {
-      ANID: "",
-      AUTH: "",
+      ANID: "0123456789",
+      AUTH: "A",
       CURR: "USD",
       EMAL: user.email,
+      NAME: user.username,
       IPAD: user.ipAddress,
       MACK: "Y",
       MERC: "102119",
       MODE: "Q",
       PTOK: "4111111111111111",
       PTYP: "CARD",
-      SESS: "zzzzzzzzzzwwwwwwwwww",
+      SESS: body?.sessionId,
       SITE: "DEFAULT",
       VERS: "0720",
-      TOTL: body?.amount.toString(),
+      EPOC: firstTenDigits,
+      TOTL: body?.amount.toString() * 100,
       "PROD_DESC[0]": "CC To Gold Coin",
       "PROD_ITEM[0]": "CC To Gold Coin",
-      "PROD_PRICE[0]": body?.amount?.toString(),
+      "PROD_PRICE[0]": body?.amount?.toString() * 100,
       "PROD_QUANT[0]": 1,
       "PROD_TYPE[0]": "CC To Gold Coin",
     };
