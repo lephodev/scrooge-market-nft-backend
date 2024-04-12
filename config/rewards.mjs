@@ -2331,10 +2331,19 @@ export async function applyPromo(req, res) {
       expireDate: { $gte: new Date() },
     };
     let getPromo = await db.get_scrooge_promoDB().findOne(query);
-    const { coupanInUse, claimedUser } = getPromo || {};
-    console.log("coupanInUse", coupanInUse);
-    console.log("getPromo", getPromo);
-    console.log("claimedUser", claimedUser);
+    const { coupanInUse, claimedUser, numberOfUsages } = getPromo || {};
+    // console.log("coupanInUse", coupanInUse);
+    // console.log("getPromo", getPromo);
+    // console.log("claimedUser", claimedUser);
+    // console.log("numberOfUsages", numberOfUsages);
+    if (numberOfUsages && numberOfUsages <= claimedUser.length) {
+      return res.status(404).send({
+        code: 404,
+        success: false,
+        message: "Number of usages exceed",
+      });
+    }
+
     if (coupanInUse === "One Time") {
       let findUser = claimedUser.find(
         (el) => el.userId.toString() === user.toString()
