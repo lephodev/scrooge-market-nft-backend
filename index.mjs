@@ -1079,43 +1079,49 @@ app.get(
 );
 app.post("/api/getFormToken", Basicauth, auth(), async (req, res) => {
   const { user, body } = req || {};
-  // console.log("user", user);
+  console.log("user", user, body);
 
+  let number = new Date().getTime();
+  let firstTenDigits = number.toString().substring(0, 10);
+  console.log("firstTenDigits", firstTenDigits);
   if (user) {
-    // const query = {
-    //   transactionType: "CC To Gold Coin",
-    //   "userId._id": ObjectId(user?._id),
-    // };
+    var requestData = {
+      ANID: "0123456789",
+      AUTH: "A",
+      CURR: "USD",
+      EMAL: user.email,
+      NAME: user.username,
+      IPAD: user.ipAddress,
+      MACK: "Y",
+      MERC: "102119",
+      MODE: "Q",
+      PTOK: "4111111111111111",
+      PTYP: "CARD",
+      SESS: body?.sessionId,
+      SITE: "SCROOGE",
+      VERS: "0720",
+      EPOC: firstTenDigits,
+      TOTL: body?.amount.toString() * 100,
+      "PROD_DESC[0]": "CC To Gold Coin",
+      "PROD_ITEM[0]": "CC To Gold Coin",
+      "PROD_PRICE[0]": body?.amount?.toString() * 100,
+      "PROD_QUANT[0]": 1,
+      "PROD_TYPE[0]": "CC To Gold Coin",
+    };
 
-    // const latestTransaction = await db
-    //   .get_scrooge_transactionDB()
-    //   .findOne(query, { sort: { _id: -1 } });
-    // console.log("latestTransaction", latestTransaction);
-
-    // if (
-    //   latestTransaction &&
-    //   // new Date() - latestTransaction.createdAt < 3 * 60 * 1000 // 60 seconds * 1000 milliseconds
-    // ) {
-
-    //   const crrDt = new Date();
-    //   const cretedDt = new Date(latestTransaction.createdAt);
-    //   crrDt.setMinutes(crrDt.getMinutes() - 1);
-    //   const crrTime = crrDt.getTime();
-    //   const cretedTime = cretedDt
-
-    //   return res.send({
-    //     code: 400,
-    //     success: false,
-    //     message: "You cannot make another transaction within a minute.",
-    //   });
-    // }
-
-    getAnAcceptPaymentPage(body, user, async (response) => {
-      return res.send({
-        code: 200,
-        success: true,
-        response,
-      });
+    utilities.makeApiRequest(requestData, function (err, response) {
+      if (err) {
+        console.error("Error:", err);
+      } else {
+        console.log("Response:", response);
+        getAnAcceptPaymentPage(body, user, async (response) => {
+          return res.send({
+            code: 200,
+            success: true,
+            response,
+          });
+        });
+      }
     });
   }
 });
@@ -1474,9 +1480,17 @@ app.get(
   auth(),
   async (req, res) => {
     const { user } = req || {};
+
+    console.log("user", user.megaOffer);
     let userId = user._id;
     const startOfDay = new Date();
-    startOfDay.setDate(startOfDay.getDate() - 1);
+
+    startOfDay.setDate(
+      user?.megaOffer?.length >= 3
+        ? startOfDay.getDate() - 3
+        : startOfDay.getDate() - 1
+    );
+
     startOfDay.setHours(0, 0, 0, 0); // Set hours, minutes, seconds, and milliseconds to 0 for the start of the day
     const query = {
       transactionType: { $in: ["CC To Gold Coin", "Crypto To Gold Coin"] },
@@ -1486,6 +1500,8 @@ app.get(
       },
       createdAt: { $gt: startOfDay },
     };
+
+    console.log("startOfDay", startOfDay);
 
     const findTransactionIfExist = await db
       .get_scrooge_transactionDB()
