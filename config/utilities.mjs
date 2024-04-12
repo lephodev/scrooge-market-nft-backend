@@ -55,3 +55,43 @@ export const compareArrays = (arr, mega) => {
   }
   return true;
 };
+
+import querystring from "querystring";
+import https from "https";
+
+export function makeApiRequest(data, callback) {
+  var postData = querystring.stringify(data);
+
+  var options = {
+    host: "risk.test.kount.net",
+    path: "/",
+    port: "443",
+    method: "POST",
+    headers: {
+      "X-Kount-Api-Key":
+        "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiIxMDIxMTkiLCJhdWQiOiJLb3VudC4xIiwiaWF0IjoxNzExNjE1NzU1LCJzY3AiOnsia2EiOm51bGwsImtjIjpudWxsLCJhcGkiOnRydWUsInJpcyI6dHJ1ZSwidGRzIjpudWxsfX0.gSUfcZ-vrncSPTI3TqDtsZh5hr5EsgDvW05FpmiLel0",
+      "Content-Type": "application/x-www-form-urlencoded",
+      "Content-Length": Buffer.byteLength(postData),
+    },
+  };
+
+  var req = https.request(options, function (res) {
+    var str = "";
+    res.setEncoding("utf8");
+    res.on("data", function (chunk) {
+      str += chunk;
+    });
+    res.on("end", function () {
+      callback(null, str);
+    });
+  });
+
+  req.on("error", function (err) {
+    callback(err, null);
+  });
+
+  req.write(postData);
+  req.end();
+}
+
+// Example usage:
