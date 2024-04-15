@@ -660,6 +660,14 @@ app.post("/api/authorize-webhook", async (req, res) => {
                     { $push: { megaOffer: parseFloat(amount) } }
                   );
                 }
+
+                await db
+                  .get_scrooge_usersDB()
+                  .findOneAndUpdate(
+                    { _id: ObjectId(extractedId) },
+                    { isSpended: true }
+                  );
+
                 await InvoiceEmail(getUser?.email, reciptPayload);
                 if (extractedPromoCode) {
                   let payload = {
