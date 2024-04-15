@@ -661,12 +661,14 @@ app.post("/api/authorize-webhook", async (req, res) => {
                   );
                 }
 
-                await db
+                const result = await db
                   .get_scrooge_usersDB()
                   .findOneAndUpdate(
                     { _id: ObjectId(extractedId) },
-                    { isSpended: true }
+                    { $set: { isSpended: true } }
                   );
+
+                console.log("ssss", result);
 
                 await InvoiceEmail(getUser?.email, reciptPayload);
                 if (extractedPromoCode) {
