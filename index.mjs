@@ -1582,34 +1582,5 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
     res.status(500).send({ success: false, message: "Error in CC  purchase" });
   }
 });
-// let query = {
-//   "userId._id": ObjectId("65b201afdc4d5b0f5bf4b4ee"),
-//   transactionType: "spin",
-// };
-
-// setTimeout(async () => {
-//   const getLastDaySpins = await db
-//     .get_scrooge_transactionDB()
-//     .find(query)
-//     .toArray();
-
-//   console.log("getLastDaySpin", getLastDaySpins);
-// }, 20000);
-
-// const reciptPayload = {
-//   username: "jivan",
-//   email: "jivanwebsul@gmail.com",
-//   invoicDate: moment(new Date()).format("D MMMM  YYYY"),
-//   paymentMethod: "Credit Card Purchase",
-//   packageName: "Gold Coin Purchase",
-//   goldCoinQuantity: 30000000,
-//   tokenQuantity: 3000,
-//   purcahsePrice: "9.99",
-//   Tax: 0,
-//   firstName: "jivan",
-//   lastName: "Tiwari",
-// };
-
-// await InvoiceEmail("jivanwebsul@gmail.com", reciptPayload);
 
 export default app;
