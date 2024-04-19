@@ -26,6 +26,7 @@ import { CryptoToGCQueue, TicketToTokenQueue } from "./utils/Queues.mjs";
 import logger from "./config/logger.mjs";
 import {
   createAnAcceptPaymentTransaction,
+  createAuthCustomAnAcceptPaymentTransaction,
   getAnAcceptPaymentPage,
   getTransactionDetails,
 } from "./utils/payment.mjs";
@@ -1389,7 +1390,94 @@ const estOffset = -5 * 60; // EST is UTC-5
 const nowEst = new Date(prevDt.getTime() + estOffset * 60 * 1000);
 console.log("prevDt", prevDt);
 
-console.log("nowEst", nowEst);
+app.post("/api/auth-make-payment", auth(), async (req, res) => {
+  console.log("hello console");
+  try {
+    const { user, body } = req || {};
+    console.log("Bodd", body);
+    let number = new Date().getTime();
+    let firstTenDigits = number.toString().substring(0, 10);
+    if (user?.isBlockWallet) {
+      return res
+        .status(400)
+        .send({ success: false, data: "Your wallet blocked by admin" });
+    }
+
+    var requestData = {
+      ANID: "1234567890",
+      AUTH: "A",
+      CURR: "USD",
+      EMAL: user?.email,
+      NAME: user?.username,
+      IPAD: user?.ipAddress,
+      MACK: "Y",
+      MERC: "102119",
+      MODE: "Q",
+      PTOK: body?.cardNumber,
+      PTYP: "CARD",
+      SESS: body?.sessionId?.sessionID,
+      SITE: "SCROOGE",
+      VERS: "0720",
+      EPOC: firstTenDigits,
+      TOTL: body?.amount.toString() * 100,
+      B2A1: body?.streetAddress,
+      B2CI: body?.city,
+      B2ST: body?.state,
+      B2PC: body?.zipCode,
+      B2CC: body?.country,
+      B2PN: body?.phoneNumber,
+      "PROD_DESC[0]": "CC To Gold Coin",
+      "PROD_ITEM[0]": "CC To Gold Coin",
+      "PROD_PRICE[0]": body?.amount.toString() * 100,
+      "PROD_QUANT[0]": 1,
+      "PROD_TYPE[0]": "CC To Gold Coin",
+    };
+
+    utilities.makeApiRequest(requestData, function (err, response) {
+      if (err) {
+        console.error("Error:", err);
+      } else {
+        console.log("response", response);
+        const modeRegex = /MODE=([^\n]+)/;
+        const modeMatch = response.match(modeRegex);
+        let modes = modeMatch ? modeMatch[1] : null;
+        console.log("modes", modes);
+        if (modes !== "Q") {
+          return res
+            .status(400)
+            .send({ success: false, message: "Error in Verifying Kount" });
+        }
+
+        createAuthCustomAnAcceptPaymentTransaction(
+          body,
+          user,
+          async (response) => {
+            // console.log("response", response.messages.resultCode);
+            if (
+              response.messages.resultCode !== "Ok" ||
+              response.transactionResponse?.errors
+            ) {
+              return res.status(400).send({
+                success: false,
+                data: "transaction failed",
+                error:
+                  response.transactionResponse?.errors?.error[0]?.errorText,
+              });
+            }
+
+            let query = {
+              couponCode: body.item.promoCode,
+              expireDate: { $gte: new Date() },
+            };
+          }
+        );
+      }
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ success: false, message: "Error in CC  purchase" });
+  }
+});
 // let query = {
 //   "userId._id": ObjectId("65b201afdc4d5b0f5bf4b4ee"),
 //   transactionType: "spin",
