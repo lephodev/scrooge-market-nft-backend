@@ -487,7 +487,7 @@ export function createAuthCustomAnAcceptPaymentTransaction(
     ApiContracts.TransactionTypeEnum.AUTHCAPTURETRANSACTION
   );
   transactionRequestType.setPayment(paymentType);
-  transactionRequestType.setAmount(0.1);
+  transactionRequestType.setAmount(body?.amount);
   transactionRequestType.setLineItems(lineItems);
   transactionRequestType.setUserFields(userFields);
   transactionRequestType.setOrder(orderDetails);
