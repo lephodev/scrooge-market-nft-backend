@@ -49,7 +49,8 @@ let _db_affiliates,
   _db_affiliates_transaction,
   _db_scrooge_promo,
   _db_scrooge_bin,
-  _db_scrooge_bonus;
+  _db_scrooge_bonus,
+  _db_scrooge_crypto_to_gc;
 
 export const connectToDB = async () => {
   const client = await MongoClient.connect(uri, {
