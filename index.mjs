@@ -1378,7 +1378,7 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
     }
 
     var requestData = {
-      ANID: "1234567890",
+      ANID: "",
       AUTH: "A",
       CURR: "USD",
       EMAL: user?.email,
