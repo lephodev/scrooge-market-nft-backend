@@ -314,7 +314,7 @@ export async function updateUserDataAndTransaction(
           { _id: ObjectId(req.user._id) },
           {
             $set: {
-              lastSpinTime: 0 /* Date.now() + spinTime */,
+              lastSpinTime: Date.now() + spinTime,
             },
             $inc: {
               wallet: reslt?.token,
