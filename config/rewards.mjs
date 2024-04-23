@@ -2698,7 +2698,13 @@ export async function redeemFreePromo(req, res) {
         );
         let updateUser = await db.get_scrooge_usersDB().findOneAndUpdate(
           { _id: ObjectId(user) },
-          { $inc: { wallet: token } },
+          {
+            $inc: {
+              wallet: token,
+              monthlyClaimBonus: token,
+              nonWithdrawableAmt: token,
+            },
+          },
           { new: true } // Specify the option outside the update object
         );
         const exprDate = new Date();
