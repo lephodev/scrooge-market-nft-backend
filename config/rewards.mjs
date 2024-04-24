@@ -1629,11 +1629,13 @@ export async function convertCryptoToGoldCoin(req, res) {
         ? parseInt(data.freeTokenAmount)
         : 0
     );
-    console.log("bonus amount ===>", 
-    findPromoData?.coupanType === "Percent"
-    ? parseInt(data.freeTokenAmount) *
-        (parseFloat(findPromoData?.discountInPercent) / 100): 0
-    )
+    console.log(
+      "bonus amount ===>",
+      findPromoData?.coupanType === "Percent"
+        ? parseInt(data.freeTokenAmount) *
+            (parseFloat(findPromoData?.discountInPercent) / 100)
+        : 0
+    );
     const trans = await addChips(
       userId,
       findPromoData?.coupanType === "Percent"
@@ -2687,7 +2689,13 @@ export async function redeemFreePromo(req, res) {
         );
         let updateUser = await db.get_scrooge_usersDB().findOneAndUpdate(
           { _id: ObjectId(user) },
-          { $inc: { wallet: token, monthlyClaimBonus: token, nonWithdrawableAmt: token } },
+          {
+            $inc: {
+              wallet: token,
+              monthlyClaimBonus: token,
+              nonWithdrawableAmt: token,
+            },
+          },
           { new: true } // Specify the option outside the update object
         );
         const exprDate = new Date();
