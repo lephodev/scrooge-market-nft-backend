@@ -663,6 +663,8 @@ export async function getCryptoToGCPackages(req, res) {
   let isMatch = compareArrays(megaOffer, arr);
   console.log("isMatch", isMatch);
 
+  if(!megaOffer) return res.status(500).send({message: "Something went wrong"});
+
   if (isMatch) {
     const tranCount = db.get_scrooge_transactionDB().find({
       "userId._id": ObjectId(req?.user?._id),
