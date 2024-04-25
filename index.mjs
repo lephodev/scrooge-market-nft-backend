@@ -1350,17 +1350,6 @@ app.post(
   rewards.redeemFreePromoST
 );
 
-app.listen(PORT, () => {
-  console.log("Server is running.", PORT);
-});
-
-const prevDt = new Date();
-prevDt.setDate(prevDt.getDate() - 1);
-prevDt.setHours(0, 0, 0, 0);
-const estOffset = -5 * 60; // EST is UTC-5
-const nowEst = new Date(prevDt.getTime() + estOffset * 60 * 1000);
-console.log("prevDt", prevDt);
-
 app.post("/api/auth-make-payment", auth(), async (req, res) => {
   console.log("hello console");
   try {
@@ -1582,5 +1571,18 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
     res.status(500).send({ success: false, message: "Error in CC  purchase" });
   }
 });
+
+app.post("/api/capture-paypal-order", Basicauth, auth(), rewards.paypalOrder);
+
+app.listen(PORT, () => {
+  console.log("Server is running.", PORT);
+});
+
+const prevDt = new Date();
+prevDt.setDate(prevDt.getDate() - 1);
+prevDt.setHours(0, 0, 0, 0);
+const estOffset = -5 * 60; // EST is UTC-5
+const nowEst = new Date(prevDt.getTime() + estOffset * 60 * 1000);
+console.log("prevDt", prevDt);
 
 export default app;
