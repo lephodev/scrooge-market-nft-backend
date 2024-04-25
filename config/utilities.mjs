@@ -49,7 +49,7 @@ export function decrypt(req) {
 
 export const compareArrays = (arr, mega) => {
   for (let i = 0; i < mega.length; i++) {
-    if (!arr.includes(mega[i])) {
+    if (arr && !arr.includes(mega[i])) {
       return false;
     }
   }
@@ -63,13 +63,12 @@ export function makeApiRequest(data, callback) {
   var postData = querystring.stringify(data);
 
   var options = {
-    host: "risk.test.kount.net",
+    host: process.env.KOUNT_TEST_RIS_URL,
     path: "/",
     port: "443",
     method: "POST",
     headers: {
-      "X-Kount-Api-Key":
-        "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiIxMDIxMTkiLCJhdWQiOiJLb3VudC4xIiwiaWF0IjoxNzExNjE1NzU1LCJzY3AiOnsia2EiOm51bGwsImtjIjpudWxsLCJhcGkiOnRydWUsInJpcyI6dHJ1ZSwidGRzIjpudWxsfX0.gSUfcZ-vrncSPTI3TqDtsZh5hr5EsgDvW05FpmiLel0",
+      "X-Kount-Api-Key": process.env.KOUNT_TEST_KEY,
       "Content-Type": "application/x-www-form-urlencoded",
       "Content-Length": Buffer.byteLength(postData),
     },
@@ -93,5 +92,5 @@ export function makeApiRequest(data, callback) {
   req.write(postData);
   req.end();
 }
-
+console.log("process.env.KOUNT_TEST_KEY---", process.env.KOUNT_TEST_KEY);
 // Example usage:

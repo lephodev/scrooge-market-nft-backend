@@ -1,4 +1,12 @@
 import Authorize from "authorizenet";
+
+import axios from "axios";
+
+const clientId = process.env.PAYPAL_SANDBOX_CLIENT_ID;
+const secret = process.env.PAYPAL_SANDBOX_CLIENT_SECRET;
+
+const credentials = `${clientId}:${secret}`;
+const base64Credentials = Buffer.from(credentials).toString("base64");
 const { APIContracts: ApiContracts, APIControllers: ApiControllers } =
   Authorize;
 
@@ -412,8 +420,8 @@ export function createAuthCustomAnAcceptPaymentTransaction(
   shipping.setDescription("shipping description");
 
   var billTo = new ApiContracts.CustomerAddressType();
-  billTo.setFirstName(body?.firstName);
-  billTo.setLastName(body?.lastName);
+  billTo.setFirstName(user?.firstName);
+  billTo.setLastName(user?.lastName);
   billTo.setCompany("Souveniropolis");
   billTo.setAddress(body?.streetAddress);
   billTo.setCity(body?.city);
@@ -422,8 +430,8 @@ export function createAuthCustomAnAcceptPaymentTransaction(
   billTo.setCountry(body?.country);
 
   var shipTo = new ApiContracts.CustomerAddressType();
-  shipTo.setFirstName(body?.firstName);
-  shipTo.setLastName(body?.lastName);
+  shipTo.setFirstName(user?.firstName);
+  shipTo.setLastName(user?.lastName);
   shipTo.setCompany("Thyme for Tea");
   shipTo.setAddress(body?.streetAddress);
   shipTo.setCity(body?.city);
@@ -487,7 +495,7 @@ export function createAuthCustomAnAcceptPaymentTransaction(
     ApiContracts.TransactionTypeEnum.AUTHCAPTURETRANSACTION
   );
   transactionRequestType.setPayment(paymentType);
-  transactionRequestType.setAmount(0.1);
+  transactionRequestType.setAmount(body?.amount);
   transactionRequestType.setLineItems(lineItems);
   transactionRequestType.setUserFields(userFields);
   transactionRequestType.setOrder(orderDetails);
@@ -609,3 +617,23 @@ export function createAuthCustomAnAcceptPaymentTransaction(
     callback(response);
   });
 }
+
+export const getToken = async () => {
+  try {
+    const response = await axios.post(
+      "https://api.sandbox.paypal.com/v1/oauth2/token",
+      "grant_type=client_credentials",
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: `Basic ${base64Credentials}`,
+        },
+      }
+    );
+    const accessToken = response.data.access_token;
+    console.log("Access Token:", accessToken);
+    return accessToken;
+  } catch (error) {
+    console.error("Error:", error.response.data.error_description);
+  }
+};
