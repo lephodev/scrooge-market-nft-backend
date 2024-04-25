@@ -15,6 +15,9 @@ import BNB_ABI from "../config/BNB_ABI.json" assert { type: "json" };
 import { sendInvoice } from "../utils/sendx_send_invoice.mjs";
 import { getSigner } from "../utils/signer.mjs";
 import Queue from "better-queue";
+import { getAnAcceptPaymentPage, getToken } from "../utils/payment.mjs";
+import { compareArrays } from "./utilities.mjs";
+import axios from "axios";
 
 const { Schema } = mongoose;
 
@@ -36,9 +39,6 @@ const busdAddress = process.env.BUSD_WALLET_ADDRESS.toLowerCase();
 const jrContractAddress = process.env.JR_CONTRACT_ADDRESS.toLowerCase();
 const ogContractAddress = process.env.OG_CONTRACT_ADDRESS.toLowerCase();
 const bnbContractAddress = process.env.BNB_CONTRACT_ADDRESS.toLowerCase();
-
-
-
 
 export async function addChips(
   _user_id,
@@ -91,7 +91,7 @@ export async function addChips(
       },
       { new: true }
     );
-    if (bonusToken > 0 && multiplier > 1) {
+    if (bonusToken > 0) {
       const exprDate = new Date();
       exprDate.setHours(24 * 30 + exprDate.getHours());
       exprDate.setSeconds(0);
@@ -146,7 +146,7 @@ export async function addChips(
         updatedAt: new Date(),
         transactionDetails: recipt,
         prevTicket: user.ticket,
-        purchasedAmountInUSD: prchAmt,
+        purchasedAmountInUSD: parseFloat(prchAmt),
         purchasedToken: _qty,
       };
       const trans_id = await db
@@ -655,14 +655,44 @@ export async function claimHolderTokens(req) {
 
 export async function getCryptoToGCPackages(req, res) {
   const qry = {};
+  let averageValue = 0;
   const sort = { price: 1 };
-  let resp;
-  const cursor = db.get_marketplace_gcPackagesDB().find(qry).sort(sort);
+  const megaOffer = req?.user?.megaOffer;
+  console.log("megaOffer", megaOffer);
+  let arr = [9.99, 19.99, 24.99];
+  let isMatch = compareArrays(megaOffer, arr);
+  console.log("isMatch", isMatch);
 
-  const arr = await cursor.toArray().then((data) => {
-    resp = data;
-  });
-  return res.send(resp);
+  if (isMatch) {
+    const tranCount = db.get_scrooge_transactionDB().find({
+      "userId._id": ObjectId(req?.user?._id),
+      transactionType: "CC To Gold Coin",
+      purchasedAmountInUSD: { $nin: megaOffer },
+    });
+    const dr = await tranCount.toArray();
+    console.log("tran---------------------", dr);
+    let totalPurchasedAmountInUSD = 0;
+    dr.forEach((transaction) => {
+      totalPurchasedAmountInUSD += transaction.purchasedAmountInUSD;
+    });
+    averageValue = dr?.length > 0 ? totalPurchasedAmountInUSD / dr.length : 1;
+    let resp;
+    const cursor = db.get_marketplace_gcPackagesDB().find(qry).sort(sort);
+
+    await cursor.toArray().then((allPackages) => {
+      resp = { allPackages, averageValue };
+    });
+
+    return res.send(resp);
+  } else {
+    let resp;
+    const cursor = db.get_marketplace_gcPackagesDB().find(qry).sort(sort);
+
+    await cursor.toArray().then((allPackages) => {
+      resp = { allPackages };
+    });
+    return res.send(resp);
+  }
 }
 
 export async function getTicketToToken(req, res) {
@@ -1600,6 +1630,13 @@ export async function convertCryptoToGoldCoin(req, res) {
         ? parseInt(data.freeTokenAmount)
         : 0
     );
+    console.log(
+      "bonus amount ===>",
+      findPromoData?.coupanType === "Percent"
+        ? parseInt(data.freeTokenAmount) *
+            (parseFloat(findPromoData?.discountInPercent) / 100)
+        : 0
+    );
     const trans = await addChips(
       userId,
       findPromoData?.coupanType === "Percent"
@@ -2295,10 +2332,19 @@ export async function applyPromo(req, res) {
       expireDate: { $gte: new Date() },
     };
     let getPromo = await db.get_scrooge_promoDB().findOne(query);
-    const { coupanInUse, claimedUser } = getPromo || {};
-    console.log("coupanInUse", coupanInUse);
-    console.log("getPromo", getPromo);
-    console.log("claimedUser", claimedUser);
+    const { coupanInUse, claimedUser, numberOfUsages } = getPromo || {};
+    // console.log("coupanInUse", coupanInUse);
+    // console.log("getPromo", getPromo);
+    // console.log("claimedUser", claimedUser);
+    // console.log("numberOfUsages", numberOfUsages);
+    if (numberOfUsages && numberOfUsages <= claimedUser.length) {
+      return res.status(404).send({
+        code: 404,
+        success: false,
+        message: "Number of usages exceed",
+      });
+    }
+
     if (coupanInUse === "One Time") {
       let findUser = claimedUser.find(
         (el) => el.userId.toString() === user.toString()
@@ -2597,5 +2643,170 @@ export async function getWeeklyWheel(req, res) {
     return res.send({ success: true, userId });
   } catch (error) {
     console.log("error in getWeeklyWheel", error);
+  }
+}
+const promoSTQue = new Queue(async function (task, cb) {
+  if (task.type === "redeemFreePromo") {
+    await redeemFreePromo(task.req, task.res);
+  }
+  cb(null, 1);
+});
+
+export const redeemFreePromoST = async (req, res, next) => {
+  try {
+    promoSTQue.push({ req, res, type: "redeemFreePromo" });
+  } catch (error) {
+    console.log("error", error);
+  }
+};
+
+export async function redeemFreePromo(req, res) {
+  let user = req.user._id;
+  try {
+    const { promocode } = req.body;
+    let query = {
+      couponCode: promocode,
+      expireDate: { $gte: new Date() },
+    };
+    let getPromo = await db.get_scrooge_promoDB().findOne(query);
+    const { coupanInUse, claimedUser, token } = getPromo || {};
+    if (coupanInUse === "One Time") {
+      let findUser = claimedUser.find(
+        (el) => el.userId.toString() === user.toString()
+      );
+      if (findUser) {
+        return res.status(404).send({
+          code: 404,
+          success: false,
+          message: "Promo code already in use.",
+        });
+      } else {
+        let payload = {
+          userId: user,
+          claimedDate: new Date(),
+        };
+        let promoFind = await db
+          .get_scrooge_promoDB()
+          .findOne({ couponCode: promocode.trim() });
+        await db.get_scrooge_promoDB().findOneAndUpdate(
+          { couponCode: promocode.trim() },
+          {
+            $push: { claimedUser: payload },
+          },
+          {
+            new: true,
+          }
+        );
+        let updateUser = await db.get_scrooge_usersDB().findOneAndUpdate(
+          { _id: ObjectId(user) },
+          {
+            $inc: {
+              wallet: token,
+              monthlyClaimBonus: token,
+              nonWithdrawableAmt: token,
+            },
+          },
+          { new: true } // Specify the option outside the update object
+        );
+        const exprDate = new Date();
+        exprDate.setHours(24 * 30 + exprDate.getHours());
+        exprDate.setSeconds(0);
+        exprDate.setMilliseconds(0);
+        await db.get_scrooge_bonus().insert({
+          userId: ObjectId(user),
+          bonusType: "monthly",
+          bonusAmount: token,
+          bonusExpirationTime: exprDate,
+          wagerLimit: token,
+          rollOverTimes: 1,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          isExpired: false,
+          wageredAmount: 0,
+          subCategory: "Promo Bonus",
+          restAmount: token,
+          expiredAmount: token,
+          executing: false,
+        });
+        const {
+          _id,
+          username,
+          email,
+          firstName,
+          lastName,
+          profile,
+          ipAddress,
+        } = updateUser?.value;
+        const transactionPayload = {
+          amount: token,
+          transactionType: "Free Promo ST",
+          prevWallet: parseFloat(updateUser?.value?.wallet),
+          updatedWallet: updateUser?.value?.wallet + parseFloat(token),
+          userId: {
+            _id,
+            username,
+            email,
+            firstName,
+            lastName,
+            profile,
+            ipAddress,
+          },
+          updatedGoldCoin: updateUser?.value?.goldCoin,
+          prevGoldCoin: updateUser?.value?.goldCoin,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        await db
+          .get_scrooge_transactionDB()
+          .insertOne(transactionPayload)
+          .catch((e) => {
+            console.log("e", e);
+          });
+      }
+      return res.send({
+        code: 200,
+        success: true,
+        getPromo,
+        message: "Token added successfully.",
+      });
+    }
+  } catch (e) {
+    console.log("outerCatch", e);
+    return res
+      .status(500)
+      .send({ success: false, message: "Error in Request Process" });
+  }
+}
+
+export async function paypalOrder(req, res) {
+  let user = req.user._id;
+  try {
+    console.log("paypalOrder user", user, req.body);
+    const { orderID } = req.body;
+    console.log("orderID", orderID);
+
+    let token = `Bearer ${await getToken()}`;
+    console.log("token", token);
+    const captureResponse = await axios.post(
+      `https://api.sandbox.paypal.com/v2/checkout/orders/${orderID}/capture`,
+      {},
+      {
+        headers: {
+          Authorization: token,
+        },
+      }
+    );
+
+    // Example response from PayPal capture API
+    const { status, id } = captureResponse.data;
+    console.log("Capture response:", { status, id });
+
+    // Respond to the client with success
+    res.status(200).json({ message: "Order successfully captured." });
+  } catch (e) {
+    console.log("outerCatch", e);
+    return res
+      .status(500)
+      .send({ success: false, message: "Error in Request Process" });
   }
 }

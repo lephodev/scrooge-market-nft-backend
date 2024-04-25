@@ -4,6 +4,8 @@ import spinGameModel from "../models/spinGameModel.mjs";
 import {
   BigWheelPlaces,
   LoyaltyWheelPlaces,
+  MegaWheelPlaces,
+  RegularRiskWheelPlaces,
   RiskWheelPlaces,
   places,
 } from "./roulleteArray.mjs";
@@ -52,6 +54,45 @@ export async function gameResultForRiskWheel(req, userId) {
     const { clientSeed } = req.query;
     let container = [];
     RiskWheelPlaces.forEach((el) => {
+      for (let i = 0.0; i < el.chances; i = i + 0.1) {
+        container.push(el);
+      }
+    });
+    let nonce = await db.get_scrooge_spinGameDB().countDocuments({ userId });
+    if (!nonce) nonce = 0;
+    const serverSeed = generateServerSeed();
+    const resultIndex = verifyResult(
+      serverSeed,
+      clientSeed,
+      nonce + 1,
+      container.length
+    );
+
+    const resultData = container[resultIndex];
+    return {
+      code: 200,
+      resultData,
+      gameModelData: {
+        serverSeed,
+        clientSeed,
+        nonce: nonce + 1,
+        userId,
+        resultIndex,
+        rouletteItems: places,
+        containerLength: container.length,
+        winItem: resultData,
+      },
+    };
+  } catch (error) {
+    console.log("error", error);
+  }
+}
+
+export async function gameResultForRegularRiskWheel(req, userId) {
+  try {
+    const { clientSeed } = req.query;
+    let container = [];
+    RegularRiskWheelPlaces.forEach((el) => {
       for (let i = 0.0; i < el.chances; i = i + 0.1) {
         container.push(el);
       }
@@ -162,12 +203,52 @@ export async function loyalitygameResultWheel(req, userId) {
   }
 }
 
+export async function MegaWheelgameResult(req, userId) {
+  try {
+    const { clientSeed } = req.query;
+    let container = [];
+    MegaWheelPlaces.forEach((el) => {
+      for (let i = 0.0; i < el.chances; i = i + 0.1) {
+        container.push(el);
+      }
+    });
+    let nonce = await db.get_scrooge_spinGameDB().countDocuments({ userId });
+    if (!nonce) nonce = 0;
+    const serverSeed = generateServerSeed();
+    const resultIndex = verifyResult(
+      serverSeed,
+      clientSeed,
+      nonce + 1,
+      container.length
+    );
+    const resultData = container[resultIndex];
+    return {
+      code: 200,
+      resultData,
+      gameModelData: {
+        serverSeed,
+        clientSeed,
+        nonce: nonce + 1,
+        userId,
+        resultIndex,
+        rouletteItems: places,
+        containerLength: container.length,
+        winItem: resultData,
+      },
+    };
+  } catch (error) {
+    console.log("error", error);
+  }
+}
+
 export async function updateUserDataAndTransaction(
   req,
   responseData,
   user,
-  type
+  type,
+  spinType
 ) {
+  console.log("spinTypespinType", spinType);
   try {
     const tempData = { ...responseData };
 
@@ -183,7 +264,8 @@ export async function updateUserDataAndTransaction(
       token === "Red4" ||
       token === "Red5" ||
       token === "Red6" ||
-      token === "Red7"
+      token === "Red7" ||
+      token === "Red8"
     ) {
       reslt.token = 0;
     }
@@ -210,6 +292,7 @@ export async function updateUserDataAndTransaction(
       amount: reslt?.token,
       createdAt: new Date(),
       updatedAt: new Date(),
+      transactionDetails: spinType,
     };
 
     const now = new Date();
@@ -218,7 +301,7 @@ export async function updateUserDataAndTransaction(
     tomorrow.setHours(0, 0, 0, 0); // Set to midnight of the next day
 
     // Convert to Eastern Standard Time (EST)
-    const estOffset = -5 * 60; // EST is UTC-5
+    const estOffset = -4 * 60; // EST is UTC-5
     const nowEst = new Date(now.getTime() + estOffset * 60 * 1000);
     const tomorrowEst = new Date(now.getTime() + estOffset * 60 * 1000);
     tomorrowEst.setDate(tomorrowEst.getDate() + 1);
@@ -281,21 +364,25 @@ export async function updateUserDataAndTransaction(
         prevDt.setDate(prevDt.getDate() - 1);
         prevDt.setHours(0, 0, 0, 0);
 
-        const estOffset = -5 * 60; // EST is UTC-5
+        const estOffset = -4 * 60; // EST is UTC-5
         const prevEst = new Date(prevDt.getTime() + estOffset * 60 * 1000);
-        console.log("prevEst", prevEst);
+        // console.log("prevEst", prevEst);
 
-        console.log(
-          "preDtTime ==>",
-          prevEst.getTime(),
-          "spin time ==>",
-          new Date(getLastDaySpin.createdAt),
-          new Date(getLastDaySpin.createdAt).getTime(),
-          prevDt.getTime() <= new Date(getLastDaySpin.createdAt).getTime()
+        // console.log(
+        //   "preDtTime ==>",
+        //   prevEst.getTime(),
+        //   "spin time ==>",
+        //   new Date(getLastDaySpin.createdAt),
+        //   new Date(getLastDaySpin.createdAt).getTime(),
+        //   prevDt.getTime() <= new Date(getLastDaySpin.createdAt).getTime()
+        // );
+
+        const lastSpintDt = new Date(getLastDaySpin.createdAt);
+        const lastSpintESTDt = new Date(
+          lastSpintDt.getTime() + estOffset * 60 * 1000
         );
 
-        if (prevEst.getTime() <= new Date(getLastDaySpin.createdAt).getTime()) {
-          console.log("helloooooooooo1");
+        if (prevEst.getTime() <= lastSpintESTDt.getTime()) {
           await db.get_scrooge_usersDB().updateOne(
             { _id: ObjectId(req.user._id) },
             {
@@ -305,7 +392,6 @@ export async function updateUserDataAndTransaction(
             }
           );
         } else {
-          console.log("helloooooooooo2");
           await db.get_scrooge_usersDB().updateOne(
             { _id: ObjectId(req.user._id) },
             {
@@ -315,7 +401,7 @@ export async function updateUserDataAndTransaction(
             }
           );
         }
-      }else{
+      } else {
         await db.get_scrooge_usersDB().updateOne(
           { _id: ObjectId(req.user._id) },
           {
