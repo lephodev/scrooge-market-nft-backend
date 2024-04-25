@@ -1546,7 +1546,7 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
       PTOK: body?.cardNumber,
       PTYP: "CARD",
       SESS: body?.sessionId?.sessionID,
-      SITE: "SCROOGE",
+      SITE: "DEFAULT",
       VERS: "0720",
       EPOC: firstTenDigits,
       TOTL: body?.amount.toString() * 100,
