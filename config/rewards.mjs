@@ -15,8 +15,9 @@ import BNB_ABI from "../config/BNB_ABI.json" assert { type: "json" };
 import { sendInvoice } from "../utils/sendx_send_invoice.mjs";
 import { getSigner } from "../utils/signer.mjs";
 import Queue from "better-queue";
-import { getAnAcceptPaymentPage } from "../utils/payment.mjs";
+import { getAnAcceptPaymentPage, getToken } from "../utils/payment.mjs";
 import { compareArrays } from "./utilities.mjs";
+import axios from "axios";
 
 const { Schema } = mongoose;
 
@@ -2760,6 +2761,39 @@ export async function redeemFreePromo(req, res) {
         message: "Token added successfully.",
       });
     }
+  } catch (e) {
+    console.log("outerCatch", e);
+    return res
+      .status(500)
+      .send({ success: false, message: "Error in Request Process" });
+  }
+}
+
+export async function paypalOrder(req, res) {
+  let user = req.user._id;
+  try {
+    console.log("paypalOrder user", user, req.body);
+    const { orderID } = req.body;
+    console.log("orderID", orderID);
+
+    let token = `Bearer ${await getToken()}`;
+    console.log("token", token);
+    const captureResponse = await axios.post(
+      `https://api.sandbox.paypal.com/v2/checkout/orders/${orderID}/capture`,
+      {},
+      {
+        headers: {
+          Authorization: token,
+        },
+      }
+    );
+
+    // Example response from PayPal capture API
+    const { status, id } = captureResponse.data;
+    console.log("Capture response:", { status, id });
+
+    // Respond to the client with success
+    res.status(200).json({ message: "Order successfully captured." });
   } catch (e) {
     console.log("outerCatch", e);
     return res

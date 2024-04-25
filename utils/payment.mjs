@@ -1,4 +1,12 @@
 import Authorize from "authorizenet";
+
+import axios from "axios";
+
+const clientId = process.env.PAYPAL_SANDBOX_CLIENT_ID;
+const secret = process.env.PAYPAL_SANDBOX_CLIENT_SECRET;
+
+const credentials = `${clientId}:${secret}`;
+const base64Credentials = Buffer.from(credentials).toString("base64");
 const { APIContracts: ApiContracts, APIControllers: ApiControllers } =
   Authorize;
 
@@ -609,3 +617,23 @@ export function createAuthCustomAnAcceptPaymentTransaction(
     callback(response);
   });
 }
+
+export const getToken = async () => {
+  try {
+    const response = await axios.post(
+      "https://api.sandbox.paypal.com/v1/oauth2/token",
+      "grant_type=client_credentials",
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: `Basic ${base64Credentials}`,
+        },
+      }
+    );
+    const accessToken = response.data.access_token;
+    console.log("Access Token:", accessToken);
+    return accessToken;
+  } catch (error) {
+    console.error("Error:", error.response.data.error_description);
+  }
+};
