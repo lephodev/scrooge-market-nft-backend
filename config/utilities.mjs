@@ -63,12 +63,12 @@ export function makeApiRequest(data, callback) {
   var postData = querystring.stringify(data);
 
   var options = {
-    host: process.env.KOUNT_TEST_RIS_URL,
+    host: process.env.KOUNT_PROD_RIS_URL,
     path: "/",
     port: "443",
     method: "POST",
     headers: {
-      "X-Kount-Api-Key": process.env.KOUNT_TEST_KEY,
+      "X-Kount-Api-Key": process.env.KOUNT_PROD_KEY,
       "Content-Type": "application/x-www-form-urlencoded",
       "Content-Length": Buffer.byteLength(postData),
     },
