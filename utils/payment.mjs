@@ -505,6 +505,7 @@ export function createAuthCustomAnAcceptPaymentTransaction(
   transactionRequestType.setBillTo(billTo);
   transactionRequestType.setShipTo(shipTo);
   transactionRequestType.setTransactionSettings(transactionSettings);
+  transactionRequestType.setCustomerIP(user?.ipAddress);
 
   var createRequest = new ApiContracts.CreateTransactionRequest();
   createRequest.setMerchantAuthentication(merchantAuthenticationType);
