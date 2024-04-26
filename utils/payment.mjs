@@ -1,6 +1,7 @@
 import Authorize from "authorizenet";
 
 import axios from "axios";
+import { getIpAdress } from "../config/utilities.mjs";
 
 const clientId = process.env.PAYPAL_SANDBOX_CLIENT_ID;
 const secret = process.env.PAYPAL_SANDBOX_CLIENT_SECRET;
@@ -381,6 +382,7 @@ export const getTransactionDetails = (body, callback) => {
 };
 
 export function createAuthCustomAnAcceptPaymentTransaction(
+  req,
   body,
   user,
   callback
@@ -392,6 +394,8 @@ export function createAuthCustomAnAcceptPaymentTransaction(
     process.env.AUTHORIZE_TRANSACTION_KEY
   );
 
+  const ipadd = getClientIp(req);
+  const ipAddress = getIpAdress(ipadd);
   var creditCard = new ApiContracts.CreditCardType();
   creditCard.setCardNumber(body?.cardNumber);
   creditCard.setExpirationDate(body?.expDate);
@@ -505,7 +509,7 @@ export function createAuthCustomAnAcceptPaymentTransaction(
   transactionRequestType.setBillTo(billTo);
   transactionRequestType.setShipTo(shipTo);
   transactionRequestType.setTransactionSettings(transactionSettings);
-  transactionRequestType.setCustomerIP(user?.ipAddress);
+  transactionRequestType.setCustomerIP(ipAddress);
 
   var createRequest = new ApiContracts.CreateTransactionRequest();
   createRequest.setMerchantAuthentication(merchantAuthenticationType);
