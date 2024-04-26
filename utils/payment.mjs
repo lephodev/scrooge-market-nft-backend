@@ -2,6 +2,7 @@ import Authorize from "authorizenet";
 
 import axios from "axios";
 import { getIpAdress } from "../config/utilities.mjs";
+import { getClientIp } from "request-ip";
 
 const clientId = process.env.PAYPAL_SANDBOX_CLIENT_ID;
 const secret = process.env.PAYPAL_SANDBOX_CLIENT_SECRET;
