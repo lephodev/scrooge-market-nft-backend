@@ -1372,7 +1372,7 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
       CURR: "USD",
       EMAL: user?.email,
       NAME: user?.username,
-      IPAD: user?.ipAddress,
+      IPAD: "111111111111",
       MACK: "Y",
       MERC: process.env.KOUNT_MERCHID,
       MODE: "Q",
