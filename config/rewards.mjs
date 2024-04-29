@@ -3000,7 +3000,7 @@ export async function paypalOrder(req, res) {
         }
       }
       // Respond to the client with success
-      res.status(200).json({ message: "Order successfully captured." });
+      res.status(200).json({ message: "Chips added successfully." });
     }
   } catch (e) {
     console.log("outerCatch", e);
