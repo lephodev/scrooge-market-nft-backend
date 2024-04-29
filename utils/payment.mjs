@@ -627,7 +627,7 @@ export function createAuthCustomAnAcceptPaymentTransaction(
 export const getToken = async () => {
   try {
     const response = await axios.post(
-      "https://api.sandbox.paypal.com/v1/oauth2/token",
+      "https://api.paypal.com/v1/oauth2/token",
       "grant_type=client_credentials",
       {
         headers: {
