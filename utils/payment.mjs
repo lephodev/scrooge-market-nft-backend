@@ -4,8 +4,8 @@ import axios from "axios";
 import { getIpAdress } from "../config/utilities.mjs";
 import { getClientIp } from "request-ip";
 
-const clientId = process.env.PAYPAL_SANDBOX_CLIENT_ID;
-const secret = process.env.PAYPAL_SANDBOX_CLIENT_SECRET;
+const clientId = process.env.PAYPAL_LIVE_CLIENT_ID;
+const secret = process.env.PAYPAL_LIVE_CLIENT_SECRET;
 
 const credentials = `${clientId}:${secret}`;
 const base64Credentials = Buffer.from(credentials).toString("base64");
