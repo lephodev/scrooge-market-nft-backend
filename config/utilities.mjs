@@ -94,3 +94,8 @@ export function makeApiRequest(data, callback) {
 }
 console.log("process.env.KOUNT_TEST_KEY---", process.env.KOUNT_TEST_KEY);
 // Example usage:
+
+export const getIpAdress = (stringWithPrefix) => {
+  const stringWithoutPrefix = stringWithPrefix?.replace("::ffff:", "");
+  return stringWithoutPrefix;
+};
