@@ -1136,9 +1136,18 @@ app.get(
     // startOfDay.setHours(5, 0, 0, 0);
     console.log("startOfDay limit ", startOfDay);
     const query = {
-      transactionType: "CC To Gold Coin",
-      "userId._id": userId,
-      createdAt: { $gte: startOfDay },
+      $or: [
+        {
+          transactionType: "CC To Gold Coin",
+          "userId._id": userId,
+          createdAt: { $gte: startOfDay },
+        },
+        {
+          transactionType: "Paypal To Gold Coin",
+          "userId._id": userId,
+          createdAt: { $gte: startOfDay },
+        },
+      ],
     };
     const findTransactionIfExist = await db
       .get_scrooge_transactionDB()
@@ -1475,7 +1484,9 @@ app.get(
 
     startOfDay.setHours(0, 0, 0, 0); // Set hours, minutes, seconds, and milliseconds to 0 for the start of the day
     const query = {
-      transactionType: { $in: ["CC To Gold Coin", "Crypto To Gold Coin"] },
+      transactionType: {
+        $in: ["CC To Gold Coin", "Crypto To Gold Coin", "Paypal To Gold Coin"],
+      },
       "userId._id": userId,
       purchasedAmountInUSD: {
         $in: [9.99, 19.99, 24.99, 4.99, 14.99, 49.99, 99.99],
