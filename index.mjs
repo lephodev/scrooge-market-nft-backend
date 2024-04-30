@@ -1412,6 +1412,7 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
         }
 
         createAuthCustomAnAcceptPaymentTransaction(
+          req,
           body,
           user,
           async (response) => {

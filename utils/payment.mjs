@@ -1,9 +1,11 @@
 import Authorize from "authorizenet";
 
 import axios from "axios";
+import { getIpAdress } from "../config/utilities.mjs";
+import { getClientIp } from "request-ip";
 
-const clientId = process.env.PAYPAL_SANDBOX_CLIENT_ID;
-const secret = process.env.PAYPAL_SANDBOX_CLIENT_SECRET;
+const clientId = process.env.PAYPAL_LIVE_CLIENT_ID;
+const secret = process.env.PAYPAL_LIVE_CLIENT_SECRET;
 
 const credentials = `${clientId}:${secret}`;
 const base64Credentials = Buffer.from(credentials).toString("base64");
@@ -381,6 +383,7 @@ export const getTransactionDetails = (body, callback) => {
 };
 
 export function createAuthCustomAnAcceptPaymentTransaction(
+  req,
   body,
   user,
   callback
@@ -392,6 +395,8 @@ export function createAuthCustomAnAcceptPaymentTransaction(
     process.env.AUTHORIZE_TRANSACTION_KEY
   );
 
+  const ipadd = getClientIp(req);
+  const ipAddress = getIpAdress(ipadd);
   var creditCard = new ApiContracts.CreditCardType();
   creditCard.setCardNumber(body?.cardNumber);
   creditCard.setExpirationDate(body?.expDate);
@@ -505,6 +510,7 @@ export function createAuthCustomAnAcceptPaymentTransaction(
   transactionRequestType.setBillTo(billTo);
   transactionRequestType.setShipTo(shipTo);
   transactionRequestType.setTransactionSettings(transactionSettings);
+  transactionRequestType.setCustomerIP(ipAddress);
 
   var createRequest = new ApiContracts.CreateTransactionRequest();
   createRequest.setMerchantAuthentication(merchantAuthenticationType);
@@ -621,7 +627,7 @@ export function createAuthCustomAnAcceptPaymentTransaction(
 export const getToken = async () => {
   try {
     const response = await axios.post(
-      "https://api.sandbox.paypal.com/v1/oauth2/token",
+      "https://api.paypal.com/v1/oauth2/token",
       "grant_type=client_credentials",
       {
         headers: {

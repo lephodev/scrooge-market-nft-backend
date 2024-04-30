@@ -18,6 +18,7 @@ import Queue from "better-queue";
 import { getAnAcceptPaymentPage, getToken } from "../utils/payment.mjs";
 import { compareArrays } from "./utilities.mjs";
 import axios from "axios";
+import moment from "moment";
 
 const { Schema } = mongoose;
 
@@ -2769,17 +2770,128 @@ export async function redeemFreePromo(req, res) {
   }
 }
 
+const getGCPurchaseAffliateBonus = async (
+  extractedId,
+  extractedReffrenceId,
+  amount
+) => {
+  console.log("888888888888888", extractedId, extractedReffrenceId, amount);
+  try {
+    let getUserdetails = await db
+      .get_scrooge_usersDB()
+      .findOne({ _id: ObjectId(extractedId) });
+    console.log("getUsergetUser", getUserdetails);
+    let affliateData = await db
+      .get_affiliatesDB()
+      .findOne({ userId: extractedId });
+    let getAdminSettings = await db.get_db_admin_settingDB().findOne({});
+    const { cryptoToGcReferalBonus } = getAdminSettings;
+    let getTicketBonus =
+      (cryptoToGcReferalBonus / 100) * parseInt(amount * 100);
+    console.log(
+      "getTicketBonus",
+      getTicketBonus,
+      amount,
+      cryptoToGcReferalBonus
+    );
+    let affliateUserDetails = {
+      commission: getTicketBonus,
+      monthly_earned: getTicketBonus,
+      referred_user_id: ObjectId(extractedReffrenceId),
+      affiliate_id: affliateData?._id || null,
+      userId: ObjectId(extractedId),
+      transactionType: "CC to Gc",
+      purchaseAmount: amount,
+      tokenAmount: getUserdetails?.wallet,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    await db.get_db_affiliates_transactionDB().insertOne(affliateUserDetails);
+    // let getUser = await db.get_scrooge_usersDB().findOneAndUpdate(
+    //   { _id: ObjectId(extractedReffrenceId) },
+    //   {
+    //     $inc: { wallet: getTicketBonus },
+    //   },
+    //   { new: true }
+    // );
+
+    db.get_affiliatesDB().findOneAndUpdate(
+      { userId: ObjectId(extractedReffrenceId) },
+      {
+        $inc: {
+          // total_earned: getTicketBonus,
+          // monthly_earned: getTicketBonus,
+        },
+      },
+      { new: true }
+    );
+
+    await db.get_scrooge_usersDB().findOneAndUpdate(
+      { _id: ObjectId(extractedId) },
+      {
+        $inc: {
+          totalBuy: parseInt(amount),
+          totalProfit: parseInt(amount),
+        },
+      }
+    );
+    let getUser = await db
+      .get_scrooge_usersDB()
+      .findOne({ _id: ObjectId(extractedReffrenceId) });
+    let getUserData = await db
+      .get_scrooge_usersDB()
+      .findOne({ _id: ObjectId(extractedReffrenceId) });
+
+    console.log("-----------------", getUserData);
+    const {
+      _id: referUserId,
+      username: referUserName,
+      email: referUserEmail,
+      firstName: referUserFirstName,
+      lastName: referUserLastName,
+      profile: referUserProfile,
+    } = getUserData;
+    const transactionPayload = {
+      amount: getTicketBonus,
+      transactionType: "CC To Gc bonus",
+      prevWallet: getUser?.value?.wallet,
+      updatedWallet: getUser?.value?.wallet,
+      // userId: ObjectId(refrenceId),
+
+      userId: {
+        _id: referUserId,
+        username: referUserName,
+        email: referUserEmail,
+        firstName: referUserFirstName,
+        referUserLastName,
+        profile: referUserProfile,
+        ipAddress: getUserData?.ipAddress,
+      },
+
+      updatedTicket: getUser?.value?.ticket + getTicketBonus,
+      prevGoldCoin: getUser?.value?.goldCoin,
+      updatedGoldCoin: getUser?.value?.goldCoin,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      prevTicket: getUser?.value?.ticket,
+    };
+    await db.get_scrooge_transactionDB().insertOne(transactionPayload);
+  } catch (error) {
+    console.log("error", error);
+  }
+};
+
 export async function paypalOrder(req, res) {
-  let user = req.user._id;
+  let user = req.user;
   try {
     console.log("paypalOrder user", user, req.body);
-    const { orderID } = req.body;
-    console.log("orderID", orderID);
+    const { orderID, promoCode } = req.body;
+    console.log("orderID", orderID, promoCode);
 
     let token = `Bearer ${await getToken()}`;
     console.log("token", token);
     const captureResponse = await axios.post(
-      `https://api.sandbox.paypal.com/v2/checkout/orders/${orderID}/capture`,
+      `https://api.paypal.com/v2/checkout/orders/${orderID}/capture`,
       {},
       {
         headers: {
@@ -2790,10 +2902,106 @@ export async function paypalOrder(req, res) {
 
     // Example response from PayPal capture API
     const { status, id } = captureResponse.data;
-    console.log("Capture response:", { status, id });
+    if (status === "COMPLETED" && id) {
+      console.log("Capture response:", { status, id });
+      const { value } =
+        captureResponse?.data?.purchase_units[0]?.payments?.captures[0].amount;
+      let amount = parseFloat(value)?.toString();
+      if (amount) {
+        const data = await db.get_marketplace_gcPackagesDB().findOne({
+          priceInBUSD: amount?.toString(),
+        });
+        if (data) {
+          let query = {
+            couponCode: promoCode,
+            expireDate: { $gte: new Date() },
+          };
+          let findPromoData = await db.get_scrooge_promoDB().findOne(query);
+          const trans = await addChips(
+            user?._id?.toString(),
+            findPromoData?.coupanType === "Percent"
+              ? parseInt(data.freeTokenAmount) +
+                  parseInt(data.freeTokenAmount) *
+                    (parseFloat(findPromoData?.discountInPercent) / 100)
+              : findPromoData?.coupanType === "2X"
+              ? parseInt(data.freeTokenAmount) * 2
+              : parseInt(data.freeTokenAmount),
+            "",
+            "Paypal To Gold Coin",
+            findPromoData?.coupanType === "Percent"
+              ? parseInt(data?.gcAmount) +
+                  parseInt(data?.gcAmount) *
+                    (parseFloat(findPromoData?.discountInPercent) / 100)
+              : findPromoData?.coupanType === "2X"
+              ? parseInt(data.gcAmount) * 2
+              : parseInt(data.gcAmount),
+            captureResponse?.data,
+            findPromoData?.coupanType === "Percent"
+              ? parseInt(data.freeTokenAmount) *
+                  (parseFloat(findPromoData?.discountInPercent) / 100)
+              : findPromoData?.coupanType === "2X"
+              ? parseInt(data.freeTokenAmount)
+              : 0,
+            amount //amount?.toString() === "9.99"
+            // ? 1500
+            // : 0
+          );
+          const reciptPayload = {
+            username: user?.username,
+            email: user?.email,
+            invoicDate: moment(new Date()).format("D MMMM  YYYY"),
+            paymentMethod: "Credit Card Purchase",
+            packageName: "Gold Coin Purchase",
+            goldCoinQuantity: parseInt(data?.gcAmount),
+            tokenQuantity: parseInt(data?.freeTokenAmount),
+            purcahsePrice: amount?.toString(),
+            Tax: 0,
+            firstName: user?.firstName,
+            lastName: user?.lastName,
+          };
+          if (data?.offerType === "MegaOffer") {
+            await db.get_scrooge_usersDB().findOneAndUpdate(
+              { _id: ObjectId(user?._id) },
 
-    // Respond to the client with success
-    res.status(200).json({ message: "Order successfully captured." });
+              { $push: { megaOffer: parseFloat(amount) } }
+            );
+          }
+
+          const result = await db
+            .get_scrooge_usersDB()
+            .findOneAndUpdate(
+              { _id: ObjectId(user?._id) },
+              { $set: { isSpended: true } }
+            );
+          await emailSend.InvoiceEmail(user?.email, reciptPayload);
+          if (promoCode) {
+            let payload = {
+              userId: user?._id,
+              claimedDate: new Date(),
+            };
+
+            let promoFind = await db
+              .get_scrooge_promoDB()
+              .findOne({ couponCode: promoCode.trim() });
+            await db.get_scrooge_promoDB().findOneAndUpdate(
+              { couponCode: promoCode.trim() },
+              {
+                $push: { claimedUser: payload },
+              },
+              {
+                new: true,
+              }
+            );
+          }
+
+          if (user?.refrenceId) {
+            getGCPurchaseAffliateBonus(user?._id, user?.refrenceId, amount);
+          }
+        }
+      }
+      // Respond to the client with success
+      res.status(200).json({ message: "Chips added successfully." });
+    }
   } catch (e) {
     console.log("outerCatch", e);
     return res
