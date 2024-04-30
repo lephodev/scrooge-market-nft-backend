@@ -2893,7 +2893,7 @@ export async function paypalOrder(req, res) {
     let token = `Bearer ${await getToken()}`;
     console.log("token", token);
     const captureResponse = await axios.post(
-      `https://api.paypal.com/v2/checkout/orders/${orderID}/capture`,
+      `${process.env.PAYPAL_URL}/v2/checkout/orders/${orderID}/capture`,
       {},
       {
         headers: {
