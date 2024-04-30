@@ -2615,7 +2615,9 @@ export async function getWeeklyWheel(req, res) {
     const { _id: userId } = req.user;
     let query = {
       "userId._id": ObjectId(userId),
-      transactionType: { $in: ["Crypto To Gold Coin", "CC To Gold Coin"] },
+      transactionType: {
+        $in: ["Crypto To Gold Coin", "CC To Gold Coin", "Paypal To Gold Coin"],
+      },
     };
 
     const getWeeklyPurchase = await db
