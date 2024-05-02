@@ -1544,12 +1544,14 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
         .send({ success: false, data: "Your wallet blocked by admin" });
     }
 
+    let fullName = user?.firstName + " " + user?.lastName;
+
     var requestData = {
       ANID: "",
       AUTH: "A",
       CURR: "USD",
       EMAL: user?.email,
-      NAME: user?.username,
+      NAME: fullName,
       IPAD: user?.ipAddress,
       MACK: "Y",
       MERC: process.env.KOUNT_MERCHID,
@@ -1567,6 +1569,7 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
       B2PC: body?.zipCode,
       B2CC: body?.country,
       B2PN: body?.phoneNumber,
+      UNIQ: user?.username,
       "PROD_DESC[0]": "CC To Gold Coin",
       "PROD_ITEM[0]": "CC To Gold Coin",
       "PROD_PRICE[0]": body?.amount.toString() * 100,
