@@ -1402,6 +1402,7 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
       B2PC: body?.zipCode,
       B2CC: body?.country,
       B2PN: body?.phoneNumber,
+      UNIQ: "hhhh123",
       "PROD_DESC[0]": "CC To Gold Coin",
       "PROD_ITEM[0]": "CC To Gold Coin",
       "PROD_PRICE[0]": body?.amount.toString() * 100,
