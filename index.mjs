@@ -9,6 +9,8 @@ import helmet from "helmet";
 import * as rewards from "./config/rewards.mjs";
 import * as affiliate from "./config/affiliate.mjs";
 import * as useSDK from "./config/sdk.mjs";
+import ip from "request-ip";
+
 import * as raffles from "./raffles/raffles.mjs";
 import * as rouletteSpin from "./rouletteSpin/rouletteSpin.mjs";
 import * as sharable from "./config/sharable_data.mjs";
@@ -1546,13 +1548,15 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
 
     let fullName = user?.firstName + " " + user?.lastName;
 
+    const ipAddress = ip.getClientIp(req);
+
     var requestData = {
       ANID: "",
       AUTH: "A",
       CURR: "USD",
       EMAL: user?.email,
       NAME: fullName,
-      IPAD: user?.ipAddress,
+      IPAD: ipAddress,
       MACK: "Y",
       MERC: process.env.KOUNT_MERCHID,
       MODE: "Q",
