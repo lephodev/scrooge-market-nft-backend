@@ -1548,6 +1548,7 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
 
     let fullName = user?.firstName + " " + user?.lastName;
 
+    console.log("amount", (body?.amount * 100).toFixed(2));
     const ipAddress = ip.getClientIp(req);
 
     var requestData = {
@@ -1566,7 +1567,7 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
       SITE: "DEFAULT",
       VERS: "0720",
       EPOC: firstTenDigits,
-      TOTL: body?.amount.toString() * 100,
+      TOTL: parseFloat((body?.amount * 100).toFixed(2)),
       B2A1: body?.streetAddress,
       B2CI: body?.city,
       B2ST: body?.state,
@@ -1576,7 +1577,7 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
       UNIQ: user?.username,
       "PROD_DESC[0]": "CC To Gold Coin",
       "PROD_ITEM[0]": "CC To Gold Coin",
-      "PROD_PRICE[0]": body?.amount.toString() * 100,
+      "PROD_PRICE[0]": parseFloat((body?.amount * 100).toFixed(2)),
       "PROD_QUANT[0]": 1,
       "PROD_TYPE[0]": "CC To Gold Coin",
     };
