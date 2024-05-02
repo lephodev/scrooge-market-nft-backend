@@ -1377,12 +1377,14 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
         .send({ success: false, data: "Your wallet blocked by admin" });
     }
 
+    let fullName = user?.firstName + " " + user?.lastName;
+
     var requestData = {
       ANID: "",
       AUTH: "A",
       CURR: "USD",
       EMAL: user?.email,
-      NAME: user?.username,
+      NAME: fullName,
       IPAD: user?.ipAddress,
       MACK: "Y",
       MERC: process.env.KOUNT_MERCHID,
