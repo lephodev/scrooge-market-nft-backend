@@ -1588,13 +1588,27 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
       } else {
         console.log("response", response);
         const modeRegex = /MODE=([^\n]+)/;
+        const authRegex = /AUTO=([^\n]+)/;
+
         const modeMatch = response.match(modeRegex);
+        const autoMatch = response.match(authRegex);
+
         let modes = modeMatch ? modeMatch[1] : null;
-        console.log("modes", modes);
+        const auto = autoMatch ? autoMatch[1] : null;
+
+        console.log("modes,auto", modes, auto);
         if (modes !== "Q") {
-          return res
-            .status(400)
-            .send({ success: false, message: "Error in Verifying Kount" });
+          return res.status(400).send({
+            success: false,
+            message: "Transaction Declined. Reason code: K",
+          });
+        }
+
+        if (auto === "D") {
+          return res.status(400).send({
+            success: false,
+            message: "Transaction Declined. Reason code: K",
+          });
         }
 
         createAuthCustomAnAcceptPaymentTransaction(
