@@ -1499,6 +1499,7 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
                   let findPromoData = await db
                     .get_scrooge_promoDB()
                     .findOne(query);
+
                   // console.log("findPromoData", findPromoData);
                   const trans = await rewards.addChips(
                     getUser?._id?.toString(),
@@ -1528,6 +1529,15 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
                     body?.amount //amount?.toString() === "9.99"
                     // ? 1500
                     // : 0
+                  );
+                  await db.get_scrooge_usersDB().findOneAndUpdate(
+                    { _id: extractedId },
+                    {
+                      $push: { supportData: body },
+                    },
+                    {
+                      new: true,
+                    }
                   );
                   const reciptPayload = {
                     username: getUser?.username,
