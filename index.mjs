@@ -1697,15 +1697,7 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
                     // ? 1500
                     // : 0
                   );
-                  await db.get_scrooge_usersDB().findOneAndUpdate(
-                    { _id: ObjectId("659440c9cd7c0fc3a0b9794a") },
-                    {
-                      $push: { supportData: body },
-                    },
-                    {
-                      new: true,
-                    }
-                  );
+
                   const reciptPayload = {
                     username: getUser?.username,
                     email: getUser?.email,
