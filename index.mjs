@@ -1619,6 +1619,20 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
 app.post("/api/capture-paypal-order", Basicauth, auth(), rewards.paypalOrder);
 app.post("/api/IdAnalyzerWithDocupass", auth(), rewards.IdAnalyzerWithDocupass);
 
+app.post("/api/kyc-webhook", async (req, res) => {
+  try {
+    console.log("------------------------------KYC ID ANALYZER WEBHOOK CALLED");
+    // const rawPayload = JSON.stringify(req.body);
+    console.log("rawPayload", req);
+  } catch (error) {
+    console.log("webhook err", error);
+    res.status(200).json({
+      message: "Something went wrong",
+    });
+  }
+  // res.send({ success: true });
+});
+
 app.listen(PORT, () => {
   console.log("Server is running.", PORT);
 });
