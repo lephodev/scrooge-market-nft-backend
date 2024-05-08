@@ -3011,3 +3011,43 @@ export async function paypalOrder(req, res) {
       .send({ success: false, message: "Error in Request Process" });
   }
 }
+
+export async function IdAnalyzerWithDocupass(req, res) {
+  let user = req.user;
+  try {
+    // Request data
+    const requestData = {
+      version: "string",
+      profile: "409fc24fd8094eb8957a9faf3d82c414",
+      mode: "ID verification + Face verification against uploaded ID",
+    };
+
+    // Axios POST request
+    axios
+      .post("https://api2.idanalyzer.com/docupass", requestData, {
+        headers: {
+          "X-API-KEY": "6fT1C2fOcaqkk5Uim7dWybraFqUdCQ3V",
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      })
+      .then((response) => {
+        console.log("Response:", response.data);
+        res.status(200).send({
+          response: response?.data,
+        });
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+
+    console.log("IdAnalyzerWithDocupass user");
+
+    // Respond to the client with success
+  } catch (e) {
+    console.log("outerCatch", e);
+    return res
+      .status(500)
+      .send({ success: false, message: "Error in Request Process" });
+  }
+}
