@@ -3021,6 +3021,11 @@ export async function IdAnalyzerWithDocupass(req, res) {
       customData: user?._id,
       profile: "409fc24fd8094eb8957a9faf3d82c414",
       mode: "ID verification + Face verification against uploaded ID",
+      userPhone: "string",
+      verifyName: "string",
+      verifyDOB: "string",
+      verifyAddress: "string",
+      verifyPostcode: "string",
     };
 
     // Axios POST request
