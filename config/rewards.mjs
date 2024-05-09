@@ -3018,6 +3018,7 @@ export async function IdAnalyzerWithDocupass(req, res) {
     // Request data
     const requestData = {
       version: "v3",
+      customData: user._id,
       profile: "409fc24fd8094eb8957a9faf3d82c414",
       mode: "ID verification + Face verification against uploaded ID",
     };
