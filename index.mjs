@@ -1623,7 +1623,7 @@ app.post("/api/kyc-webhook", async (req, res) => {
   try {
     console.log("------------------------------KYC ID ANALYZER WEBHOOK CALLED");
     // const rawPayload = JSON.stringify(req.body);
-    console.log("rawPayload", req);
+    console.log("rawPayload", req.body);
   } catch (error) {
     console.log("webhook err", error);
     res.status(200).json({
