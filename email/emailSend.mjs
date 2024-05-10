@@ -70,8 +70,8 @@ export const SubmitRedeemRequestEmail = async (to, name, prize) => {
     console.log("to, name", to, name);
     let subject = "Submit Redeem Request";
     const text = ``;
-    const html = SUBMIT_REDEEM_REQUEST(name, prize);
-    await redeemSendemail(to, subject, text, html);
+    // const html = SUBMIT_REDEEM_REQUEST(name, prize);
+    // await redeemSendemail(to, subject, text, html);
   } catch (error) {
     console.log("error", error);
   }
