@@ -3027,7 +3027,7 @@ export async function IdAnalyzerWithDocupass(req, res) {
       verifyName: firstName + " " + lastName,
       verifyDOB: birthDate,
       // verifyAge: "string",
-      verifyAddress: address,
+      // verifyAddress: address,
       verifyPostcode: zipCode,
     };
 
