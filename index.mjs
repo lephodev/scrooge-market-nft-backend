@@ -222,7 +222,6 @@ app.get("/api/getItems/:type", Basicauth, auth(), async (req, res) => {
 //################################# Prizes #################################//
 // Route to get available prizes
 app.get("/api/getPrizes", Basicauth, auth(), async (req, res) => {
-  console.log("abcccc");
   const resp = await rewards.getPrizes(req).then((data) => {
     // console.log("prizes resp: ", data);
     res.send(data);
@@ -351,7 +350,6 @@ app.get(
   express.raw({ type: "application/json" }),
   auth(),
   (request, response) => {
-    console.log("reee", request.query, request.params, request.body);
     const res = processStripeWebhook(request, response);
     // response.send();
   }
@@ -512,7 +510,6 @@ const getGCPurchaseAffliateBonus = async (
       .get_scrooge_usersDB()
       .findOne({ _id: ObjectId(extractedReffrenceId) });
 
-    console.log("-----------------", getUserData);
     const {
       _id: referUserId,
       username: referUserName,
@@ -558,7 +555,6 @@ app.post("/api/authorize-webhook", async (req, res) => {
 
     getTransactionDetails(rawPayload, async (response) => {
       try {
-        console.log("response528", response);
         const amount = response?.transaction?.settleAmount;
         const email = response?.transaction?.customer?.email;
         // const emailAndIdRegex = /^(.+?)_(\w+)$/;
@@ -571,10 +567,6 @@ app.post("/api/authorize-webhook", async (req, res) => {
           const extractedId = parts[0] || null;
           const extractedPromoCode = parts[1] || null;
           const extractedReffrenceId = parts[2] || null;
-
-          console.log("extractedId:", extractedId);
-          console.log("extractedPromoCode:", extractedPromoCode);
-          console.log("extractedReffrenceId", extractedReffrenceId);
 
           if (
             response.messages.resultCode !== "Ok" ||
@@ -597,7 +589,6 @@ app.post("/api/authorize-webhook", async (req, res) => {
             const data = await db.get_marketplace_gcPackagesDB().findOne({
               priceInBUSD: amount?.toString(),
             });
-            console.log("data", data);
             if (data) {
               const findTransactionIfExist = await db
                 .get_scrooge_transactionDB()
@@ -606,7 +597,6 @@ app.post("/api/authorize-webhook", async (req, res) => {
                     response?.transaction?.transId,
                 })
                 .toArray();
-              console.log("findTransactionIfExist", findTransactionIfExist);
 
               if (findTransactionIfExist.length === 0) {
                 let query = {
@@ -616,7 +606,6 @@ app.post("/api/authorize-webhook", async (req, res) => {
                 let findPromoData = await db
                   .get_scrooge_promoDB()
                   .findOne(query);
-                console.log("findPromoData", findPromoData);
                 const trans = await rewards.addChips(
                   getUser?._id?.toString(),
                   findPromoData?.coupanType === "Percent"
@@ -674,20 +663,16 @@ app.post("/api/authorize-webhook", async (req, res) => {
                     { $set: { isSpended: true } }
                   );
 
-                console.log("ssss", result);
-
                 await InvoiceEmail(getUser?.email, reciptPayload);
                 if (extractedPromoCode) {
                   let payload = {
                     userId: extractedId,
                     claimedDate: new Date(),
                   };
-                  console.log("promoCode", extractedPromoCode);
-                  console.log("payload", payload);
+
                   let promoFind = await db
                     .get_scrooge_promoDB()
                     .findOne({ couponCode: extractedPromoCode.trim() });
-                  console.log("promoFind", promoFind);
                   await db.get_scrooge_promoDB().findOneAndUpdate(
                     { couponCode: extractedPromoCode.trim() },
                     {
@@ -698,11 +683,7 @@ app.post("/api/authorize-webhook", async (req, res) => {
                     }
                   );
                 }
-                console.log(
-                  "extractedReffrenceIdextractedReffrenceIdextractedReffrenceId",
-                  typeof extractedReffrenceId,
-                  extractedReffrenceId
-                );
+
                 if (extractedReffrenceId !== "null") {
                   getGCPurchaseAffliateBonus(
                     extractedId,
@@ -734,11 +715,9 @@ app.post("/api/authorize-webhook", async (req, res) => {
 app.post("/api/testpostman", async (req, res) => {
   try {
     const rawPayload = JSON.stringify(req.body);
-    console.log("rawPayload", rawPayload);
 
     getTransactionDetails(rawPayload, async (response) => {
       try {
-        console.log("response528", response);
         const amount = response?.transaction?.settleAmount;
         const email = response?.transaction?.customer?.email;
         // const emailAndIdRegex = /^(.+?)_(\w+)$/;
@@ -751,10 +730,6 @@ app.post("/api/testpostman", async (req, res) => {
           const extractedId = parts[0] || null;
           const extractedPromoCode = parts[1] || null;
           const extractedReffrenceId = parts[2] || null;
-
-          console.log("extractedId:", extractedId);
-          console.log("extractedPromoCode:", extractedPromoCode);
-          console.log("extractedReffrenceId", extractedReffrenceId);
 
           if (
             response.messages.resultCode !== "Ok" ||
@@ -915,20 +890,16 @@ app.post("/api/accept-deceptor", auth(), authLimiter, async (req, res) => {
   console.log("hello console");
   try {
     const { user, body } = req || {};
-    console.log("body", body);
     if (user?.isBlockWallet) {
       return res
         .status(400)
         .send({ success: false, data: "Your wallet blocked by admin" });
     }
-    console.log();
+
     const binStr = new RegExp(`^${body.bin}`, "gm");
-    console.log("binStr", binStr);
     const bin = await db.get_scrooge_bin().findOne({
       binNumber: binStr,
     });
-
-    console.log("bin", bin);
 
     if (bin?.isbinBlock) {
       return res
@@ -944,7 +915,6 @@ app.post("/api/accept-deceptor", auth(), authLimiter, async (req, res) => {
         .status(400)
         .send({ success: false, data: "Invalid price amount" });
     createAnAcceptPaymentTransaction(body, user, async (response) => {
-      console.log("response", response.messages.resultCode);
       if (
         response.messages.resultCode !== "Ok" ||
         response.transactionResponse?.errors
@@ -1016,18 +986,15 @@ app.post("/api/accept-deceptor", auth(), authLimiter, async (req, res) => {
       };
       await sendInvoice(reciptPayload);
       // console.log("refrenceId",user.refrenceId);
-      console.log("Body With CC ", body.item.promoCode);
       if (body?.item?.promoCode) {
         let payload = {
           userId: user?._id,
           claimedDate: new Date(),
         };
-        console.log("promoCode CC", body.item.promoCode);
-        console.log("payload CC", payload);
+
         let promoFind = await db
           .get_scrooge_promoDB()
           .findOne({ couponCode: body.item.promoCode.trim() });
-        console.log("promoFind With CC", promoFind);
         let updatePromo = await db.get_scrooge_promoDB().findOneAndUpdate(
           { couponCode: body.item.promoCode.trim() },
           {
@@ -1036,10 +1003,6 @@ app.post("/api/accept-deceptor", auth(), authLimiter, async (req, res) => {
           {
             new: true,
           }
-        );
-        console.log(
-          "updatePromoupdatePromoupdatePromo with Creadit card",
-          updatePromo
         );
       }
       if (user.refrenceId) {
@@ -1095,11 +1058,9 @@ app.get(
 );
 app.post("/api/getFormToken", Basicauth, auth(), async (req, res) => {
   const { user, body } = req || {};
-  console.log("user", user, body);
 
   let number = new Date().getTime();
   let firstTenDigits = number.toString().substring(0, 10);
-  console.log("firstTenDigits", firstTenDigits);
 
   getAnAcceptPaymentPage(body, user, async (response) => {
     return res.send({
@@ -1118,11 +1079,9 @@ app.get(
     const { user } = req || {};
     let userId = user._id;
 
-    console.log("getGCPurcahseLimitPerDay", userId);
     const startOfDay = new Date();
     let crrHours = startOfDay.getHours();
     let rnageDt = startOfDay.getDate();
-    console.log("startOfDay-------", startOfDay, rnageDt, crrHours);
     if (crrHours < 5) {
       startOfDay.setDate(rnageDt - 1);
       startOfDay.setHours(5, 0, 0, 0);
@@ -1132,11 +1091,8 @@ app.get(
     const endDate = new Date();
     endDate.setHours(startOfDay.getHours() + 24);
 
-    console.log("startOfDay", startOfDay, "endDate", endDate);
-
     // startOfDay.setHours(0, 0, 0, 0); // Set hours, minutes, seconds, and milliseconds to 0 for the start of the day
     // startOfDay.setHours(5, 0, 0, 0);
-    console.log("startOfDay limit ", startOfDay);
     const query = {
       $or: [
         {
@@ -1311,7 +1267,6 @@ const gameResultForRegularRiskWheel = async (req, res) => {
       resultData.token === "Green2" ||
       resultData.token === "Green3"
     ) {
-      console.log("inside update");
       await db.get_scrooge_usersDB().updateOne(
         { _id: ObjectId(req.user._id) },
         {
@@ -1321,7 +1276,6 @@ const gameResultForRegularRiskWheel = async (req, res) => {
         }
       );
     }
-    console.log("req?.user?._id", req?.user?._id);
     let find = await db
       .get_scrooge_usersDB()
       .findOne({ _id: ObjectId(req?.user?._id) });
@@ -1374,12 +1328,10 @@ const gameResultForRiskWheel = async (req, res) => {
     const {
       resultData: { token },
     } = resp1;
-    console.log("tokentokentoken", token);
     if (token !== "Green1" && token !== "Green2") {
       await rouletteSpin.updateUserDataAndTransaction(req, resp1, user, "", {
         spinType: "Risk wheel",
       });
-      console.log("helloooo");
     }
   } catch (error) {
     return res.status(500).send({ msg: "Internal Server Error" });
@@ -1474,7 +1426,6 @@ app.get(
   async (req, res) => {
     const { user } = req || {};
 
-    console.log("user", user.megaOffer);
     let userId = user._id;
     const startOfDay = new Date();
 
@@ -1495,8 +1446,6 @@ app.get(
       },
       createdAt: { $gt: startOfDay },
     };
-
-    console.log("startOfDay", startOfDay);
 
     const findTransactionIfExist = await db
       .get_scrooge_transactionDB()
@@ -1531,10 +1480,8 @@ app.post(
 );
 
 app.post("/api/auth-make-payment", auth(), async (req, res) => {
-  console.log("hello console");
   try {
     const { user, body } = req || {};
-    console.log("Bodd", body);
     const extractedId = user._id;
     const extractedPromoCode = body?.promoCode || null;
     const extractedReffrenceId = user?.refrenceId || null;
@@ -1548,7 +1495,6 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
 
     let fullName = user?.firstName + " " + user?.lastName;
 
-    console.log("amount", (body?.amount * 100).toFixed(2));
     const ipAddress = ip.getClientIp(req);
 
     var requestData = {
@@ -1586,7 +1532,6 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
       if (err) {
         console.error("Error:", err);
       } else {
-        console.log("response", response);
         const modeRegex = /MODE=([^\n]+)/;
         const authRegex = /AUTO=([^\n]+)/;
 
@@ -1596,7 +1541,6 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
         let modes = modeMatch ? modeMatch[1] : null;
         const auto = autoMatch ? autoMatch[1] : null;
 
-        console.log("modes,auto", modes, auto);
         if (modes !== "Q") {
           return res.status(400).send({
             success: false,
@@ -1639,11 +1583,6 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
               const data = await db.get_marketplace_gcPackagesDB().findOne({
                 priceInBUSD: body?.amount?.toString(),
               });
-              console.log("data", data);
-              console.log(
-                "response?.transaction?.transId",
-                response.transactionResponse.transId
-              );
 
               if (data) {
                 const findTransactionIfExist = await db
@@ -1653,10 +1592,6 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
                       response?.transactionResponse?.transId,
                   })
                   .toArray();
-                console.log(
-                  "findTransactionIfExist",
-                  findTransactionIfExist.length
-                );
 
                 if (findTransactionIfExist.length === 0) {
                   let query = {
@@ -1738,7 +1673,6 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
                     let promoFind = await db
                       .get_scrooge_promoDB()
                       .findOne({ couponCode: extractedPromoCode.trim() });
-                    console.log("promoFind", promoFind);
                     await db.get_scrooge_promoDB().findOneAndUpdate(
                       { couponCode: extractedPromoCode.trim() },
                       {
@@ -1749,7 +1683,6 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
                       }
                     );
                   }
-                  console.log("extractedReffrenceId", extractedReffrenceId);
                   if (extractedReffrenceId) {
                     getGCPurchaseAffliateBonus(
                       extractedId,
