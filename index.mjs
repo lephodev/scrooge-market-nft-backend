@@ -229,7 +229,7 @@ app.get("/api/getPrizes", Basicauth, auth(), async (req, res) => {
   });
 });
 
-app.get("/api/getGCPackages", Basicauth, auth(), rewards.getCryptoToGCPackages);
+app.get("/api/getGCPackages", auth(), rewards.getCryptoToGCPackages);
 app.get("/api/getTicketToToken", Basicauth, auth(), rewards.getTicketToToken);
 
 // Route to get user's redeemed prizes
@@ -467,7 +467,7 @@ const getGCPurchaseAffliateBonus = async (
     let affliateUserDetails = {
       commission: getTicketBonus,
       monthly_earned: getTicketBonus,
-      referred_user_id: ObjectId(extractedReffrenceId),
+      referred_user_id: extractedReffrenceId && ObjectId(extractedReffrenceId),
       affiliate_id: affliateData?._id || null,
       userId: ObjectId(extractedId),
       transactionType: "CC to Gc",
