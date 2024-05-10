@@ -229,7 +229,7 @@ app.get("/api/getPrizes", Basicauth, auth(), async (req, res) => {
   });
 });
 
-app.get("/api/getGCPackages", auth(), rewards.getCryptoToGCPackages);
+app.get("/api/getGCPackages", Basicauth, auth(), rewards.getCryptoToGCPackages);
 app.get("/api/getTicketToToken", Basicauth, auth(), rewards.getTicketToToken);
 
 // Route to get user's redeemed prizes
