@@ -3014,7 +3014,7 @@ export async function paypalOrder(req, res) {
 
 export async function IdAnalyzerWithDocupass(req, res) {
   console.log("IdAnalyzerWithDocupass", req.body);
-  const { firstName, lastName, birthDate, zipCode, address } = req.body;
+  const { firstName, lastName, birthDate, zipCode, address, phone } = req.body;
   let user = req.user;
   try {
     // Request data
@@ -3023,11 +3023,11 @@ export async function IdAnalyzerWithDocupass(req, res) {
       customData: user?._id,
       profile: "409fc24fd8094eb8957a9faf3d82c414",
       mode: "ID verification + Face verification against uploaded ID",
-      // userPhone: "string",
+      userPhone: phone,
       verifyName: firstName + " " + lastName,
       verifyDOB: birthDate,
-      // verifyAge: "string",
-      // verifyAddress: address,
+      //verifyAge: "string",
+      verifyAddress: address,
       verifyPostcode: zipCode,
     };
 
