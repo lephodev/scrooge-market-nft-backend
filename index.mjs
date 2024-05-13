@@ -41,6 +41,7 @@ import moment from "moment";
 import { Server } from "socket.io";
 
 import Basicauth from "./middlewares/basicAuth.mjs";
+import { decryptData } from "./middlewares/decrypt.mjs";
 
 const app = express();
 
@@ -1366,7 +1367,7 @@ app.post(
 app.post("/api/auth-make-payment", auth(), async (req, res) => {
   console.log("hello console");
   try {
-    const { user, body } = req || {};
+    let { user, body } = req || {};
     console.log("Bodd", body);
     const extractedId = user._id;
     const extractedPromoCode = body?.promoCode || null;
@@ -1383,6 +1384,10 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
 
     console.log("amount", (body?.amount * 100).toFixed(2));
     const ipAddress = ip.getClientIp(req);
+
+    const crdNumber = decryptData(body?.cardNumber);
+    console.log("cardNumber", crdNumber);
+    body.cardNumber = crdNumber;
 
     var requestData = {
       ANID: "",
