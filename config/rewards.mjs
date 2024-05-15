@@ -51,7 +51,6 @@ export async function addChips(
   bonusToken,
   prchAmt
 ) {
-  console.log("bonusToken", bonusToken);
   const multiplier = getRolloverMultiplier(Math.floor(prchAmt));
   try {
     let query = {};
@@ -64,7 +63,6 @@ export async function addChips(
         nonWithdrawableAmt: _qty,
       };
     } else {
-      console.log("prchAmt", Math.floor(prchAmt));
 
       if (prchAmt > 10) {
         query = {
@@ -84,7 +82,6 @@ export async function addChips(
         };
       }
     }
-    console.log("query", query);
     const { value: user } = await db.get_scrooge_usersDB().findOneAndUpdate(
       { _id: ObjectId(_user_id) },
       {
@@ -471,9 +468,7 @@ export async function claimHolderTokens(req) {
     OGValue,
     lastClaimDate;
 
-  console.log("req.params", req.params);
   const isValid = await getSigner(req.params);
-  console.log("datata", isValid);
   if (!isValid) {
     return (resp = { msg: "Invalid signer", code: 400 });
   }
@@ -564,7 +559,6 @@ export async function claimHolderTokens(req) {
     }
   }
   const { createdAt } = getLastetMonthyTransaction;
-  console.log("createdAt", createdAt);
   const currentDate = new Date(createdAt);
   const currentDay = currentDate.getDate();
   currentDate.setMonth(currentDate.getMonth() + 1);
@@ -572,7 +566,6 @@ export async function claimHolderTokens(req) {
   if (currentDate.getDate() < currentDay) {
     currentDate.setDate(0);
   }
-  console.log("claimDtae", currentDate);
   if (currentDate > new Date()) {
     return (resp = { msg: "You can cliam Only one in a month", code: 400 });
   }
@@ -659,10 +652,8 @@ export async function getCryptoToGCPackages(req, res) {
   let averageValue = 0;
   const sort = { price: 1 };
   const megaOffer = req?.user?.megaOffer;
-  console.log("megaOffer", megaOffer);
   let arr = [9.99, 19.99, 24.99];
   let isMatch = compareArrays(megaOffer, arr);
-  console.log("isMatch", isMatch);
 
   if (isMatch) {
     const tranCount = db.get_scrooge_transactionDB().find({
@@ -908,7 +899,6 @@ export async function redeemPrize(req, res) {
 
   try {
     let recipt = await useSDK.sdk.getProvider().getTransaction(transactionHash);
-    console.log("getOGCurrentPrice", recipt);
     const { hash, from } = recipt;
     const query = await db
       .get_db_withdraw_requestDB()
@@ -975,7 +965,6 @@ export async function redeemPrize(req, res) {
       if (prize_contract_name === "OG") {
         use_sdk = useSDK.sdk_OG;
       } else if (prize_contract_name === "JR") {
-        console.log("JRRRRR");
         use_sdk = useSDK.sdk_JR;
       } else if (prize_contract_name === "Casino NFTS") {
         use_sdk = useSDK.sdk_casino_nfts;
@@ -1452,7 +1441,6 @@ const getDecodedData = async (recipt) => {
   try {
     let iface, contractAddresss;
 
-    console.log("bnbContractAddress", bnbContractAddress);
 
     if (recipt.to.toLowerCase() === jrContractAddress) {
       //  console.log("JR ")
@@ -1477,8 +1465,6 @@ const getDecodedData = async (recipt) => {
         : decoded && decoded.args["amount"]
         ? Number(ethers.utils.formatEther(decoded.args["amount"]))
         : Number(ethers.utils.formatEther(recipt.value));
-    console.log("cryptoAmtcryptoAmt===>>>", cryptoAmt);
-    console.log("reciptrecipt", recipt);
     if (
       recipt.to.toLowerCase() ===
       "0x" + process.env.BUSD_WALLET_ADDRESS.toLowerCase()
@@ -1495,9 +1481,6 @@ const getDecodedData = async (recipt) => {
       const data = await res.json();
       const current_price = data[0].priceUsd;
       const cryptoUsd = cryptoAmt * current_price;
-      console.log("cryptoUsd1286", cryptoUsd);
-      console.log("Math.round(cryptoUsd", Math.round(cryptoUsd));
-      console.log("pids[Math.round(cryptoUsd)]", pids[Math.round(cryptoUsd)]);
       if (
         recipt.to.toLowerCase() ===
         "0x" + process.env.BUSD_WALLET_ADDRESS.toLowerCase()
@@ -1529,9 +1512,6 @@ const getDecodedData = async (recipt) => {
         return parseInt(cryptoUsd);
       }
 
-      console.log("cryptoUsd", cryptoUsd);
-      console.log("Math.round(cryptoUsd", Math.round(cryptoUsd));
-      console.log("pids[Math.round(cryptoUsd)]", pids[Math.round(cryptoUsd)]);
       if (cryptoUsd === 11.5884) {
         return 9.99;
       }
@@ -1601,15 +1581,11 @@ export async function convertCryptoToGoldCoin(req, res) {
         data: "Transaction is already exist",
       });
     }
-    console.log("recipt", recipt);
     const amt = usd;
-    console.log("amt", amt);
     // let cealAmount = Math.ceil(amt);
-    console.log("cealAmount", usd);
     const data = await db.get_marketplace_gcPackagesDB().findOne({
       priceInBUSD: amt.toString(),
     });
-    console.log("datadata--------", data);
     if (!data)
       return res
         .status(400)
@@ -1620,24 +1596,7 @@ export async function convertCryptoToGoldCoin(req, res) {
       expireDate: { $gte: new Date() },
     };
     let findPromoData = await db.get_scrooge_promoDB().findOne(query);
-    console.log("findPromoData", findPromoData);
-    console.log(
-      "findPromoData?.coupanType",
-      findPromoData?.coupanType,
-      findPromoData?.coupanType === "Percent"
-        ? parseInt(data.freeTokenAmount) *
-            (parseFloat(findPromoData?.discountInPercent) / 100)
-        : findPromoData?.coupanType === "2X"
-        ? parseInt(data.freeTokenAmount)
-        : 0
-    );
-    console.log(
-      "bonus amount ===>",
-      findPromoData?.coupanType === "Percent"
-        ? parseInt(data.freeTokenAmount) *
-            (parseFloat(findPromoData?.discountInPercent) / 100)
-        : 0
-    );
+    
     const trans = await addChips(
       userId,
       findPromoData?.coupanType === "Percent"
@@ -1703,18 +1662,14 @@ export async function convertCryptoToGoldCoin(req, res) {
           { $inc: { totalBuy: amt, totalProfit: amt } }
         );
     }
-    console.log("before promoCode", promoCode);
     if (promoCode) {
       let payload = {
         userId: userId,
         claimedDate: new Date(),
       };
-      console.log("promoCode", promoCode);
-      console.log("payload", payload);
       let promoFind = await db
         .get_scrooge_promoDB()
         .findOne({ couponCode: promoCode.trim() });
-      console.log("promoFind", promoFind);
       let updatePromo = await db.get_scrooge_promoDB().findOneAndUpdate(
         { couponCode: promoCode.trim() },
         {
@@ -1724,7 +1679,6 @@ export async function convertCryptoToGoldCoin(req, res) {
           new: true,
         }
       );
-      console.log("updatePromoupdatePromoupdatePromo", updatePromo);
     }
 
     if (refrenceId) {
@@ -1810,7 +1764,6 @@ export async function convertCryptoToGoldCoin(req, res) {
         .insertOne(transactionPayload);
     }
 
-    console.log("OfferType", data?.offerType);
     if (data?.offerType === "MegaOffer") {
       await db
         .get_scrooge_usersDB()
@@ -2047,7 +2000,6 @@ export async function convertPrice(req, res) {
 }
 
 const WithdrawQ = new Queue(async function (task, cb) {
-  console.log("abcccc141441");
   if (task.type === "WithdrawRequest") {
     await WithdrawRequest(task.req, task.res);
   }
@@ -2058,7 +2010,7 @@ const WithdrawQ = new Queue(async function (task, cb) {
 });
 
 export const createWithdraw = async (req, res, next) => {
-  console.log("createWithdraw route");
+  
   try {
     WithdrawQ.push({ req, res, type: "WithdrawRequest" });
   } catch (error) {
@@ -2066,7 +2018,7 @@ export const createWithdraw = async (req, res, next) => {
   }
 };
 export const createFastWithdraw = async (req, res, next) => {
-  console.log("createfastWithdraw route");
+  
   try {
     WithdrawQ.push({ req, res, type: "FastWithdrawRequest" });
   } catch (error) {
@@ -2074,13 +2026,13 @@ export const createFastWithdraw = async (req, res, next) => {
   }
 };
 export async function WithdrawRequest(req, res) {
-  console.log("call withdrwa");
+  
   const address = req.params.address;
   const prize_id = req.params.prize_id;
   let updtdUser = await db
     .get_scrooge_usersDB()
     .findOne({ _id: req?.user?._id });
-  console.log("updtdUser===>>>", updtdUser);
+  
   let user_id = updtdUser?._id;
   // let token = updtdUser?.wallet;
   let totalwallet = updtdUser?.wallet;
@@ -2179,14 +2131,14 @@ export async function WithdrawRequest(req, res) {
   }
 }
 export async function FastWithdrawRequest(req, res) {
-  console.log("call fast withdrwa");
+ 
   const address = req.params.address;
   const amount = Number(req.params.amount);
 
   let updtdUser = await db
     .get_scrooge_usersDB()
     .findOne({ _id: req?.user?._id });
-  console.log("updtdUser===>>>", updtdUser);
+  
   let user_id = updtdUser?._id;
   // let token = updtdUser?.wallet;
   let totalwallet = updtdUser?.wallet;
@@ -2201,7 +2153,7 @@ export async function FastWithdrawRequest(req, res) {
         message: "Your wallet blocked by admin",
       });
     }
-    console.log("amount", amount);
+    
     if (amount < 5000) {
       return res.send({
         success: false,
@@ -2217,12 +2169,11 @@ export async function FastWithdrawRequest(req, res) {
     });
     const data = await resp.json();
     const current_price = data[0].priceUsd;
-    console.log("current_price", current_price);
+    
     // const totalScrooge = (amount * 100) / current_price;
     let totalScrooge = (Number(amount) / 100 / current_price).toFixed(0);
     totalScrooge = totalScrooge - totalScrooge * 0.01;
 
-    console.log("totalScroogetotalScrooge", totalScrooge);
 
     let getKycuser = await db
       .get_scrooge_user_kycs()
@@ -2334,14 +2285,10 @@ export async function applyPromo(req, res) {
     };
     let getPromo = await db.get_scrooge_promoDB().findOne(query);
     const { coupanInUse, claimedUser } = getPromo || {};
-    console.log("coupanInUse", coupanInUse);
-    console.log("getPromo", getPromo);
-    console.log("claimedUser", claimedUser);
     if (coupanInUse === "One Time") {
       let findUser = claimedUser.find(
         (el) => el.userId.toString() === user.toString()
       );
-      console.log("findUser", findUser);
       if (findUser) {
         return res.status(404).send({
           code: 404,
@@ -2392,7 +2339,6 @@ export async function getCryptoToGCPurcahse(req, res) {
 }
 
 export async function WithdrawRequestWithFiat(req, res) {
-  console.log("req,body", req.body);
   const {
     amount: redeemPrize,
     paymentType,
@@ -2402,10 +2348,8 @@ export async function WithdrawRequestWithFiat(req, res) {
   let updtdUser = await db
     .get_scrooge_usersDB()
     .findOne({ _id: req?.user?._id });
-  console.log("updtdUser===>>>", updtdUser);
   let user_id = updtdUser?._id;
   let token = updtdUser?.wallet;
-  console.log("token--->>>", token);
 
   const redeemToken = redeemPrize;
 
@@ -2423,7 +2367,6 @@ export async function WithdrawRequestWithFiat(req, res) {
     if (getKycuser?.status !== "accept") {
       return res.send({ success: false, message: "Your kyc is not approved" });
     }
-    console.log("redeemToken", redeemToken);
 
     if (token < redeemToken) {
       return res.send({ success: false, message: "Not Enough Tokens" });
@@ -2501,10 +2444,8 @@ export async function WithdrawRequestWithFiat(req, res) {
 export async function getFormToken(req, res) {
   // let user = req.user._id;
   const { user } = req || {};
-  console.log("useruseruseruser", req.body);
   try {
     getAnAcceptPaymentPage(req.body, user, async (response) => {
-      console.log("response", response);
       return res.send({
         code: 200,
         success: true,
@@ -2524,7 +2465,6 @@ export async function FastWithdrawRedeem(req, res) {
   let user_ticket;
   try {
     let recipt = await useSDK.sdk.getProvider().getTransaction(transactionHash);
-    console.log("getOGCurrentPrice", recipt);
     const query = await db
       .get_db_withdraw_requestDB()
       .findOne({ _id: ObjectId(withdraw_id) });
@@ -2777,12 +2717,10 @@ const getGCPurchaseAffliateBonus = async (
   extractedReffrenceId,
   amount
 ) => {
-  console.log("888888888888888", extractedId, extractedReffrenceId, amount);
   try {
     let getUserdetails = await db
       .get_scrooge_usersDB()
       .findOne({ _id: ObjectId(extractedId) });
-    console.log("getUsergetUser", getUserdetails);
     let affliateData = await db
       .get_affiliatesDB()
       .findOne({ userId: extractedId });
@@ -2886,12 +2824,9 @@ const getGCPurchaseAffliateBonus = async (
 export async function paypalOrder(req, res) {
   let user = req.user;
   try {
-    console.log("paypalOrder user", user, req.body);
     const { orderID, promoCode } = req.body;
-    console.log("orderID", orderID, promoCode);
 
     let token = `Bearer ${await getToken()}`;
-    console.log("token", token);
     const captureResponse = await axios.post(
       `${process.env.PAYPAL_URL}/v2/checkout/orders/${orderID}/capture`,
       {},
@@ -2905,7 +2840,6 @@ export async function paypalOrder(req, res) {
     // Example response from PayPal capture API
     const { status, id } = captureResponse.data;
     if (status === "COMPLETED" && id) {
-      console.log("Capture response:", { status, id });
       const { value } =
         captureResponse?.data?.purchase_units[0]?.payments?.captures[0].amount;
       let amount = parseFloat(value)?.toString();
@@ -3013,7 +2947,6 @@ export async function paypalOrder(req, res) {
 }
 
 export async function IdAnalyzerWithDocupass(req, res) {
-  console.log("IdAnalyzerWithDocupass", req.body);
   const { firstName, lastName, birthDate, zipCode, address, phone } = req.body;
   let user = req.user;
   try {
@@ -3041,7 +2974,6 @@ export async function IdAnalyzerWithDocupass(req, res) {
         },
       })
       .then((response) => {
-        console.log("Response:", response.data);
         res.status(200).send({
           response: response?.data,
         });
