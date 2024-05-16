@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import CryptoJS from "crypto-js";
 
 export const decryptPass = (encryptedPassword) => {
   try {
@@ -15,4 +16,11 @@ export const decryptPass = (encryptedPassword) => {
     console.log("error in decryption", e);
     return null;
   }
+};
+
+export const decryptData = (encryptedData) => {
+  const PUBLICK_KEY = "AC2d27e9ad2978d70ffb5637ce05542078";
+
+  const bytes = CryptoJS.AES.decrypt(encryptedData, PUBLICK_KEY);
+  return JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
 };
