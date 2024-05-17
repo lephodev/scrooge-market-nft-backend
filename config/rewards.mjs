@@ -2285,7 +2285,7 @@ export async function applyPromo(req, res) {
       getPromo || {};
 
     if (coupanType === "Free ST") {
-      if (numberOfUsages >= claimedUser.length)
+      if (claimedUser?.length >= numberOfUsages)
         return res.status(404).send({
           code: 404,
           success: false,
