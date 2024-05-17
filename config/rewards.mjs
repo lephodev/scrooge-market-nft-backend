@@ -2615,7 +2615,7 @@ export async function redeemFreePromo(req, res) {
       getPromo || {};
     if (coupanType === "Free ST") {
       if (claimedUser?.length >= numberOfUsages)
-        return res.status(404).send({
+        return res.status(400).send({
           code: 404,
           success: false,
           message: "Promo code usage limit reached .",
@@ -2627,7 +2627,7 @@ export async function redeemFreePromo(req, res) {
       );
       if (findUser) {
         return res.status(404).send({
-          code: 404,
+          code: 400,
           success: false,
           message: "Promo code already in use.",
         });
