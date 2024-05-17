@@ -63,7 +63,6 @@ export async function addChips(
         nonWithdrawableAmt: _qty,
       };
     } else {
-
       if (prchAmt > 10) {
         query = {
           goldCoin: gc,
@@ -655,6 +654,9 @@ export async function getCryptoToGCPackages(req, res) {
   let arr = [9.99, 19.99, 24.99];
   let isMatch = compareArrays(megaOffer, arr);
 
+  if (!megaOffer)
+    return res.status(500).send({ message: "Something went wrong" });
+
   if (isMatch) {
     const tranCount = db.get_scrooge_transactionDB().find({
       "userId._id": ObjectId(req?.user?._id),
@@ -662,12 +664,12 @@ export async function getCryptoToGCPackages(req, res) {
       purchasedAmountInUSD: { $nin: megaOffer },
     });
     const dr = await tranCount.toArray();
-    // console.log("tran", dr);
+    console.log("tran---------------------", dr);
     let totalPurchasedAmountInUSD = 0;
     dr.forEach((transaction) => {
       totalPurchasedAmountInUSD += transaction.purchasedAmountInUSD;
     });
-    averageValue = totalPurchasedAmountInUSD / dr.length;
+    averageValue = dr?.length > 0 ? totalPurchasedAmountInUSD / dr.length : 1;
     let resp;
     const cursor = db.get_marketplace_gcPackagesDB().find(qry).sort(sort);
 
@@ -1441,7 +1443,6 @@ const getDecodedData = async (recipt) => {
   try {
     let iface, contractAddresss;
 
-
     if (recipt.to.toLowerCase() === jrContractAddress) {
       //  console.log("JR ")
       iface = new ethers.utils.Interface(JR_ABI);
@@ -1596,7 +1597,7 @@ export async function convertCryptoToGoldCoin(req, res) {
       expireDate: { $gte: new Date() },
     };
     let findPromoData = await db.get_scrooge_promoDB().findOne(query);
-    
+
     const trans = await addChips(
       userId,
       findPromoData?.coupanType === "Percent"
@@ -2010,7 +2011,6 @@ const WithdrawQ = new Queue(async function (task, cb) {
 });
 
 export const createWithdraw = async (req, res, next) => {
-  
   try {
     WithdrawQ.push({ req, res, type: "WithdrawRequest" });
   } catch (error) {
@@ -2018,7 +2018,6 @@ export const createWithdraw = async (req, res, next) => {
   }
 };
 export const createFastWithdraw = async (req, res, next) => {
-  
   try {
     WithdrawQ.push({ req, res, type: "FastWithdrawRequest" });
   } catch (error) {
@@ -2026,13 +2025,12 @@ export const createFastWithdraw = async (req, res, next) => {
   }
 };
 export async function WithdrawRequest(req, res) {
-  
   const address = req.params.address;
   const prize_id = req.params.prize_id;
   let updtdUser = await db
     .get_scrooge_usersDB()
     .findOne({ _id: req?.user?._id });
-  
+
   let user_id = updtdUser?._id;
   // let token = updtdUser?.wallet;
   let totalwallet = updtdUser?.wallet;
@@ -2131,14 +2129,13 @@ export async function WithdrawRequest(req, res) {
   }
 }
 export async function FastWithdrawRequest(req, res) {
- 
   const address = req.params.address;
   const amount = Number(req.params.amount);
 
   let updtdUser = await db
     .get_scrooge_usersDB()
     .findOne({ _id: req?.user?._id });
-  
+
   let user_id = updtdUser?._id;
   // let token = updtdUser?.wallet;
   let totalwallet = updtdUser?.wallet;
@@ -2153,7 +2150,7 @@ export async function FastWithdrawRequest(req, res) {
         message: "Your wallet blocked by admin",
       });
     }
-    
+
     if (amount < 5000) {
       return res.send({
         success: false,
@@ -2169,11 +2166,10 @@ export async function FastWithdrawRequest(req, res) {
     });
     const data = await resp.json();
     const current_price = data[0].priceUsd;
-    
+
     // const totalScrooge = (amount * 100) / current_price;
     let totalScrooge = (Number(amount) / 100 / current_price).toFixed(0);
     totalScrooge = totalScrooge - totalScrooge * 0.01;
-
 
     let getKycuser = await db
       .get_scrooge_user_kycs()
@@ -2284,7 +2280,18 @@ export async function applyPromo(req, res) {
       expireDate: { $gte: new Date() },
     };
     let getPromo = await db.get_scrooge_promoDB().findOne(query);
-    const { coupanInUse, claimedUser } = getPromo || {};
+    console.log("getPromo", getPromo);
+    const { coupanInUse, claimedUser, numberOfUsages, coupanType } =
+      getPromo || {};
+
+    if (coupanType === "Free ST") {
+      if (numberOfUsages >= claimedUser.length)
+        return res.status(404).send({
+          code: 404,
+          success: false,
+          message: "Promo code usage limit reached .",
+        });
+    }
     if (coupanInUse === "One Time") {
       let findUser = claimedUser.find(
         (el) => el.userId.toString() === user.toString()
