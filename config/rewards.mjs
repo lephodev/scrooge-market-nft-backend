@@ -2280,7 +2280,19 @@ export async function applyPromo(req, res) {
       expireDate: { $gte: new Date() },
     };
     let getPromo = await db.get_scrooge_promoDB().findOne(query);
-    const { coupanInUse, claimedUser } = getPromo || {};
+    console.log("getPromo", getPromo);
+    const { coupanInUse, claimedUser, numberOfUsages, coupanType } =
+      getPromo || {};
+
+    if (coupanType === "Free ST") {
+      if (claimedUser?.length >= numberOfUsages)
+        return res.status(404).send({
+          code: 404,
+          success: false,
+          message: "Promo code usage limit reached .",
+        });
+    }
+
     if (coupanInUse === "One Time") {
       let findUser = claimedUser.find(
         (el) => el.userId.toString() === user.toString()
@@ -2599,14 +2611,23 @@ export async function redeemFreePromo(req, res) {
       expireDate: { $gte: new Date() },
     };
     let getPromo = await db.get_scrooge_promoDB().findOne(query);
-    const { coupanInUse, claimedUser, token } = getPromo || {};
+    const { coupanInUse, claimedUser, token, coupanType, numberOfUsages } =
+      getPromo || {};
+    if (coupanType === "Free ST") {
+      if (claimedUser?.length >= numberOfUsages)
+        return res.status(400).send({
+          code: 400,
+          success: false,
+          message: "Promo code usage limit reached .",
+        });
+    }
     if (coupanInUse === "One Time") {
       let findUser = claimedUser.find(
         (el) => el.userId.toString() === user.toString()
       );
       if (findUser) {
-        return res.status(404).send({
-          code: 404,
+        return res.status(400).send({
+          code: 400,
           success: false,
           message: "Promo code already in use.",
         });
