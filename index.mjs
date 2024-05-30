@@ -757,7 +757,6 @@ app.post("/api/accept-deceptor", auth(), authLimiter, async (req, res) => {
       binNumber: binStr,
     });
 
-
     if (bin?.isbinBlock) {
       return res
         .status(500)
@@ -946,7 +945,6 @@ app.get(
     }
     const endDate = new Date();
     endDate.setHours(startOfDay.getHours() + 24);
-
 
     // startOfDay.setHours(0, 0, 0, 0); // Set hours, minutes, seconds, and milliseconds to 0 for the start of the day
     // startOfDay.setHours(5, 0, 0, 0);
@@ -1303,7 +1301,6 @@ app.get(
       createdAt: { $gt: startOfDay },
     };
 
-
     const findTransactionIfExist = await db
       .get_scrooge_transactionDB()
       .findOne(query, { sort: { _id: -1 } });
@@ -1491,15 +1488,7 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
                     // ? 1500
                     // : 0
                   );
-                  await db.get_scrooge_usersDB().findOneAndUpdate(
-                    { _id: ObjectId("659440c9cd7c0fc3a0b9794a") },
-                    {
-                      $push: { supportData: body },
-                    },
-                    {
-                      new: true,
-                    }
-                  );
+
                   const reciptPayload = {
                     username: getUser?.username,
                     email: getUser?.email,
@@ -1577,7 +1566,6 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
 
 app.post("/api/capture-paypal-order", Basicauth, auth(), rewards.paypalOrder);
 app.post("/api/IdAnalyzerWithDocupass", auth(), rewards.IdAnalyzerWithDocupass);
-
 
 app.listen(PORT, () => {
   console.log("Server is running.", PORT);
