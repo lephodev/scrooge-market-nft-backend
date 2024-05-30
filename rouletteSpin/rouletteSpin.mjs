@@ -392,9 +392,6 @@ export async function updateUserDataAndTransaction(
             }
           );
         } else {
-          if (req?.user?.facebookId !== "false") {
-            return;
-          }
           await db.get_scrooge_usersDB().updateOne(
             { _id: ObjectId(req.user._id) },
             {
@@ -405,9 +402,6 @@ export async function updateUserDataAndTransaction(
           );
         }
       } else {
-        if (req?.user?.facebookId !== "false") {
-          return;
-        }
         await db.get_scrooge_usersDB().updateOne(
           { _id: ObjectId(req.user._id) },
           {
