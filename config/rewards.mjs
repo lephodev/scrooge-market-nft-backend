@@ -670,6 +670,7 @@ export async function getCryptoToGCPackages(req, res) {
       totalPurchasedAmountInUSD += transaction.purchasedAmountInUSD;
     });
     averageValue = dr?.length > 0 ? totalPurchasedAmountInUSD / dr.length : 1;
+
     let resp;
     const cursor = db.get_marketplace_gcPackagesDB().find(qry).sort(sort);
 
