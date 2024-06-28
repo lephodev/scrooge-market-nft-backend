@@ -3014,22 +3014,34 @@ export async function IdAnalyzerWithDocupass(req, res) {
 export async function saveUserconnectedWallet(req, res) {
   const { walletAddress } = req.body;
   console.log("walletAddress", walletAddress);
-  const connectedWalletAddress = {
-    address: walletAddress,
-    createdAt: new Date(),
-  };
+  const currentTime = new Date();
   let user = req.user;
-  const result = await db
-    .get_scrooge_usersDB()
-    .findOneAndUpdate(
-      { _id: ObjectId(user._id) },
-      { $push: { connectedWalletAddress } },
-      { new: true }
+  const result = await db.get_scrooge_usersDB().updateOne(
+    {
+      _id: ObjectId(user?._id),
+      "connectedWalletAddress.address": walletAddress,
+    },
+    {
+      $set: { "connectedWalletAddress.$.createdAt": currentTime },
+    }
+  );
+
+  if (result.matchedCount === 0) {
+    await db.get_scrooge_usersDB().updateOne(
+      { _id: ObjectId(user?._id) },
+      {
+        $push: {
+          connectedWalletAddress: {
+            address: walletAddress,
+            createdAt: currentTime,
+          },
+        },
+      }
     );
 
-  console.log("result", result);
-  res.status(200).json({ message: "Wallet added successfully." });
-
+    console.log("result", result);
+    res.status(200).json({ message: "Wallet added successfully." });
+  }
   try {
   } catch (e) {
     console.log("outerCatch", e);
