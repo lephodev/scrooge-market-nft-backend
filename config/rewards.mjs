@@ -3010,3 +3010,29 @@ export async function IdAnalyzerWithDocupass(req, res) {
       .send({ success: false, message: "Error in Request Process" });
   }
 }
+
+export async function saveUserconnectedWallet(req, res) {
+  const { walletAddress } = req.body;
+  const connectedWalletAddress = {
+    address: walletAddress,
+    createdAt: new Date(),
+  };
+  let user = req.user;
+  const result = await db.get_scrooge_usersDB().findOneAndUpdate(
+    {
+      _id: ObjectId(user._id),
+      "connectedWalletAddress.address": { $ne: walletAddress },
+    },
+    { $addToSet: { connectedWalletAddress } },
+    { new: true }
+  );
+  res.status(200).json({ message: "Wallet added successfully." });
+
+  try {
+  } catch (e) {
+    console.log("outerCatch", e);
+    return res
+      .status(500)
+      .send({ success: false, message: "Error in Request Process" });
+  }
+}
