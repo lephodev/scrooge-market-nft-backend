@@ -1791,7 +1791,14 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
 });
 
 app.post("/api/capture-paypal-order", Basicauth, auth(), rewards.paypalOrder);
+
 app.post("/api/IdAnalyzerWithDocupass", auth(), rewards.IdAnalyzerWithDocupass);
+app.post(
+  "/api/saveUserconnectedWallet",
+  Basicauth,
+  auth(),
+  rewards.saveUserconnectedWallet
+);
 
 app.listen(PORT, () => {
   console.log("Server is running.", PORT);
