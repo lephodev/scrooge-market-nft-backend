@@ -3013,19 +3013,21 @@ export async function IdAnalyzerWithDocupass(req, res) {
 
 export async function saveUserconnectedWallet(req, res) {
   const { walletAddress } = req.body;
+  console.log("walletAddress", walletAddress);
   const connectedWalletAddress = {
     address: walletAddress,
     createdAt: new Date(),
   };
   let user = req.user;
-  const result = await db.get_scrooge_usersDB().findOneAndUpdate(
-    {
-      _id: ObjectId(user._id),
-      "connectedWalletAddress.address": { $ne: walletAddress },
-    },
-    { $addToSet: { connectedWalletAddress } },
-    { new: true }
-  );
+  const result = await db
+    .get_scrooge_usersDB()
+    .findOneAndUpdate(
+      { _id: ObjectId(user._id) },
+      { $push: { connectedWalletAddress } },
+      { new: true }
+    );
+
+  console.log("result", result);
   res.status(200).json({ message: "Wallet added successfully." });
 
   try {
