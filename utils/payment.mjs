@@ -643,3 +643,22 @@ export const getToken = async () => {
     console.error("Error:", error.response.data.error_description);
   }
 };
+
+export const createFreeSpin = async (values) => {
+  console.log("values", values, process.env.SLOT_API_URL);
+  try {
+    let res = await axios.post(`${process.env.SLOT_API_URL}/createRelaxSpin`, {
+      ...values,
+    });
+    console.log("resres", res.data);
+    const { success } = res.data;
+    if (success) {
+      return res.data;
+    } else {
+    }
+  } catch (error) {
+    console.log("errorerrorerror", error);
+    if (axios.isAxiosError(error) && error.response) {
+    }
+  }
+};

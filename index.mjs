@@ -29,6 +29,7 @@ import logger from "./config/logger.mjs";
 import {
   createAnAcceptPaymentTransaction,
   createAuthCustomAnAcceptPaymentTransaction,
+  createFreeSpin,
   getAnAcceptPaymentPage,
   getTransactionDetails,
 } from "./utils/payment.mjs";
@@ -1510,6 +1511,18 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
 
                       { $push: { megaOffer: parseFloat(body?.amount) } }
                     );
+                  }
+                  if (data?.offerType === "freeSpin") {
+                    console.log("freeSpin", freeSpin);
+                    let freeSpinPayload = {
+                      amount: "10",
+                      currency: "SC.",
+                      freespinvalue: "1000",
+                      gameid: "thegreatpigsby",
+                      remoteusername: extractedId,
+                    };
+                    let spinRes = createFreeSpin(freeSpinPayload);
+                    console.log("spinRes", spinRes);
                   }
 
                   const result = await db
