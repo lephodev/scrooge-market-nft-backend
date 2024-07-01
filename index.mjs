@@ -1521,7 +1521,11 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
                       remoteusername: extractedId,
                     };
                     let spinRes = createFreeSpin(freeSpinPayload);
-                    console.log("spinRes", spinRes);
+                    await db.get_scrooge_usersDB().findOneAndUpdate(
+                      { _id: ObjectId(extractedId) },
+
+                      { $push: { freeSpin: parseFloat(body?.amount) } }
+                    );
                   }
 
                   const result = await db
