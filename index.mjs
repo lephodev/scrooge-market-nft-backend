@@ -1513,7 +1513,6 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
                     );
                   }
                   if (data?.offerType === "freeSpin") {
-                    console.log("freeSpin", freeSpin);
                     let freeSpinPayload = {
                       amount: "10",
                       currency: "SC.",
