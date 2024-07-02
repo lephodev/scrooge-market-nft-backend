@@ -1438,6 +1438,7 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
             if (!getUser) {
               return;
             }
+
             if (body?.amount) {
               const data = await db.get_marketplace_gcPackagesDB().findOne({
                 priceInBUSD: body?.amount?.toString(),
@@ -1566,12 +1567,14 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
                   }
                 }
               }
+
+              return res.status(200).send({
+                success: true,
+                message: "Chips added successfully.",
+                user: getUser,
+                package: data,
+              });
             }
-            return res.status(200).send({
-              success: true,
-              message: "Chips added successfully.",
-              user: getUser,
-            });
           }
         );
       }
