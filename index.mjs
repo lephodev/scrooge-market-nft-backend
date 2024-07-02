@@ -1514,7 +1514,7 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
                   }
                   if (data?.offerType === "freeSpin") {
                     let freeSpinPayload = {
-                      amount: "30",
+                      amount: "50",
                       currency: "SC.",
                       freespinvalue: "1000",
                       gameid: "thegreatpigsby",
