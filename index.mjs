@@ -80,6 +80,9 @@ app.use(
       "https://betaadmin.scrooge.casino",
       "https://betamarket.scrooge.casino",
       "https://betaroulette.scrooge.casino",
+
+      "https://landing-newui.scrooge.casino",
+      "https://market-newui.scrooge.casino",
     ],
     credentials: true,
   })
