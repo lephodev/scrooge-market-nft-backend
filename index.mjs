@@ -29,6 +29,7 @@ import logger from "./config/logger.mjs";
 import {
   createAnAcceptPaymentTransaction,
   createAuthCustomAnAcceptPaymentTransaction,
+  createFreeSpin,
   getAnAcceptPaymentPage,
   getTransactionDetails,
 } from "./utils/payment.mjs";
@@ -80,6 +81,9 @@ app.use(
       "https://betaadmin.scrooge.casino",
       "https://betamarket.scrooge.casino",
       "https://betaroulette.scrooge.casino",
+
+      "https://landing-newui.scrooge.casino",
+      "https://market-newui.scrooge.casino",
     ],
     credentials: true,
   })
@@ -1661,6 +1665,7 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
             if (!getUser) {
               return;
             }
+
             if (body?.amount) {
               const data = await db.get_marketplace_gcPackagesDB().findOne({
                 priceInBUSD: body?.amount?.toString(),
@@ -1735,6 +1740,21 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
                       { $push: { megaOffer: parseFloat(body?.amount) } }
                     );
                   }
+                  if (data?.offerType === "freeSpin") {
+                    let freeSpinPayload = {
+                      amount: "50",
+                      currency: "SC.",
+                      freespinvalue: "1000",
+                      gameid: "thegreatpigsby",
+                      remoteusername: extractedId,
+                    };
+                    let spinRes = createFreeSpin(freeSpinPayload);
+                    await db.get_scrooge_usersDB().findOneAndUpdate(
+                      { _id: ObjectId(extractedId) },
+
+                      { $push: { freeSpin: parseFloat(body?.amount) } }
+                    );
+                  }
 
                   const result = await db
                     .get_scrooge_usersDB()
@@ -1774,12 +1794,14 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
                   }
                 }
               }
+
+              return res.status(200).send({
+                success: true,
+                message: "Chips added successfully.",
+                user: getUser,
+                package: data,
+              });
             }
-            return res.status(200).send({
-              success: true,
-              message: "Chips added successfully.",
-              user: getUser,
-            });
           }
         );
       }
