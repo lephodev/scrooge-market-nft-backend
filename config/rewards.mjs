@@ -1071,14 +1071,15 @@ export async function redeemPrize(req, res) {
                 .catch((e) => {
                   console.log("e", e);
                 });
-              emailSend.ApproveRedeemRequestEmail(
-                email,
-                prize_price,
-                username,
-                hash,
-                from
-              );
-
+              if (!getUserData?.isAdmin) {
+                emailSend.ApproveRedeemRequestEmail(
+                  email,
+                  prize_price,
+                  username,
+                  hash,
+                  from
+                );
+              }
               if (refrenceId) {
                 let getUserdetails = await db
                   .get_scrooge_usersDB()
