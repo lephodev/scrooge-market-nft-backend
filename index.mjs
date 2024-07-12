@@ -73,6 +73,7 @@ app.use(
       "https://devadmin.scrooge.casino",
       "https://devmarket.scrooge.casino",
       "https://devroulette.scrooge.casino",
+      "https://market-newui.scrooge.casino",
 
       "https://beta.scrooge.casino",
       "https://betapoker.scrooge.casino",
