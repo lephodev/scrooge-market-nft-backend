@@ -501,8 +501,8 @@ const getGCPurchaseAffliateBonus = async (
       { _id: ObjectId(extractedId) },
       {
         $inc: {
-          totalBuy: parseInt(amount),
-          totalProfit: parseInt(amount),
+          totalBuy: parseFloat(amount),
+          totalProfit: parseFloat(amount),
         },
       }
     );
@@ -551,186 +551,6 @@ const getGCPurchaseAffliateBonus = async (
     console.log("error", error);
   }
 };
-
-// app.post("/api/authorize-webhook", async (req, res) => {
-//   try {
-//     const rawPayload = JSON.stringify(req.body);
-//     console.log("rawPayload", rawPayload);
-
-//     getTransactionDetails(rawPayload, async (response) => {
-//       try {
-//         console.log("response528", response);
-//         const amount = response?.transaction?.settleAmount;
-//         const email = response?.transaction?.customer?.email;
-//         // const emailAndIdRegex = /^(.+?)_(\w+)$/;
-//         // const match = email.match(emailAndIdRegex);
-//         // console.log("email", email);
-//         var parts = email.split("_");
-
-//         if (parts) {
-//           // Extract each part
-//           const extractedId = parts[0] || null;
-//           const extractedPromoCode = parts[1] || null;
-//           const extractedReffrenceId = parts[2] || null;
-
-//           console.log("extractedId:", extractedId);
-//           console.log("extractedPromoCode:", extractedPromoCode);
-//           console.log("extractedReffrenceId", extractedReffrenceId);
-
-//           if (
-//             response.messages.resultCode !== "Ok" ||
-//             response.transactionResponse?.errors
-//           ) {
-//             return res.status(400).send({
-//               success: false,
-//               data: "transaction failed",
-//               error: response.transactionResponse?.errors?.error[0]?.errorText,
-//             });
-//           }
-//           const getUser = await db
-//             .get_scrooge_usersDB()
-//             .findOne({ _id: ObjectId(extractedId) });
-//           if (!getUser) {
-//             console.log("User Not Found");
-//             return;
-//           }
-//           if (amount) {
-//             const data = await db.get_marketplace_gcPackagesDB().findOne({
-//               priceInBUSD: amount?.toString(),
-//             });
-//             console.log("data", data);
-//             if (data) {
-//               const findTransactionIfExist = await db
-//                 .get_scrooge_transactionDB()
-//                 .find({
-//                   "transactionDetails.transaction.transId":
-//                     response?.transaction?.transId,
-//                 })
-//                 .toArray();
-//               console.log("findTransactionIfExist", findTransactionIfExist);
-
-//               if (findTransactionIfExist.length === 0) {
-//                 let query = {
-//                   couponCode: extractedPromoCode,
-//                   expireDate: { $gte: new Date() },
-//                 };
-//                 let findPromoData = await db
-//                   .get_scrooge_promoDB()
-//                   .findOne(query);
-//                 console.log("findPromoData", findPromoData);
-//                 const trans = await rewards.addChips(
-//                   getUser?._id?.toString(),
-//                   findPromoData?.coupanType === "Percent"
-//                     ? parseInt(data.freeTokenAmount) +
-//                         parseInt(data.freeTokenAmount) *
-//                           (parseFloat(findPromoData?.discountInPercent) / 100)
-//                     : findPromoData?.coupanType === "2X"
-//                     ? parseInt(data.freeTokenAmount) * 2
-//                     : parseInt(data.freeTokenAmount),
-//                   "",
-//                   "CC To Gold Coin",
-//                   findPromoData?.coupanType === "Percent"
-//                     ? parseInt(data.gcAmount) +
-//                         parseInt(data.gcAmount) *
-//                           (parseFloat(findPromoData?.discountInPercent) / 100)
-//                     : findPromoData?.coupanType === "2X"
-//                     ? parseInt(data.gcAmount) * 2
-//                     : parseInt(data.gcAmount),
-//                   response,
-//                   findPromoData?.coupanType === "Percent"
-//                     ? parseInt(data.freeTokenAmount) *
-//                         (parseFloat(findPromoData?.discountInPercent) / 100)
-//                     : findPromoData?.coupanType === "2X"
-//                     ? parseInt(data.freeTokenAmount)
-//                     : 0,
-//                   amount //amount?.toString() === "9.99"
-//                   // ? 1500
-//                   // : 0
-//                 );
-//                 const reciptPayload = {
-//                   username: getUser?.username,
-//                   email: getUser?.email,
-//                   invoicDate: moment(new Date()).format("D MMMM  YYYY"),
-//                   paymentMethod: "Credit Card Purchase",
-//                   packageName: "Gold Coin Purchase",
-//                   goldCoinQuantity: parseInt(data?.gcAmount),
-//                   tokenQuantity: parseInt(data?.freeTokenAmount),
-//                   purcahsePrice: amount?.toString(),
-//                   Tax: 0,
-//                   firstName: getUser?.firstName,
-//                   lastName: getUser?.lastName,
-//                 };
-//                 if (data?.offerType === "MegaOffer") {
-//                   await db.get_scrooge_usersDB().findOneAndUpdate(
-//                     { _id: ObjectId(extractedId) },
-
-//                     { $push: { megaOffer: parseFloat(amount) } }
-//                   );
-//                 }
-
-//                 const result = await db
-//                   .get_scrooge_usersDB()
-//                   .findOneAndUpdate(
-//                     { _id: ObjectId(extractedId) },
-//                     { $set: { isSpended: true } }
-//                   );
-
-//                 console.log("ssss", result);
-
-//                 await InvoiceEmail(getUser?.email, reciptPayload);
-//                 if (extractedPromoCode) {
-//                   let payload = {
-//                     userId: extractedId,
-//                     claimedDate: new Date(),
-//                   };
-//                   console.log("promoCode", extractedPromoCode);
-//                   console.log("payload", payload);
-//                   let promoFind = await db
-//                     .get_scrooge_promoDB()
-//                     .findOne({ couponCode: extractedPromoCode.trim() });
-//                   console.log("promoFind", promoFind);
-//                   await db.get_scrooge_promoDB().findOneAndUpdate(
-//                     { couponCode: extractedPromoCode.trim() },
-//                     {
-//                       $push: { claimedUser: payload },
-//                     },
-//                     {
-//                       new: true,
-//                     }
-//                   );
-//                 }
-//                 console.log(
-//                   "extractedReffrenceIdextractedReffrenceIdextractedReffrenceId",
-//                   typeof extractedReffrenceId,
-//                   extractedReffrenceId
-//                 );
-//                 if (extractedReffrenceId !== "null") {
-//                   getGCPurchaseAffliateBonus(
-//                     extractedId,
-//                     extractedReffrenceId,
-//                     amount
-//                   );
-//                 }
-//               }
-//             }
-//           }
-//         }
-//       } catch (error) {
-//         console.log("error", error);
-//       }
-//     });
-//     res.status(200).send({
-//       success: true,
-//       data: "Chips added successfully.",
-//     });
-//   } catch (error) {
-//     console.log("webhook err", error);
-//     res.status(200).json({
-//       message: "Something went wrong",
-//     });
-//   }
-//   // res.send({ success: true });
-// });
 
 app.get(
   "/api/WithdrawRequest/:address/:prize_id",
@@ -867,8 +687,8 @@ app.post("/api/accept-deceptor", auth(), authLimiter, async (req, res) => {
           { _id: ObjectId(user._id) },
           {
             $inc: {
-              totalBuy: parseInt(body.item.price),
-              totalProfit: parseInt(body.item.price),
+              totalBuy: parseFloat(body?.item?.price),
+              totalProfit: parseFloat(body?.item?.price),
             },
           }
         );
