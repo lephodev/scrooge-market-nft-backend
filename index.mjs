@@ -1111,7 +1111,7 @@ app.get(
     startOfDay.setDate(
       user?.megaOffer?.length >= 3
         ? startOfDay.getDate() - 3
-        : user?.megaOffer.includes(99.99)
+        : user?.megaOffer?.includes(99.99)
         ? startOfDay.getDate() - 7
         : startOfDay.getDate() - 1
     );
