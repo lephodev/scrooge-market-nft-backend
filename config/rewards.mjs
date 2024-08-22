@@ -2313,7 +2313,7 @@ export async function applyPromo(req, res) {
         return res.status(404).send({
           code: 404,
           success: false,
-          message: "Time passed",
+          message: "Invalid promo code!",
         });
       }
       if (claimedUser?.length > numberOfUsages)
@@ -2325,7 +2325,7 @@ export async function applyPromo(req, res) {
     }
 
     if (coupanType === "Free ST") {
-      if (claimedUser?.length >= numberOfUsages)
+      if (claimedUser?.length > numberOfUsages)
         return res.status(404).send({
           code: 404,
           success: false,
