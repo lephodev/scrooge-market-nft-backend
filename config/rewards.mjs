@@ -2320,7 +2320,7 @@ export async function applyPromo(req, res) {
         return res.status(404).send({
           code: 404,
           success: false,
-          message: "Promo code usage limit reached .....",
+          message: "Promo code usage limit reached .",
         });
     }
 
