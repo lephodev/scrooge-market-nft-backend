@@ -2654,7 +2654,7 @@ export async function redeemFreePromo(req, res) {
     const { coupanInUse, claimedUser, token, coupanType, numberOfUsages } =
       getPromo || {};
     if (coupanType === "Free ST") {
-      if (claimedUser?.length >= numberOfUsages)
+      if (claimedUser?.length > numberOfUsages)
         return res.status(400).send({
           code: 400,
           success: false,
