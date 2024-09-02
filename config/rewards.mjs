@@ -2273,18 +2273,57 @@ export const applyPromoCode = async (req, res, next) => {
   }
 };
 
+const compareDate = (createdAtDate) => {
+  const createdAt = new Date(createdAtDate);
+  const currentTime = new Date();
+  const difference = currentTime - createdAt;
+  const isGreaterThan24Hours = difference > 24 * 60 * 60 * 1000;
+
+  if (isGreaterThan24Hours) {
+    console.log("The date is greater than 24 hours ago.");
+    return true;
+  } else {
+    console.log("The date is within the last 24 hours.");
+    return false;
+  }
+};
+
 export async function applyPromo(req, res) {
   let user = req.user._id;
+  let createdAt = req.user.createdAt;
   try {
     const { promocode } = req.body;
     let query = {
       couponCode: promocode,
       expireDate: { $gte: new Date() },
     };
+    console.log("createdAt", createdAt);
     let getPromo = await db.get_scrooge_promoDB().findOne(query);
     console.log("getPromo", getPromo);
-    const { coupanInUse, claimedUser, numberOfUsages, coupanType } =
-      getPromo || {};
+    const {
+      coupanInUse,
+      claimedUser,
+      numberOfUsages,
+      coupanType,
+      promoUserType,
+    } = getPromo || {};
+
+    if (promoUserType === "New User") {
+      let isTimecheck = compareDate(createdAt);
+      if (isTimecheck) {
+        return res.status(404).send({
+          code: 404,
+          success: false,
+          message: "Invalid promo code!",
+        });
+      }
+      if (claimedUser?.length > numberOfUsages)
+        return res.status(404).send({
+          code: 404,
+          success: false,
+          message: "Promo code usage limit reached .",
+        });
+    }
 
     if (coupanType === "Free ST") {
       if (claimedUser?.length > numberOfUsages)

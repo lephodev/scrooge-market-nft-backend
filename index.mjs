@@ -73,6 +73,7 @@ app.use(
       "https://devadmin.scrooge.casino",
       "https://devmarket.scrooge.casino",
       "https://devroulette.scrooge.casino",
+      "https://market-newui.scrooge.casino",
 
       "https://beta.scrooge.casino",
       "https://betapoker.scrooge.casino",
@@ -503,8 +504,8 @@ const getGCPurchaseAffliateBonus = async (
       { _id: ObjectId(extractedId) },
       {
         $inc: {
-          totalBuy: parseInt(amount),
-          totalProfit: parseInt(amount),
+          totalBuy: parseFloat(amount),
+          totalProfit: parseFloat(amount),
         },
       }
     );
@@ -1014,8 +1015,8 @@ app.post("/api/accept-deceptor", auth(), authLimiter, async (req, res) => {
           { _id: ObjectId(user._id) },
           {
             $inc: {
-              totalBuy: parseInt(body.item.price),
-              totalProfit: parseInt(body.item.price),
+              totalBuy: parseFloat(body?.item?.price),
+              totalProfit: parseFloat(body?.item?.price),
             },
           }
         );
@@ -1432,7 +1433,9 @@ app.get(
     const startOfDay = new Date();
 
     startOfDay.setDate(
-      user?.megaOffer.includes(99.99)
+      user?.megaOffer?.length >= 3
+        ? startOfDay.getDate() - 3
+        : user?.megaOffer?.includes(99.99)
         ? startOfDay.getDate() - 7
         : user?.megaOffer?.length >= 3
         ? startOfDay.getDate() - 3
@@ -1742,10 +1745,10 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
                   }
                   if (data?.offerType === "freeSpin") {
                     let freeSpinPayload = {
-                      amount: "50",
-                      currency: "SC.",
-                      freespinvalue: "1000",
-                      gameid: "thegreatpigsby",
+                      amount: data?.numberofSpins,
+                      currency: data.currency,
+                      freespinvalue: data?.freespinValue,
+                      gameid: data?.freeSpinGame,
                       remoteusername: extractedId,
                     };
                     let spinRes = createFreeSpin(freeSpinPayload);
