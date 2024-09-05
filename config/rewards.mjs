@@ -2307,7 +2307,7 @@ export async function applyPromo(req, res) {
       promoUserType,
     } = getPromo || {};
 
-    if (promoUserType === "New User") {
+    if (promoUserType === "NewUser") {
       let isTimecheck = compareDate(createdAt);
       if (isTimecheck) {
         return res.status(404).send({
