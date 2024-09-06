@@ -2298,7 +2298,6 @@ export async function applyPromo(req, res) {
     };
     console.log("createdAt", createdAt);
     let getPromo = await db.get_scrooge_promoDB().findOne(query);
-    console.log("getPromo", getPromo);
     const {
       coupanInUse,
       claimedUser,
@@ -2308,6 +2307,23 @@ export async function applyPromo(req, res) {
     } = getPromo || {};
 
     if (promoUserType === "NewUser") {
+      let query = {
+        promoUserType: "NewUser",
+        "claimedUser.userId": ObjectId(user),
+      };
+
+      const getAllNewUserPromo = await db
+        .get_scrooge_promoDB()
+        .find(query)
+        .toArray();
+      if (getAllNewUserPromo.length > 0) {
+        return res.status(404).send({
+          code: 404,
+          success: false,
+          message: "unfortunately this code is not eligible for your account!.",
+        });
+      }
+
       let isTimecheck = compareDate(createdAt);
       if (isTimecheck) {
         return res.status(404).send({
