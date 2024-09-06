@@ -2320,7 +2320,8 @@ export async function applyPromo(req, res) {
         return res.status(404).send({
           code: 404,
           success: false,
-          message: "unfortunately this code is not eligible for your account!.",
+          message:
+            "Hey sneaky one, unfortunately this code is not eligible for your account! Keep an eye on your email and our socials for a code meant for you.",
         });
       }
 
