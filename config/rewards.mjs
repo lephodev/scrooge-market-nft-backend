@@ -2665,7 +2665,7 @@ export async function getWeeklyWheel(req, res) {
       if (isWithin60Days) {
         return res.send({
           success: true,
-          showWheel: true,
+          showWheel: isWithin60Days,
           isWeeklySpin: false,
         });
       }
