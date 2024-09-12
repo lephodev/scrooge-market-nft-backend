@@ -2617,7 +2617,7 @@ export async function FastWithdrawRedeem(req, res) {
 
 export async function getWeeklyWheel(req, res) {
   try {
-    const { _id: userId } = req.user;
+    const { _id: userId, isSpended } = req.user;
     let query = {
       "userId._id": ObjectId(userId),
       transactionType: {
@@ -2654,10 +2654,24 @@ export async function getWeeklyWheel(req, res) {
         showWheel: isWithin60Days,
         isWeeklySpin: isWithin6Days,
       });
+    } else if (!req?.user?.isSpended) {
+      const currentDate = new Date();
+      const prev60Days = new Date();
+      prev60Days.setDate(currentDate.getDate() - 60);
+      prev60Days.setHours(0, 0, 0, 0);
+
+      const isWithin60Days =
+        prev60Days.getTime() <= new Date(req?.user?.createdAt).getTime();
+      if (isWithin60Days) {
+        return res.send({
+          success: true,
+          showWheel: true,
+          isWeeklySpin: false,
+        });
+      }
     }
 
     // In case no purchase is found
-    return res.send({ success: true, showWheel: true, isWeeklySpin: false });
   } catch (error) {
     console.log("error in getWeeklyWheel", error);
     return res
