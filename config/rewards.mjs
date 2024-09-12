@@ -2657,7 +2657,7 @@ export async function getWeeklyWheel(req, res) {
     }
 
     // In case no purchase is found
-    return res.send({ success: true, userId });
+    return res.send({ success: true, showWheel: true, isWeeklySpin: true });
   } catch (error) {
     console.log("error in getWeeklyWheel", error);
     return res
