@@ -2298,7 +2298,6 @@ export async function applyPromo(req, res) {
     };
     console.log("createdAt", createdAt);
     let getPromo = await db.get_scrooge_promoDB().findOne(query);
-    console.log("getPromo", getPromo);
     const {
       coupanInUse,
       claimedUser,
@@ -2308,6 +2307,24 @@ export async function applyPromo(req, res) {
     } = getPromo || {};
 
     if (promoUserType === "NewUser") {
+      let query = {
+        promoUserType: "NewUser",
+        "claimedUser.userId": ObjectId(user),
+      };
+
+      const getAllNewUserPromo = await db
+        .get_scrooge_promoDB()
+        .find(query)
+        .toArray();
+      if (getAllNewUserPromo.length > 0) {
+        return res.status(404).send({
+          code: 404,
+          success: false,
+          message:
+            "Hey sneaky one, unfortunately this code is not eligible for your account! Keep an eye on your email and our socials for a code meant for you.",
+        });
+      }
+
       let isTimecheck = compareDate(createdAt);
       if (isTimecheck) {
         return res.status(404).send({
@@ -2608,25 +2625,47 @@ export async function getWeeklyWheel(req, res) {
       },
     };
 
-    const getWeeklyPurchase = await db
+    const PurchaseList = await db
       .get_scrooge_transactionDB()
       .findOne(query, { sort: { _id: -1 } });
-    if (getWeeklyPurchase) {
-      const prevDt = new Date();
-      prevDt.setDate(prevDt.getDate() - 6);
-      prevDt.setHours(0, 0, 0, 0);
-      if (prevDt.getTime() <= new Date(getWeeklyPurchase.createdAt).getTime()) {
-        return res.send({ success: true, isWeeklySpin: true });
-      } else {
-        return res.send({ success: false, isWeeklySpin: false });
-      }
+
+    if (PurchaseList) {
+      const currentDate = new Date();
+
+      // Check for 60 days condition (showWheel)
+      const prev60Days = new Date();
+      prev60Days.setDate(currentDate.getDate() - 60);
+      prev60Days.setHours(0, 0, 0, 0);
+
+      const isWithin60Days =
+        prev60Days.getTime() <= new Date(PurchaseList.createdAt).getTime();
+
+      // Check for 6 days condition (isWeeklySpin)
+      const prev6Days = new Date();
+      prev6Days.setDate(currentDate.getDate() - 6);
+      prev6Days.setHours(0, 0, 0, 0);
+
+      const isWithin6Days =
+        prev6Days.getTime() <= new Date(PurchaseList.createdAt).getTime();
+
+      // Return both conditions at once
+      return res.send({
+        success: true,
+        showWheel: isWithin60Days,
+        isWeeklySpin: isWithin6Days,
+      });
     }
 
+    // In case no purchase is found
     return res.send({ success: true, userId });
   } catch (error) {
     console.log("error in getWeeklyWheel", error);
+    return res
+      .status(500)
+      .send({ success: false, message: "Internal Server Error" });
   }
 }
+
 const promoSTQue = new Queue(async function (task, cb) {
   if (task.type === "redeemFreePromo") {
     await redeemFreePromo(task.req, task.res);
