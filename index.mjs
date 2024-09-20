@@ -1161,13 +1161,24 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
   try {
     let { user, body } = req || {};
     const dcryptdData = decryptData(body?.data);
-    console.log("dcryptdData ==>", dcryptdData);
-    body = dcryptdData
+    // console.log("dcryptdData ==>", dcryptdData);
+    body = dcryptdData;
     const extractedId = user._id;
     const extractedPromoCode = body?.promoCode || null;
     const extractedReffrenceId = user?.refrenceId || null;
+
     let number = new Date().getTime();
     let firstTenDigits = number.toString().substring(0, 10);
+
+    if (
+      user.firstName !== dcryptdData?.firstName ||
+      user.lastName !== dcryptdData?.lastName
+    ) {
+      return res.status(400).send({
+        success: false,
+        message: "First name and Last name mismatch from user profile.",
+      });
+    }
     if (user?.isBlockWallet) {
       return res
         .status(400)
@@ -1178,7 +1189,7 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
 
     const ipAddress = ip.getClientIp(req);
 
-    const crdNumber = body?.cardNumber //decryptData(b);
+    const crdNumber = body?.cardNumber; //decryptData(b);
     body.cardNumber = crdNumber;
 
     var requestData = {
