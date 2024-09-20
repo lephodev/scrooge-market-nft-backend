@@ -2272,21 +2272,77 @@ export const applyPromoCode = async (req, res, next) => {
   }
 };
 
+const compareDate = (createdAtDate) => {
+  const createdAt = new Date(createdAtDate);
+  const currentTime = new Date();
+  const difference = currentTime - createdAt;
+  const isGreaterThan24Hours = difference > 24 * 60 * 60 * 1000;
+
+  if (isGreaterThan24Hours) {
+    console.log("The date is greater than 24 hours ago.");
+    return true;
+  } else {
+    console.log("The date is within the last 24 hours.");
+    return false;
+  }
+};
+
 export async function applyPromo(req, res) {
   let user = req.user._id;
+  let createdAt = req.user.createdAt;
   try {
     const { promocode } = req.body;
     let query = {
       couponCode: promocode,
       expireDate: { $gte: new Date() },
     };
+    console.log("createdAt", createdAt);
     let getPromo = await db.get_scrooge_promoDB().findOne(query);
-    console.log("getPromo", getPromo);
-    const { coupanInUse, claimedUser, numberOfUsages, coupanType } =
-      getPromo || {};
+    const {
+      coupanInUse,
+      claimedUser,
+      numberOfUsages,
+      coupanType,
+      promoUserType,
+    } = getPromo || {};
+
+    if (promoUserType === "NewUser") {
+      let query = {
+        promoUserType: "NewUser",
+        "claimedUser.userId": ObjectId(user),
+      };
+
+      const getAllNewUserPromo = await db
+        .get_scrooge_promoDB()
+        .find(query)
+        .toArray();
+      if (getAllNewUserPromo.length > 0) {
+        return res.status(404).send({
+          code: 404,
+          success: false,
+          message:
+            "Hey sneaky one, unfortunately this code is not eligible for your account! Keep an eye on your email and our socials for a code meant for you.",
+        });
+      }
+
+      let isTimecheck = compareDate(createdAt);
+      if (isTimecheck) {
+        return res.status(404).send({
+          code: 404,
+          success: false,
+          message: "Invalid promo code!",
+        });
+      }
+      if (claimedUser?.length > numberOfUsages)
+        return res.status(404).send({
+          code: 404,
+          success: false,
+          message: "Promo code usage limit reached .",
+        });
+    }
 
     if (coupanType === "Free ST") {
-      if (claimedUser?.length >= numberOfUsages)
+      if (claimedUser?.length > numberOfUsages)
         return res.status(404).send({
           code: 404,
           success: false,
@@ -2560,8 +2616,10 @@ export async function FastWithdrawRedeem(req, res) {
 }
 
 export async function getWeeklyWheel(req, res) {
+  console.log("-----------------------------------------------", req.user);
+
   try {
-    const { _id: userId } = req.user;
+    const { _id: userId, isSpended } = req.user;
     let query = {
       "userId._id": ObjectId(userId),
       transactionType: {
@@ -2569,25 +2627,68 @@ export async function getWeeklyWheel(req, res) {
       },
     };
 
-    const getWeeklyPurchase = await db
+    const PurchaseList = await db
       .get_scrooge_transactionDB()
       .findOne(query, { sort: { _id: -1 } });
-    if (getWeeklyPurchase) {
-      const prevDt = new Date();
-      prevDt.setDate(prevDt.getDate() - 6);
-      prevDt.setHours(0, 0, 0, 0);
-      if (prevDt.getTime() <= new Date(getWeeklyPurchase.createdAt).getTime()) {
-        return res.send({ success: true, isWeeklySpin: true });
-      } else {
-        return res.send({ success: false, isWeeklySpin: false });
-      }
+
+    if (PurchaseList) {
+      const currentDate = new Date();
+      console.log(
+        "req?.user?.isSpendedreq?.user?.isSpended",
+        req?.user?.isSpended
+      );
+
+      // Check for 60 days condition (showWheel)
+      const prev60Days = new Date();
+      prev60Days.setDate(currentDate.getDate() - 60);
+      prev60Days.setHours(0, 0, 0, 0);
+
+      const isWithin60Days =
+        prev60Days.getTime() <= new Date(PurchaseList.createdAt).getTime();
+
+      // Check for 6 days condition (isWeeklySpin)
+      const prev6Days = new Date();
+      prev6Days.setDate(currentDate.getDate() - 6);
+      prev6Days.setHours(0, 0, 0, 0);
+
+      const isWithin6Days =
+        prev6Days.getTime() <= new Date(PurchaseList.createdAt).getTime();
+
+      // Return both conditions at once
+      return res.send({
+        success: true,
+        showWheel: isWithin60Days,
+        isWeeklySpin: isWithin6Days,
+      });
+    } else if (!req?.user?.isSpended) {
+      console.log("s[pennenenne", req?.user?.isSpended);
+
+      const currentDate = new Date();
+      const prev60Days = new Date();
+      prev60Days.setDate(currentDate.getDate() - 60);
+      prev60Days.setHours(0, 0, 0, 0);
+
+      const isWithin60Days =
+        prev60Days.getTime() <= new Date(req?.user?.createdAt).getTime();
+      console.log("isWithin60Days", isWithin60Days);
+
+      console.log("isWithin60Days", isWithin60Days);
+      return res.send({
+        success: true,
+        showWheel: isWithin60Days,
+        isWeeklySpin: false,
+      });
     }
 
-    return res.send({ success: true, userId });
+    // In case no purchase is found
   } catch (error) {
     console.log("error in getWeeklyWheel", error);
+    return res
+      .status(500)
+      .send({ success: false, message: "Internal Server Error" });
   }
 }
+
 const promoSTQue = new Queue(async function (task, cb) {
   if (task.type === "redeemFreePromo") {
     await redeemFreePromo(task.req, task.res);
@@ -2615,7 +2716,7 @@ export async function redeemFreePromo(req, res) {
     const { coupanInUse, claimedUser, token, coupanType, numberOfUsages } =
       getPromo || {};
     if (coupanType === "Free ST") {
-      if (claimedUser?.length >= numberOfUsages)
+      if (claimedUser?.length > numberOfUsages)
         return res.status(400).send({
           code: 400,
           success: false,
@@ -3003,6 +3104,34 @@ export async function IdAnalyzerWithDocupass(req, res) {
     console.log("IdAnalyzerWithDocupass user");
 
     // Respond to the client with success
+  } catch (e) {
+    console.log("outerCatch", e);
+    return res
+      .status(500)
+      .send({ success: false, message: "Error in Request Process" });
+  }
+}
+
+export async function saveUserconnectedWallet(req, res) {
+  const { walletAddress } = req.body;
+  console.log("walletAddress", walletAddress);
+  const connectedWalletAddress = {
+    address: walletAddress,
+    createdAt: new Date(),
+  };
+  let user = req.user;
+  const result = await db
+    .get_scrooge_usersDB()
+    .findOneAndUpdate(
+      { _id: ObjectId(user._id) },
+      { $push: { connectedWalletAddress } },
+      { new: true }
+    );
+
+  console.log("result", result);
+  res.status(200).json({ message: "Wallet added successfully." });
+
+  try {
   } catch (e) {
     console.log("outerCatch", e);
     return res
