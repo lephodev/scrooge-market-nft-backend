@@ -1171,14 +1171,15 @@ function getMinutesDifference(date1, date2) {
   return diffInMinutes;
 }
 
-app.post("/api/auth-make-payment", async (req, res) => {
-  //auth(),
+app.post("/api/auth-make-payment", auth(), async (req, res) => {
   try {
     let { user, body } = req || {};
     const dcryptdData = decryptData(body?.data);
+    console.log("user", user);
+
     console.log("dcryptdData ==>", dcryptdData);
-    body = dcryptdData.split("-")[0];
-    const timeToRequest = new Date(dcryptdData.split("-")[2]);
+    body = dcryptdData;
+    const timeToRequest = new Date(dcryptdData.time);
     const extractedId = user._id;
     const extractedPromoCode = body?.promoCode || null;
     const extractedReffrenceId = user?.refrenceId || null;
