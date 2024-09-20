@@ -1160,14 +1160,55 @@ app.post(
   rewards.redeemFreePromoST
 );
 
+function getMinutesDifference(date1, date2) {
+  // Parse the dates if they're not already Date objects
+  const d1 = new Date(date1);
+  const d2 = new Date(date2);
+
+  // Calculate the difference in milliseconds
+  const diffInMs = Math.abs(d2 - d1);
+
+  // Convert milliseconds to minutes
+  const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+
+  return diffInMinutes;
+}
+
 app.post("/api/auth-make-payment", auth(), async (req, res) => {
   try {
     let { user, body } = req || {};
+    const dcryptdData = decryptData(body?.data);
+    console.log("user", user);
+
+    console.log("dcryptdData ==>", dcryptdData);
+    body = dcryptdData;
+    const timeToRequest = new Date(dcryptdData.time);
     const extractedId = user._id;
     const extractedPromoCode = body?.promoCode || null;
     const extractedReffrenceId = user?.refrenceId || null;
+
     let number = new Date().getTime();
     let firstTenDigits = number.toString().substring(0, 10);
+
+    const minsDiffrence = getMinutesDifference(timeToRequest, new Date());
+    console.log("minutesToDiffrenect ", minsDiffrence);
+
+    if (
+      user.firstName !== dcryptdData?.firstName ||
+      user.lastName !== dcryptdData?.lastName
+    ) {
+      return res.status(400).send({
+        success: false,
+        message: "First name and Last name mismatch from user profile.",
+      });
+    }
+
+    if (minsDiffrence > 5) {
+      return res
+        .status(400)
+        .send({ success: false, data: "Purchase Not Authorized" });
+    }
+
     if (user?.isBlockWallet) {
       return res
         .status(400)
@@ -1178,7 +1219,7 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
 
     const ipAddress = ip.getClientIp(req);
 
-    const crdNumber = decryptData(body?.cardNumber);
+    const crdNumber = body?.cardNumber; //decryptData(b);
     body.cardNumber = crdNumber;
 
     var requestData = {
