@@ -1338,6 +1338,9 @@ app.post(
 app.post("/api/auth-make-payment", auth(), async (req, res) => {
   try {
     let { user, body } = req || {};
+    const dcryptdData = decryptData(body?.data);
+    console.log("dcryptdData ==>", dcryptdData);
+    body = dcryptdData
     const extractedId = user._id;
     const extractedPromoCode = body?.promoCode || null;
     const extractedReffrenceId = user?.refrenceId || null;
@@ -1353,7 +1356,7 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
 
     const ipAddress = ip.getClientIp(req);
 
-    const crdNumber = decryptData(body?.cardNumber);
+    const crdNumber = body?.cardNumber //decryptData(b);
     body.cardNumber = crdNumber;
 
     var requestData = {
