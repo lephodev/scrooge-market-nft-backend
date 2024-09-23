@@ -450,8 +450,7 @@ const getGCPurchaseAffliateBonus = async (
   try {
     let getUserdetails = await db
       .get_scrooge_usersDB()
-      .findOne({ _id: ObjectId(extractedId) })
-      .select("-password"); // Exclude the password field;
+      .findOne({ _id: ObjectId(extractedId) });
     // console.log("getUsergetUser", getUserdetails);
     let affliateData = await db
       .get_affiliatesDB()
@@ -512,8 +511,7 @@ const getGCPurchaseAffliateBonus = async (
       .findOne({ _id: ObjectId(extractedReffrenceId) });
     let getUserData = await db
       .get_scrooge_usersDB()
-      .findOne({ _id: ObjectId(extractedReffrenceId) })
-      .select("-password"); // Exclude the password field;
+      .findOne({ _id: ObjectId(extractedReffrenceId) });
 
     // console.log("-----------------", getUserData);
     const {
@@ -702,8 +700,7 @@ app.post("/api/accept-deceptor", auth(), authLimiter, async (req, res) => {
       );
       let getUserDetail = await db
         .get_scrooge_usersDB()
-        .findOne({ _id: ObjectId(user._id) })
-        .select("-password"); // Exclude the password field;
+        .findOne({ _id: ObjectId(user._id) });
       res.status(200).send({
         success: true,
         data: "Chips added successfully.",
@@ -1300,7 +1297,8 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
             const getUser = await db
               .get_scrooge_usersDB()
               .findOne({ _id: ObjectId(user?._id) })
-              .select("-password"); // Exclude the password field;
+              .select("-password") // Exclude the password field
+              .exec(); // Execute the query;
             if (!getUser) {
               return;
             }
