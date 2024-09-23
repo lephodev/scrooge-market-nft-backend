@@ -364,7 +364,7 @@ export async function updateUserDataAndTransaction(
         prevDt.setDate(prevDt.getDate() - 1);
         prevDt.setHours(0, 0, 0, 0);
 
-        const estOffset = -4 * 60; // EST is UTC-5
+        const estOffset = 1 * 60; // EST is UTC-5
         const prevEst = new Date(prevDt.getTime() + estOffset * 60 * 1000);
         // console.log("prevEst", prevEst);
 
