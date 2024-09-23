@@ -1294,11 +1294,11 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
                   response.transactionResponse?.errors?.error[0]?.errorText,
               });
             }
-            const getUser = await db
-              .get_scrooge_usersDB()
-              .findOne({ _id: ObjectId(user?._id) })
-              .select("-password") // Exclude the password field
-              .exec(); // Execute the query;
+
+            const getUser = await db.get_scrooge_usersDB().findOne(
+              { _id: ObjectId(user?._id) },
+              { projection: { password: 0 } } // Exclude the password field
+            );
             if (!getUser) {
               return;
             }
