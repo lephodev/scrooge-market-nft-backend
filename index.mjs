@@ -43,6 +43,7 @@ import { Server } from "socket.io";
 
 import Basicauth from "./middlewares/basicAuth.mjs";
 import { decryptData } from "./middlewares/decrypt.mjs";
+import { addCheckoutWorkFlows, getAllCheckoutwebhooks, getPaymentSession } from "./services/checkout.services.mjs";
 
 const app = express();
 
@@ -1175,9 +1176,11 @@ app.post("/api/auth-make-payment", async (req, res) => {
   //auth(),
   try {
     let { user, body } = req || {};
+    console.log("body =", body)
     const dcryptdData = decryptData(body?.data);
     console.log("dcryptdData ==>", dcryptdData);
     body = dcryptdData.split("-")[0];
+    return;
     const timeToRequest = new Date(dcryptdData.split("-")[2]);
     const extractedId = user._id;
     const extractedPromoCode = body?.promoCode || null;
@@ -1455,6 +1458,45 @@ app.post(
   auth(),
   rewards.saveUserconnectedWallet
 );
+
+app.post("/api/get-payment-session", auth(), async (req, res)=>{
+  try {
+    const resp = await getPaymentSession(req.body);
+    console.log("response ", resp);
+    return res.status(200).json(resp);
+  } catch (error) {
+    console.log("error in /get-payment-session", error);
+    res.status(500).json({
+      message: "Internal server error"
+    });
+  }
+})
+
+app.post("/api/add-checkout-workflows", async (req, res)=>{
+  try {
+    const resp = await addCheckoutWorkFlows();
+    
+  } catch (error) {
+    console.log("error in add-checkout-workflows", error);
+  }
+})
+
+app.post("/api/get-all-workflows", async(req, res)=>{
+  try {
+    const resp = getAllCheckoutwebhooks();
+  } catch (error) {
+    console.log("error in get all checkout workflows", error);
+  }
+})
+
+app.post("/api/checkout-payments-webhook", async(req, res)=>{
+  try {
+    console.log("req.body in checkout webhoook",req.body);
+  } catch (error) {
+    console.log("error in checkpout payment webhooks", error);
+  }
+});
+
 
 app.listen(PORT, () => {
   console.log("Server is running.", PORT);
