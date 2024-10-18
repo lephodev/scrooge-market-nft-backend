@@ -1172,16 +1172,16 @@ function getMinutesDifference(date1, date2) {
   return diffInMinutes;
 }
 
-app.post("/api/auth-make-payment", async (req, res) => {
-  //auth(),
+app.post("/api/auth-make-payment", auth(), async (req, res) => {
   try {
     let { user, body } = req || {};
     console.log("body =", body)
     const dcryptdData = decryptData(body?.data);
+    console.log("user", user);
+
     console.log("dcryptdData ==>", dcryptdData);
-    body = dcryptdData.split("-")[0];
-    return;
-    const timeToRequest = new Date(dcryptdData.split("-")[2]);
+    body = dcryptdData;
+    const timeToRequest = new Date(dcryptdData.time);
     const extractedId = user._id;
     const extractedPromoCode = body?.promoCode || null;
     const extractedReffrenceId = user?.refrenceId || null;
@@ -1296,9 +1296,11 @@ app.post("/api/auth-make-payment", async (req, res) => {
                   response.transactionResponse?.errors?.error[0]?.errorText,
               });
             }
-            const getUser = await db
-              .get_scrooge_usersDB()
-              .findOne({ _id: ObjectId(user?._id) });
+
+            const getUser = await db.get_scrooge_usersDB().findOne(
+              { _id: ObjectId(user?._id) },
+              { projection: { password: 0 } } // Exclude the password field
+            );
             if (!getUser) {
               return;
             }
