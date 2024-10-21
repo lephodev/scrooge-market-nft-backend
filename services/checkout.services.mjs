@@ -32,7 +32,7 @@ export const getPaymentSession = async (body)=>{
                   "aft": true
                 },
                 "processing_channel_id": "pc_sxouohxmuome5jptmrsoxsdoru",
-                "expires_on": "2024-10-19T09:15:30Z",
+                "expires_on": "2024-10-31T09:15:30Z",
                 "payment_method_configuration": {
                   "card": {
                     "store_payment_details": "disabled"
