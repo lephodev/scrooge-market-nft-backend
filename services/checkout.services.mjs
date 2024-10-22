@@ -13,7 +13,7 @@ export const getPaymentSession = async (body)=>{
         } = body;
 
         const accessToken = await getAcessToken();
-        console.log("accessToken ==>", accessToken);
+        console.log("userId ==>", userId);
 
         const resp = await axios.post("https://api.sandbox.checkout.com/payment-sessions", {
                 "amount": 10 * 100,
@@ -29,7 +29,7 @@ export const getPaymentSession = async (body)=>{
                 //   "city": "Los Angeles",
                 //   "reference": "Scrooge casino"
                 // },
-                "reference": "661cc926e4a6bc1e2d722300",
+                "reference": userId,
                 // "description": "Payment for Scrooge GC",
                 // "processing": {
                 //   "aft": true
@@ -63,8 +63,8 @@ export const getPaymentSession = async (body)=>{
                 //   "max_attempts": 5
                 // },
                 // "display_name": "Test user",
-                "success_url": "https://scrooge.casino/success",
-                "failure_url": "https://scrooge.casino/failure",
+                "success_url": "https://dev.scrooge.casino/success",
+                "failure_url": "https://dev.scrooge.casino/failure",
                 // "metadata": {
                 //   "coupon_code": "NY2018"
                 // },
@@ -91,7 +91,6 @@ export const getPaymentSession = async (body)=>{
             }
           });
 
-        console.log("resp ==>", resp);
           return resp.data
 
     } catch (error) {

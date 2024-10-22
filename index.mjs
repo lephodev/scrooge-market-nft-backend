@@ -1463,8 +1463,9 @@ app.post(
 
 app.post("/api/get-payment-session", auth(), async (req, res)=>{
   try {
+    console.log("req.body ==>", req.body);
     const resp = await getPaymentSession(req.body);
-    console.log("response ", resp);
+    
     return res.status(200).json(resp);
   } catch (error) {
     console.log("error in /get-payment-session", error);
