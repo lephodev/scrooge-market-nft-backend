@@ -186,12 +186,9 @@ export const checkoutWebHook = async (body)=>{
         amount
       }
     } = body;
-    console.log("refrence ==>", reference, amount);
     const user = await db.get_scrooge_usersDB().findOne({
       _id: ObjectId(reference)
     });
-
-    console.log("user in checkout webhook", user);
 
     let query = {
       couponCode: "",
