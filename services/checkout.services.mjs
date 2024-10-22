@@ -16,7 +16,7 @@ export const getPaymentSession = async (body)=>{
         console.log("accessToken ==>", accessToken);
 
         const resp = await axios.post("https://api.sandbox.checkout.com/payment-sessions", {
-                "amount": 10,
+                "amount": 10 * 100,
                 "currency": "USD",
                 // "payment_type": "Regular",
                 "billing": {
@@ -180,7 +180,7 @@ export const getAllCheckoutwebhooks = async ()=>{
 
 export const checkoutWebHook = async (body)=>{
   try {
-    const {
+    let {
       data: {
         reference,
         amount
@@ -203,21 +203,21 @@ export const checkoutWebHook = async (body)=>{
     const trans = await rewards.addChips(
       user?._id?.toString(),
       findPromoData?.coupanType === "Percent"
-        ? parseInt(data ?data.freeTokenAmount : amount * 100) +
-            parseInt(data ? data.freeTokenAmount : amount * 100) *
+        ? parseInt(data ?data.freeTokenAmount : amount) +
+            parseInt(data ? data.freeTokenAmount : amount) *
               (parseFloat(findPromoData?.discountInPercent) / 100)
         : findPromoData?.coupanType === "2X"
-        ? parseInt(data ? data.freeTokenAmount :  amount * 100) * 2
-        : parseInt(data ? data.freeTokenAmount :  amount * 100),
+        ? parseInt(data ? data.freeTokenAmount :  amount) * 2
+        : parseInt(data ? data.freeTokenAmount :  amount),
       "",
       "CC To Gold Coin",
       findPromoData?.coupanType === "Percent"
-        ? parseInt(data ? data.gcAmount :  amount * 100000) +
-            parseInt(data ? data.gcAmount :  amount * 100000) *
+        ? parseInt(data ? data.gcAmount :  amount * 1000) +
+            parseInt(data ? data.gcAmount :  amount * 1000) *
               (parseFloat(findPromoData?.discountInPercent) / 100)
         : findPromoData?.coupanType === "2X"
-        ? parseInt(data ? data.gcAmount :  amount * 100000) * 2
-        : parseInt(data ? data.gcAmount :  amount * 100000),
+        ? parseInt(data ? data.gcAmount :  amount * 1000) * 2
+        : parseInt(data ? data.gcAmount :  amount * 1000),
       {},
       findPromoData?.coupanType === "Percent"
         ? parseInt(data ? data.freeTokenAmount : amount) *
@@ -225,7 +225,7 @@ export const checkoutWebHook = async (body)=>{
         : findPromoData?.coupanType === "2X"
         ? parseInt(data ? data.freeTokenAmount : amount)
         : 0,
-        amount //amount?.toString() === "9.99"
+        amount/100 //amount?.toString() === "9.99"
       // ? 1500
       // : 0
     );
