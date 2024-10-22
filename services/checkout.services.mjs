@@ -234,6 +234,6 @@ export const checkoutWebHook = async (body)=>{
     return;
 
   } catch (error) {
-    console.log("web hook in checkout ==>", );
+    console.log("web hook in checkout ==>", error);
   }
 }
