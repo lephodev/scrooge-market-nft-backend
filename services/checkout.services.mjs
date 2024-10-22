@@ -1,6 +1,9 @@
 import axios from "axios";
 import qs from "qs";
 import { Checkout } from "checkout-sdk-node";
+import * as db from "../config/mongodb.mjs";
+import { ObjectId } from "mongodb";
+import * as rewards from "../config/rewards.mjs";
 
 
 export const getPaymentSession = async (body)=>{
@@ -15,82 +18,73 @@ export const getPaymentSession = async (body)=>{
         const resp = await axios.post("https://api.sandbox.checkout.com/payment-sessions", {
                 "amount": 10,
                 "currency": "USD",
-                "payment_type": "Regular",
+                // "payment_type": "Regular",
                 "billing": {
                   "address": {
                     "country": "US"
                   }
                 },
-                "billing_descriptor": {
-                  "name": "Test user",
-                  "city": "Los Angeles",
-                  "reference": "Scrooge casino"
-                },
-                "reference": "ORD-111",
-                "description": "Payment for Scrooge GC",
-                "processing": {
-                  "aft": true
-                },
+                // "billing_descriptor": {
+                //   "name": "Test user",
+                //   "city": "Los Angeles",
+                //   "reference": "Scrooge casino"
+                // },
+                "reference": "661cc926e4a6bc1e2d722300",
+                // "description": "Payment for Scrooge GC",
+                // "processing": {
+                //   "aft": true
+                // },
                 "processing_channel_id": "pc_sxouohxmuome5jptmrsoxsdoru",
-                "expires_on": "2024-10-31T09:15:30Z",
-                "payment_method_configuration": {
-                  "card": {
-                    "store_payment_details": "disabled"
-                  }
-                },
-                "enabled_payment_methods": ["card", "applepay", "googlepay"],
-                "disabled_payment_methods": ["eps", "ideal", "knet"],
-                "items": [{
-                  "reference": "$10 GC",
-                  "commodity_code": "1234",
-                  "unit_of_measure": "each",
-                  "total_amount": 10,
-                  "tax_amount": 0,
-                  "discount_amount": 0,
-                  "url": "string",
-                  "image_url": "string",
-                  "name": "Gold Necklace",
-                  "quantity": 1,
-                  "unit_price": 10
-                  }],
-                "amount_allocations": [{
-                  "id": "2222",
-                  "amount": 1,
-                  "reference": "ORD-123A",
-                  "commission": {
-                    "amount": 0,
-                    "percentage": 0
-                  }
-                }],
-                "risk": {
-                  "enabled": false
-                },
-                "customer_retry": {
-                  "max_attempts": 5
-                },
-                "display_name": "Test user",
+                // "expires_on": "2024-10-31T09:15:30Z",
+                // "payment_method_configuration": {
+                //   "card": {
+                //     "store_payment_details": "disabled"
+                //   }
+                // },
+                // "enabled_payment_methods": ["card", "applepay", "googlepay"],
+                // "disabled_payment_methods": ["eps", "ideal", "knet"],
+                // "items": [{
+                //   "reference": "$10 GC",
+                //   "commodity_code": "1234",
+                //   "unit_of_measure": "each",
+                //   "total_amount": 10,
+                //   "tax_amount": 0,
+                //   "discount_amount": 0,
+                //   "url": "string",
+                //   "image_url": "string",
+                //   "name": "Gold Necklace",
+                //   "quantity": 1,
+                //   "unit_price": 10
+                //   }],
+                // "risk": {
+                //   "enabled": false
+                // },
+                // "customer_retry": {
+                //   "max_attempts": 5
+                // },
+                // "display_name": "Test user",
                 "success_url": "https://scrooge.casino/success",
                 "failure_url": "https://scrooge.casino/failure",
-                "metadata": {
-                  "coupon_code": "NY2018"
-                },
-                "locale": "en-GB",
-                "3ds": {
-                  "enabled": true,
-                  "attempt_n3d": true,
-                  "challenge_indicator": "no_preference",
-                  "exemption": "low_value",
-                  "allow_upgrade": true
-                },
-                "sender": {
-                  "type": "individual",
-                  "reference": "8285282045818",
-                  "first_name": "test",
-                  "last_name": "user"
-                },
-                "capture": true,
-                "capture_on": "2024-10-17T11:15:30Z",
-                "ip_address": "49.36.170.1"
+                // "metadata": {
+                //   "coupon_code": "NY2018"
+                // },
+                // "locale": "en-GB",
+                // "3ds": {
+                //   "enabled": true,
+                //   "attempt_n3d": true,
+                //   "challenge_indicator": "no_preference",
+                //   "exemption": "low_value",
+                //   "allow_upgrade": true
+                // },
+                // "sender": {
+                //   "type": "individual",
+                //   "reference": "8285282045818",
+                //   "first_name": "test",
+                //   "last_name": "user"
+                // },
+                // "capture": true,
+                // "capture_on": "2024-10-17T11:15:30Z",
+                // "ip_address": "49.36.170.1"
               }, {
             headers: {
               Authorization: `Bearer ${accessToken}`
@@ -181,5 +175,65 @@ export const getAllCheckoutwebhooks = async ()=>{
     console.log("webhooks ==>", workflows.data[0]._links);
   } catch (error) {
     console.log("error in addCheckoutWorkFlows =>", error);
+  }
+}
+
+export const checkoutWebHook = async (body)=>{
+  try {
+    const {
+      data: {
+        reference,
+        amount
+      }
+    } = body;
+    console.log("refrence ==>", reference);
+    const user = await db.get_scrooge_usersDB().findOne({
+      _id: ObjectId(reference)
+    });
+
+    console.log("user in checkout webhook", user);
+
+    let query = {
+      couponCode: "",
+      expireDate: { $gte: new Date() },
+    };
+    let findPromoData = await db
+      .get_scrooge_promoDB()
+      .findOne(query);
+
+    const trans = await rewards.addChips(
+      user?._id?.toString(),
+      findPromoData?.coupanType === "Percent"
+        ? parseInt(data ?data.freeTokenAmount : amount * 100) +
+            parseInt(data ? data.freeTokenAmount : amount * 100) *
+              (parseFloat(findPromoData?.discountInPercent) / 100)
+        : findPromoData?.coupanType === "2X"
+        ? parseInt(data ? data.freeTokenAmount :  amount * 100) * 2
+        : parseInt(data ? data.freeTokenAmount :  amount * 100),
+      "",
+      "CC To Gold Coin",
+      findPromoData?.coupanType === "Percent"
+        ? parseInt(data ? data.gcAmount :  amount * 100000) +
+            parseInt(data ? data.gcAmount :  amount * 100000) *
+              (parseFloat(findPromoData?.discountInPercent) / 100)
+        : findPromoData?.coupanType === "2X"
+        ? parseInt(data ? data.gcAmount :  amount * 100000) * 2
+        : parseInt(data ? data.gcAmount :  amount * 100000),
+      response,
+      findPromoData?.coupanType === "Percent"
+        ? parseInt(data ? data.freeTokenAmount : amount) *
+            (parseFloat(findPromoData?.discountInPercent) / 100)
+        : findPromoData?.coupanType === "2X"
+        ? parseInt(data ? data.freeTokenAmount : amount)
+        : 0,
+        amount //amount?.toString() === "9.99"
+      // ? 1500
+      // : 0
+    );
+    
+
+
+  } catch (error) {
+    console.log("web hook in checkout ==>", );
   }
 }
