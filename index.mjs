@@ -1494,7 +1494,9 @@ app.post("/api/get-all-workflows", async(req, res)=>{
 app.post("/api/checkout-payments-webhook", async(req, res)=>{
   try {
     console.log("req.body in checkout webhoook",req.body);
-    await checkoutWebHook(req.body);
+    if(req.body.type === "payment_approved"){
+      await checkoutWebHook(req.body);
+    }
     return res.status(200).json({
       message: "Successfully completed"
     });
