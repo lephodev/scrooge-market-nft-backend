@@ -201,6 +201,8 @@ export const checkoutWebHook = async (body)=>{
       .get_scrooge_promoDB()
       .findOne(query);
 
+    let data;
+
     const trans = await rewards.addChips(
       user?._id?.toString(),
       findPromoData?.coupanType === "Percent"
