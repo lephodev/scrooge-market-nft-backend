@@ -221,7 +221,7 @@ export const checkoutWebHook = async (body)=>{
         : findPromoData?.coupanType === "2X"
         ? parseInt(data ? data.gcAmount :  amount * 100000) * 2
         : parseInt(data ? data.gcAmount :  amount * 100000),
-      response,
+      {},
       findPromoData?.coupanType === "Percent"
         ? parseInt(data ? data.freeTokenAmount : amount) *
             (parseFloat(findPromoData?.discountInPercent) / 100)
