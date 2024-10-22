@@ -43,7 +43,7 @@ import { Server } from "socket.io";
 
 import Basicauth from "./middlewares/basicAuth.mjs";
 import { decryptData } from "./middlewares/decrypt.mjs";
-import { addCheckoutWorkFlows, getAllCheckoutwebhooks, getPaymentSession } from "./services/checkout.services.mjs";
+import { addCheckoutWorkFlows, checkoutWebHook, getAllCheckoutwebhooks, getPaymentSession } from "./services/checkout.services.mjs";
 
 const app = express();
 
@@ -1494,6 +1494,10 @@ app.post("/api/get-all-workflows", async(req, res)=>{
 app.post("/api/checkout-payments-webhook", async(req, res)=>{
   try {
     console.log("req.body in checkout webhoook",req.body);
+    await checkoutWebHook(req.body);
+    return res.status(200).json({
+      message: "Successfully completed"
+    });
   } catch (error) {
     console.log("error in checkpout payment webhooks", error);
   }
