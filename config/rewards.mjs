@@ -81,6 +81,7 @@ export async function addChips(
         };
       }
     }
+    console.log("query afetr purchase ", query);
     const { value: user } = await db.get_scrooge_usersDB().findOneAndUpdate(
       { _id: ObjectId(_user_id) },
       {
