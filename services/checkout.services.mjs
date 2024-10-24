@@ -10,10 +10,10 @@ export const getPaymentSession = async (body) => {
     const { userId, amount } = body;
 
     const accessToken = await getAcessToken();
-    console.log("userId ==>", userId);
+    console.log("userId ==>", accessToken);
 
     const resp = await axios.post(
-      "https://api.sandbox.checkout.com/payment-sessions",
+      "https://api.checkout.com/payment-sessions",
       {
         amount: amount * 100,
         currency: "USD",
@@ -33,7 +33,7 @@ export const getPaymentSession = async (body) => {
         // "processing": {
         //   "aft": true
         // },
-        processing_channel_id: "pc_sxouohxmuome5jptmrsoxsdoru",
+        processing_channel_id: process.env.CHECKOUt_MERCHENT_CHANEL_ID,
         // "expires_on": "2024-10-31T09:15:30Z",
         // "payment_method_configuration": {
         //   "card": {
@@ -62,8 +62,8 @@ export const getPaymentSession = async (body) => {
         //   "max_attempts": 5
         // },
         // "display_name": "Test user",
-        success_url: "https://dev.scrooge.casino/success",
-        failure_url: "https://dev.scrooge.casino/failure",
+        success_url: `${process.env.LANDING_CLIENT}/success`,
+        failure_url: `${process.env.LANDING_CLIENT}/failure`,
         // "metadata": {
         //   "coupon_code": "NY2018"
         // },
@@ -94,18 +94,18 @@ export const getPaymentSession = async (body) => {
 
     return resp.data;
   } catch (error) {
-    console.log("error in get checkout payment session", error.response.data);
+    console.log("error in get checkout payment session", error);
   }
 };
 
 const getAcessToken = async () => {
   try {
     const acsTkResp = await axios.post(
-      "https://access.sandbox.checkout.com/connect/token",
+      process.env.CHECKOUT_MERCHENT_URL,
       qs.stringify({
         grant_type: "client_credentials",
-        client_id: process.env.CHECKOUT_CLIENT_ID, //"ack_eiccapfazfletih475sllukdmy",
-        client_secret: process.env.CHECKOUT_CLIENT_SECRET, //"sa3U0dlryEzJ9CtbLzQkDfZ1Bdv963F92SmGKWwmNjt0-V5qDgbtpZmNqUP6_Oh-ztbylzjOlWzNqmxfFY8qmA",
+        client_id: process.env.CHECKOUT_MERCHENT_CLIENT_ID, //"ack_eiccapfazfletih475sllukdmy",
+        client_secret: process.env.CHECKOUT_MERCHENT_CLIENT_SECRET, //"sa3U0dlryEzJ9CtbLzQkDfZ1Bdv963F92SmGKWwmNjt0-V5qDgbtpZmNqUP6_Oh-ztbylzjOlWzNqmxfFY8qmA",
         scope: "payment-sessions",
       }),
       {
@@ -122,10 +122,10 @@ const getAcessToken = async () => {
 
 export const addCheckoutWorkFlows = async () => {
   try {
-    let cko = new Checkout(process.env.CHECKOUT_CLIENT_SECRET, {
-      client: process.env.CHECKOUT_CLIENT_ID,
+    let cko = new Checkout(process.env.CHECKOUT_MERCHENT_CLIENT_SECRET, {
+      client: process.env.CHECKOUT_MERCHENT_CLIENT_ID,
       scope: ["flow:workflows"], // array of scopes
-      environment: "sandbox", // or "production"
+      environment: "production", // or "sandbox"
     });
     let workflows = await cko.workflows.add({
       name: "Payment webhooks",
@@ -142,13 +142,13 @@ export const addCheckoutWorkFlows = async () => {
         // },
         {
           type: "processing_channel",
-          processing_channels: ["pc_zs5fqhybzc2e3jmq3efvybybpq"],
+          processing_channels: [process.env.CHECKOUt_MERCHENT_CHANEL_ID],
         },
       ],
       actions: [
         {
           type: "webhook",
-          url: "https://devmarket-api.scrooge.casino/api/checkout-payments-webhook",
+          url: "https://market-api.scrooge.casino/api/checkout-payments-webhook",
           headers: {
             Authorization: "scrooge-test",
           },
