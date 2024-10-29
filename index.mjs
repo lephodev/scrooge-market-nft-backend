@@ -1386,7 +1386,11 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
                     );
                   }
                   if (data?.offerType === "freeSpin") {
-                    if (data?.provider === "Relax") {
+                    if (
+                      data?.provider === "Relax" ||
+                      data?.provider === "Relax-Kalamba" ||
+                      data?.provider === "Relax-Evoplay"
+                    ) {
                       let freeSpinPayload = {
                         amount: data?.numberofSpins,
                         currency: data.currency,
