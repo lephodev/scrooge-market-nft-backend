@@ -674,12 +674,10 @@ export const createBgamingFreeSpin = async (values) => {
         values?.currency === "SC." ? "ST" : "GC"
       }`,
       {
-        data: {
-          userId: values?.userid,
-          freeSpins: values?.amount,
-          games: [values?.gameid],
-          bet_level: values?.freespinvalue,
-        },
+        userId: values?.userid,
+        freeSpins: values?.amount,
+        games: [values?.gameid],
+        bet_level: values?.freespinvalue,
       }
     );
     console.log("resres", res.data);
