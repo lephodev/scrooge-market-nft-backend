@@ -1403,8 +1403,9 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
                         gameid: data?.freeSpinGame,
                         userid: extractedId,
                       };
-                      let bgamingSpinRes =
-                        createBgamingFreeSpin(freeSpinPayload);
+                      let bgamingSpinRes = await createBgamingFreeSpin(
+                        freeSpinPayload
+                      );
                       console.log("bgamingSpinRes", bgamingSpinRes);
                     }
                     await db.get_scrooge_usersDB().findOneAndUpdate(
