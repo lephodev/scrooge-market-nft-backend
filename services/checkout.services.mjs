@@ -94,7 +94,7 @@ export const getPaymentSession = async (body) => {
 
     return resp.data;
   } catch (error) {
-    console.log("error in get checkout payment session", error);
+    console.log("error in get checkout payment session", JSON.stringify(error));
   }
 };
 
