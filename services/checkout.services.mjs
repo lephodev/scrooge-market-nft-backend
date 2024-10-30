@@ -62,8 +62,8 @@ export const getPaymentSession = async (body) => {
         //   "max_attempts": 5
         // },
         // "display_name": "Test user",
-        success_url: `${process.env.LANDING_CLIENT}/success`,
-        failure_url: `${process.env.LANDING_CLIENT}/failure`,
+        success_url: `${process.env.CLIENT}`,
+        failure_url: `${process.env.CLIENT}`,
         // "metadata": {
         //   "coupon_code": "NY2018"
         // },
