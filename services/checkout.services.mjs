@@ -62,8 +62,8 @@ export const getPaymentSession = async (body) => {
         //   "max_attempts": 5
         // },
         // "display_name": "Test user",
-        success_url: `${process.env.CLIENT}`,
-        failure_url: `${process.env.CLIENT}`,
+        success_url: `${process.env.CLIENT}/copy-crypto-to-gc`,
+        failure_url: `${process.env.CLIENT}/copy-crypto-to-gc/?status=failure`,
         // "metadata": {
         //   "coupon_code": "NY2018"
         // },
