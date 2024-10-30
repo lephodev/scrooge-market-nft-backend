@@ -40,7 +40,7 @@ export const getPaymentSession = async (body) => {
         //     "store_payment_details": "disabled"
         //   }
         // },
-        allow_payment_methods: ["card", "applepay", "googlepay", "paypal"],
+        enabled_payment_methods: ["card", "applepay", "googlepay", "paypal"],
         // "disabled_payment_methods": ["eps", "ideal", "knet"],
         // "items": [{
         //   "reference": "$10 GC",
