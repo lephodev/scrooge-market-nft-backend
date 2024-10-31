@@ -29,6 +29,7 @@ import logger from "./config/logger.mjs";
 import {
   createAnAcceptPaymentTransaction,
   createAuthCustomAnAcceptPaymentTransaction,
+  createBgamingFreeSpin,
   createFreeSpin,
   getAnAcceptPaymentPage,
   getTransactionDetails,
@@ -43,7 +44,12 @@ import { Server } from "socket.io";
 
 import Basicauth from "./middlewares/basicAuth.mjs";
 import { decryptData } from "./middlewares/decrypt.mjs";
-import { addCheckoutWorkFlows, checkoutWebHook, getAllCheckoutwebhooks, getPaymentSession } from "./services/checkout.services.mjs";
+import {
+  addCheckoutWorkFlows,
+  checkoutWebHook,
+  getAllCheckoutwebhooks,
+  getPaymentSession,
+} from "./services/checkout.services.mjs";
 
 const app = express();
 
@@ -1504,7 +1510,7 @@ function getMinutesDifference(date1, date2) {
 app.post("/api/auth-make-payment", auth(), async (req, res) => {
   try {
     let { user, body } = req || {};
-    console.log("body =", body)
+    console.log("body =", body);
     const dcryptdData = decryptData(body?.data);
     console.log("user", user);
 
@@ -1789,14 +1795,32 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
                     );
                   }
                   if (data?.offerType === "freeSpin") {
-                    let freeSpinPayload = {
-                      amount: data?.numberofSpins,
-                      currency: data.currency,
-                      freespinvalue: data?.freespinValue,
-                      gameid: data?.freeSpinGame,
-                      remoteusername: extractedId,
-                    };
-                    let spinRes = createFreeSpin(freeSpinPayload);
+                    if (
+                      data?.provider === "Relax" ||
+                      data?.provider === "Relax-Kalamba" ||
+                      data?.provider === "Relax-Evoplay"
+                    ) {
+                      let freeSpinPayload = {
+                        amount: data?.numberofSpins,
+                        currency: data.currency,
+                        freespinvalue: data?.freespinValue,
+                        gameid: data?.freeSpinGame,
+                        remoteusername: extractedId,
+                      };
+                      let relaxSpinRes = createFreeSpin(freeSpinPayload);
+                    } else if (data?.provider === "bGaming") {
+                      let freeSpinPayload = {
+                        amount: data?.numberofSpins,
+                        currency: data.currency,
+                        freespinvalue: data?.freespinValue,
+                        gameid: data?.freeSpinGame,
+                        userid: extractedId,
+                      };
+                      let bgamingSpinRes = await createBgamingFreeSpin(
+                        freeSpinPayload
+                      );
+                      console.log("bgamingSpinRes", bgamingSpinRes);
+                    }
                     await db.get_scrooge_usersDB().findOneAndUpdate(
                       { _id: ObjectId(extractedId) },
 
@@ -1870,52 +1894,49 @@ app.post(
   rewards.saveUserconnectedWallet
 );
 
-app.post("/api/get-payment-session", auth(), async (req, res)=>{
+app.post("/api/get-payment-session", auth(), async (req, res) => {
   try {
     console.log("req.body ==>", req.body);
     const resp = await getPaymentSession(req.body);
-    
+
     return res.status(200).json(resp);
   } catch (error) {
     console.log("error in /get-payment-session", error);
     res.status(500).json({
-      message: "Internal server error"
+      message: "Internal server error",
     });
   }
-})
+});
 
-app.post("/api/add-checkout-workflows", async (req, res)=>{
+app.post("/api/add-checkout-workflows", async (req, res) => {
   try {
     const resp = await addCheckoutWorkFlows();
-    
   } catch (error) {
     console.log("error in add-checkout-workflows", error);
   }
-})
+});
 
-app.post("/api/get-all-workflows", async(req, res)=>{
+app.post("/api/get-all-workflows", async (req, res) => {
   try {
     const resp = getAllCheckoutwebhooks();
   } catch (error) {
     console.log("error in get all checkout workflows", error);
   }
-})
+});
 
-app.post("/api/checkout-payments-webhook", async(req, res)=>{
+app.post("/api/checkout-payments-webhook", async (req, res) => {
   try {
-    console.log("req.body in checkout webhoook",req.body);
-    if(req.body.type === "payment_approved"){
+    console.log("req.body in checkout webhoook", req.body);
+    if (req.body.type === "payment_approved") {
       await checkoutWebHook(req.body);
     }
     return res.status(200).json({
-      message: "Successfully completed"
+      message: "Successfully completed",
     });
   } catch (error) {
     console.log("error in checkpout payment webhooks", error);
   }
 });
-
-
 
 app.listen(PORT, () => {
   console.log("Server is running.", PORT);
