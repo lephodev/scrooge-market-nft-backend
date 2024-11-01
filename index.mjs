@@ -1873,7 +1873,7 @@ app.post(
 app.post("/api/get-payment-session", auth(), async (req, res)=>{
   try {
     console.log("req.body ==>", req.body);
-    const resp = await getPaymentSession(req.body);
+    const resp = await getPaymentSession(req.body, req);
     
     return res.status(200).json(resp);
   } catch (error) {

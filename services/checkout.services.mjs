@@ -4,10 +4,13 @@ import { Checkout } from "checkout-sdk-node";
 import * as db from "../config/mongodb.mjs";
 import { ObjectId } from "mongodb";
 import * as rewards from "../config/rewards.mjs";
+import ip from "request-ip";
 
-export const getPaymentSession = async (body) => {
+export const getPaymentSession = async (body, req) => {
   try {
-    const { userId, amount } = body;
+    const { userId, amount, city, state, zipCode, phoneNumber, email, firstName, lastName } = body;
+    
+    console.log("helloo ==>", city, state, zipCode);
 
     const accessToken = await getAcessToken();
     console.log("userId ==>", accessToken);
@@ -21,6 +24,9 @@ export const getPaymentSession = async (body) => {
         billing: {
           address: {
             country: "US",
+            city,
+            state,
+            zip: zipCode
           },
         },
         // "billing_descriptor": {
@@ -83,7 +89,16 @@ export const getPaymentSession = async (body) => {
         // },
         // "capture": true,
         // "capture_on": "2024-10-17T11:15:30Z",
-        // "ip_address": "49.36.170.1"
+        ip_address: ip.getClientIp(req),
+        customer: {
+        email: email,
+        name: firstName + " " + lastName,
+        // id: userId.toString(),
+        phone: {
+          country_code: "+1",
+          number: phoneNumber,
+        }
+      }
       },
       {
         headers: {
@@ -94,7 +109,7 @@ export const getPaymentSession = async (body) => {
 
     return resp.data;
   } catch (error) {
-    console.log("error in get checkout payment session",error.data.error_codes, JSON.stringify(error));
+    console.log("error in get checkout payment session", error.response.data.error_codes);
   }
 };
 
