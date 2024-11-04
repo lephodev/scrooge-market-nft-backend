@@ -48,6 +48,7 @@ import {
   addCheckoutWorkFlows,
   checkoutWebHook,
   getAllCheckoutwebhooks,
+  getHostedPaymentSession,
   getPaymentSession,
 } from "./services/checkout.services.mjs";
 
@@ -1897,7 +1898,7 @@ app.post(
 app.post("/api/get-payment-session", auth(), async (req, res) => {
   try {
     console.log("req.body ==>", req.body);
-    const resp = await getPaymentSession(req.body, req);
+    const resp = await getPaymentSession(req.body, req);//getHostedPaymentSession(req.body, req)
     
     return res.status(200).json(resp);
   } catch (error) {

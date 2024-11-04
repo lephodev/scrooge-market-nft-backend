@@ -8,98 +8,115 @@ import ip from "request-ip";
 
 export const getPaymentSession = async (body, req) => {
   try {
-    const { userId, amount, city, state, zipCode, phoneNumber, email, firstName, lastName } = body;
-    
-    console.log("helloo ==>", city, state, zipCode);
+    const {
+      userId,
+      amount,
+      city,
+      state,
+      zipCode,
+      phoneNumber,
+      email,
+      firstName,
+      lastName,
+    } = body;
+
+    console.log("helloo ==>", city, state, zipCode, email);
 
     const accessToken = await getAcessToken();
     console.log("userId ==>", accessToken);
 
-    const resp = await axios.post(
-      "https://api.checkout.com/payment-sessions",
-      {
-        amount: amount * 100,
-        currency: "USD",
-        // "payment_type": "Regular",
-        billing: {
-          address: {
-            country: "US",
-            city,
-            state,
-            zip: zipCode
-          },
+    const payload = {
+      amount: amount * 100,
+      currency: "USD",
+      // "payment_type": "Regular",
+      billing: {
+        address: {
+          country: "US",
+          city,
+          state,
+          zip: zipCode,
         },
-        // "billing_descriptor": {
-        //   "name": "Test user",
-        //   "city": "Los Angeles",
-        //   "reference": "Scrooge casino"
-        // },
-        reference: userId,
-        // "description": "Payment for Scrooge GC",
-        // "processing": {
-        //   "aft": true
-        // },
-        processing_channel_id: process.env.CHECKOUt_MERCHENT_CHANEL_ID,
-        // "expires_on": "2024-10-31T09:15:30Z",
-        // "payment_method_configuration": {
-        //   "card": {
-        //     "store_payment_details": "disabled"
-        //   }
-        // },
-        enabled_payment_methods: ["card", "applepay", "googlepay", "paypal"],
-        // "disabled_payment_methods": ["eps", "ideal", "knet"],
-        // "items": [{
-        //   "reference": "$10 GC",
-        //   "commodity_code": "1234",
-        //   "unit_of_measure": "each",
-        //   "total_amount": 10,
-        //   "tax_amount": 0,
-        //   "discount_amount": 0,
-        //   "url": "string",
-        //   "image_url": "string",
-        //   "name": "Gold Necklace",
-        //   "quantity": 1,
-        //   "unit_price": 10
-        //   }],
-        risk: {
-          "enabled": false
+        phone: {
+          number: phoneNumber,
         },
-        // "customer_retry": {
-        //   "max_attempts": 5
-        // },
-        // "display_name": "Test user",
-        success_url: `${process.env.CLIENT}/copy-crypto-to-gc`,
-        failure_url: `${process.env.CLIENT}/copy-crypto-to-gc/?status=failure`,
-        // "metadata": {
-        //   "coupon_code": "NY2018"
-        // },
-        // "locale": "en-GB",
-        // "3ds": {
-        //   "enabled": true,
-        //   "attempt_n3d": true,
-        //   "challenge_indicator": "no_preference",
-        //   "exemption": "low_value",
-        //   "allow_upgrade": true
-        // },
-        // "sender": {
-        //   "type": "individual",
-        //   "reference": "8285282045818",
-        //   "first_name": "test",
-        //   "last_name": "user"
-        // },
-        // "capture": true,
-        // "capture_on": "2024-10-17T11:15:30Z",
-        ip_address: ip.getClientIp(req),
-        customer: {
+      },
+      // "billing_descriptor": {
+      //   "name": "Test user",
+      //   "city": "Los Angeles",
+      //   "reference": "Scrooge casino"
+      // },
+      reference: userId,
+      // "description": "Payment for Scrooge GC",
+      // "processing": {
+      //   "aft": true
+      // },
+      processing_channel_id: process.env.CHECKOUt_MERCHENT_CHANEL_ID,
+      // "expires_on": "2024-10-31T09:15:30Z",
+      // "payment_method_configuration": {
+      //   "card": {
+      //     "store_payment_details": "disabled"
+      //   }
+      // },
+      enabled_payment_methods: ["card", "applepay", "googlepay", "paypal"],
+      // "disabled_payment_methods": ["eps", "ideal", "knet"],
+      // "items": [{
+      //   "reference": "$10 GC",
+      //   "commodity_code": "1234",
+      //   "unit_of_measure": "each",
+      //   "total_amount": 10,
+      //   "tax_amount": 0,
+      //   "discount_amount": 0,
+      //   "url": "string",
+      //   "image_url": "string",
+      //   "name": "Gold Necklace",
+      //   "quantity": 1,
+      //   "unit_price": 10
+      //   }],
+      risk: {
+        enabled: false,
+      },
+      // "customer_retry": {
+      //   "max_attempts": 5
+      // },
+      // "display_name": "Test user",
+      success_url: `${process.env.CLIENT}/copy-crypto-to-gc`,
+      failure_url: `${process.env.CLIENT}/copy-crypto-to-gc/?status=failure`,
+      // "metadata": {
+      //   "coupon_code": "NY2018"
+      // },
+      // "locale": "en-GB",
+      // "3ds": {
+      //   "enabled": true,
+      //   "attempt_n3d": true,
+      //   "challenge_indicator": "no_preference",
+      //   "exemption": "low_value",
+      //   "allow_upgrade": true
+      // },
+      // "sender": {
+      //   "type": "individual",
+      //   "reference": "8285282045818",
+      //   "first_name": "test",
+      //   "last_name": "user"
+      // },
+      // "capture": true,
+      // "capture_on": "2024-10-17T11:15:30Z",
+      ip_address: ip.getClientIp(req),
+      customer: {
         email: email,
         name: firstName + " " + lastName,
         // id: userId.toString(),
         phone: {
           country_code: "+1",
           number: phoneNumber,
-        }
-      }
+        },
       },
+    }
+
+    console.log("payload in checkout payment session", payload);
+
+    const resp = await axios.post(
+      "https://api.checkout.com/payment-sessions",
+      payload,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -109,7 +126,139 @@ export const getPaymentSession = async (body, req) => {
 
     return resp.data;
   } catch (error) {
-    console.log("error in get checkout payment session", error.response.data.error_codes);
+    console.log(
+      "error in get checkout payment session",
+      error.response.data.error_codes
+    );
+  }
+};
+
+export const getHostedPaymentSession = async (body, req) => {
+  try {
+    const {
+      userId,
+      amount,
+      city,
+      state,
+      zipCode,
+      phoneNumber,
+      email,
+      firstName,
+      lastName,
+    } = body;
+
+    console.log("helloo ==>", city, state, zipCode, email);
+
+    const accessToken = await getAcessToken();
+    console.log("userId ==>", accessToken);
+
+    const payload = {
+      amount: amount * 100,
+      currency: "USD",
+      // "payment_type": "Regular",
+      billing: {
+        address: {
+          country: "US",
+          city,
+          state,
+          zip: zipCode,
+        },
+        phone: {
+          number: phoneNumber,
+        },
+      },
+      "3ds": {
+        enabled: true,
+        attempt_n3d: true,
+      },
+      // "billing_descriptor": {
+      //   "name": "Test user",
+      //   "city": "Los Angeles",
+      //   "reference": "Scrooge casino"
+      // },
+      reference: userId,
+      // "description": "Payment for Scrooge GC",
+      // "processing": {
+      //   "aft": true
+      // },
+      processing_channel_id: process.env.CHECKOUt_MERCHENT_CHANEL_ID,
+      // "expires_on": "2024-10-31T09:15:30Z",
+      // "payment_method_configuration": {
+      //   "card": {
+      //     "store_payment_details": "disabled"
+      //   }
+      // },
+      allow_payment_methods: ["card", "applepay", "googlepay", "paypal"],
+      // "disabled_payment_methods": ["eps", "ideal", "knet"],
+      // "items": [{
+      //   "reference": "$10 GC",
+      //   "commodity_code": "1234",
+      //   "unit_of_measure": "each",
+      //   "total_amount": 10,
+      //   "tax_amount": 0,
+      //   "discount_amount": 0,
+      //   "url": "string",
+      //   "image_url": "string",
+      //   "name": "Gold Necklace",
+      //   "quantity": 1,
+      //   "unit_price": 10
+      //   }],
+      risk: {
+        enabled: true,
+      },
+      // "customer_retry": {
+      //   "max_attempts": 5
+      // },
+      // "display_name": "Test user",
+      success_url: `${process.env.CLIENT}/copy-crypto-to-gc`,
+      failure_url: `${process.env.CLIENT}/copy-crypto-to-gc/?status=failure`,
+      cancel_url: `${process.env.CLIENT}/copy-crypto-to-gc`,
+      // "metadata": {
+      //   "coupon_code": "NY2018"
+      // },
+      // "locale": "en-GB",
+      // "3ds": {
+      //   "enabled": true,
+      //   "attempt_n3d": true,
+      //   "challenge_indicator": "no_preference",
+      //   "exemption": "low_value",
+      //   "allow_upgrade": true
+      // },
+      // "sender": {
+      //   "type": "individual",
+      //   "reference": "8285282045818",
+      //   "first_name": "test",
+      //   "last_name": "user"
+      // },
+      // "capture": true,
+      // "capture_on": "2024-10-17T11:15:30Z",
+      payment_ip: ip.getClientIp(req),
+      customer: {
+        email: email,
+        name: firstName + " " + lastName,
+        // id: userId.toString(),
+        // phone: {
+        //   country_code: "+1",
+        //   number: phoneNumber,
+        // }
+      },
+    }
+
+    console.log("hosted payment payload", payload);
+
+    const resp = await axios.post(
+      "https://api.checkout.com/hosted-payments",
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    return resp.data;
+  } catch (error) {
+    console.log("error in get checkout payment session", error.response);
   }
 };
 
