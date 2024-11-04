@@ -61,9 +61,9 @@ export const getPaymentSession = async (body, req) => {
         //   "quantity": 1,
         //   "unit_price": 10
         //   }],
-        // "risk": {
-        //   "enabled": false
-        // },
+        risk: {
+          "enabled": false
+        },
         // "customer_retry": {
         //   "max_attempts": 5
         // },
