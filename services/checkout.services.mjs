@@ -50,6 +50,24 @@ export const getPaymentSession = async (body, req) => {
       // "processing": {
       //   "aft": true
       // },
+      "3ds": {
+        enabled: true,
+        attempt_n3d: true,
+      },
+      shipping: {
+        address: {
+          address_line1: "123 High St.",
+          address_line2: "Flat 456",
+          country: "US",
+          city,
+          state,
+          zip: zipCode
+        },
+        phone: {
+          // country_code: "+1",
+          number: phoneNumber,
+        },
+      },
       processing_channel_id: process.env.CHECKOUt_MERCHENT_CHANEL_ID,
       // "expires_on": "2024-10-31T09:15:30Z",
       // "payment_method_configuration": {
@@ -110,7 +128,7 @@ export const getPaymentSession = async (body, req) => {
           number: phoneNumber,
         },
       },
-    }
+    };
 
     console.log("payload in checkout payment session", payload);
 
@@ -242,7 +260,7 @@ export const getHostedPaymentSession = async (body, req) => {
         //   number: phoneNumber,
         // }
       },
-    }
+    };
 
     console.log("hosted payment payload", payload);
 
