@@ -19,7 +19,8 @@ export const getPaymentSession = async (body, req) => {
       firstName,
       lastName,
       country,
-      address
+      address,
+      streetAddress
     } = body;
 
     console.log("helloo ==>", city, state, zipCode, email, address);
@@ -33,7 +34,7 @@ export const getPaymentSession = async (body, req) => {
       // "payment_type": "Regular",
       billing: {
         address: {
-          address_line1: address,
+          address_line1: streetAddress,
           country,
           city,
           state,
@@ -59,7 +60,7 @@ export const getPaymentSession = async (body, req) => {
       },
       shipping: {
         address: {
-          address_line1: address,
+          address_line1: streetAddress,
           country,
           city,
           state,
