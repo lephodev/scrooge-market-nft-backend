@@ -18,6 +18,8 @@ export const getPaymentSession = async (body, req) => {
       email,
       firstName,
       lastName,
+      country,
+      address
     } = body;
 
     console.log("helloo ==>", city, state, zipCode, email);
@@ -31,7 +33,7 @@ export const getPaymentSession = async (body, req) => {
       // "payment_type": "Regular",
       billing: {
         address: {
-          country: "US",
+          country,
           city,
           state,
           zip: zipCode,
@@ -56,9 +58,8 @@ export const getPaymentSession = async (body, req) => {
       },
       shipping: {
         address: {
-          address_line1: "123 High St.",
-          address_line2: "Flat 456",
-          country: "US",
+          address_line1: address,
+          country,
           city,
           state,
           zip: zipCode
@@ -124,7 +125,7 @@ export const getPaymentSession = async (body, req) => {
         name: firstName + " " + lastName,
         // id: userId.toString(),
         phone: {
-          country_code: "+1",
+          // country_code: "+1",
           number: phoneNumber,
         },
       },
@@ -176,7 +177,7 @@ export const getHostedPaymentSession = async (body, req) => {
       // "payment_type": "Regular",
       billing: {
         address: {
-          country: "US",
+          country,
           city,
           state,
           zip: zipCode,
@@ -415,3 +416,4 @@ export const checkoutWebHook = async (body) => {
     console.log("web hook in checkout ==>", error);
   }
 };
+
