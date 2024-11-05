@@ -22,7 +22,7 @@ export const getPaymentSession = async (body, req) => {
       address
     } = body;
 
-    console.log("helloo ==>", city, state, zipCode, email);
+    console.log("helloo ==>", city, state, zipCode, email, address);
 
     const accessToken = await getAcessToken();
     console.log("userId ==>", accessToken);
@@ -33,6 +33,7 @@ export const getPaymentSession = async (body, req) => {
       // "payment_type": "Regular",
       billing: {
         address: {
+          address_line1: address,
           country,
           city,
           state,
