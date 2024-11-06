@@ -82,8 +82,16 @@ export const getPaymentSession = async (body, req) => {
       // },
       enabled_payment_methods: ["card", "applepay", "googlepay"],
       // "disabled_payment_methods": ["eps", "ideal", "knet"],
-      "items": [{
-        "name": "Promo",
+      items: [{
+        "reference": "$10 GC",
+        "commodity_code": "1234",
+        "unit_of_measure": "each",
+        "total_amount": 10,
+        "tax_amount": 0,
+        "discount_amount": 0,
+        "url": "string",
+        "image_url": "string",
+        "name": "Gold Necklace",
         "quantity": 1,
         "unit_price": 10
         }],
