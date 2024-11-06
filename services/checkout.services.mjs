@@ -63,6 +63,7 @@ export const getPaymentSession = async (body, req) => {
       shipping: {
         address: {
           address_line1: streetAddress,
+          address_line2: "promo",
           country,
           city,
           state,
