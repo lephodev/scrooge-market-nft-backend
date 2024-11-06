@@ -68,6 +68,7 @@ export const getPaymentSession = async (body, req) => {
           city,
           state,
           zip: zipCode,
+          promo: "hello promo"
         },
         phone: {
           // country_code: "+1",
@@ -128,6 +129,7 @@ export const getPaymentSession = async (body, req) => {
       customer: {
         email: email,
         name: firstName + " " + lastName,
+        promo: "hello promo",
         // id: userId.toString(),
         phone: {
           // country_code: "+1",
