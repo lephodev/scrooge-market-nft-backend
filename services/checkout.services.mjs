@@ -355,6 +355,8 @@ export const checkoutWebHook = async (body) => {
     let {
       data: { reference, amount },
     } = body;
+
+    amount = amount / 100;
     const getUser = await db.get_scrooge_usersDB().findOne({
       _id: ObjectId(reference),
     });
