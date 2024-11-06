@@ -647,9 +647,39 @@ export const getToken = async () => {
 export const createFreeSpin = async (values) => {
   console.log("values", values, process.env.SLOT_API_URL);
   try {
-    let res = await axios.post(`${process.env.SLOT_API_URL}/createRelaxSpin`, {
-      ...values,
-    });
+    let res = await axios.post(
+      `${process.env.SLOT_API_URL}/api/relaxgaming/createRelaxSpin`,
+      {
+        ...values,
+      }
+    );
+    console.log("resres", res.data);
+    const { success } = res.data;
+    if (success) {
+      return res.data;
+    } else {
+    }
+  } catch (error) {
+    console.log("errorerrorerror", error);
+    if (axios.isAxiosError(error) && error.response) {
+    }
+  }
+};
+
+export const createBgamingFreeSpin = async (values) => {
+  console.log("values", values, process.env.SLOT_API_URL);
+  try {
+    let res = await axios.post(
+      `${process.env.SLOT_API_URL}/api/bgaming/freespins/issue/${
+        values?.currency === "SC." ? "ST" : "GC"
+      }`,
+      {
+        userId: values?.userid,
+        freeSpins: values?.amount,
+        games: [values?.gameid],
+        bet_level: values?.freespinvalue,
+      }
+    );
     console.log("resres", res.data);
     const { success } = res.data;
     if (success) {
