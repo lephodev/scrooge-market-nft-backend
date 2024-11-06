@@ -48,7 +48,6 @@ import {
   addCheckoutWorkFlows,
   checkoutWebHook,
   getAllCheckoutwebhooks,
-  getHostedPaymentSession,
   getPaymentSession,
 } from "./services/checkout.services.mjs";
 
@@ -1898,8 +1897,8 @@ app.post(
 app.post("/api/get-payment-session", auth(), async (req, res) => {
   try {
     console.log("req.body ==>", req.body);
-    const resp = await getPaymentSession(req.body, req);//getHostedPaymentSession(req.body, req)
-    
+    const resp = await getPaymentSession(req.body, req); //getHostedPaymentSession(req.body, req)
+
     return res.status(200).json(resp);
   } catch (error) {
     console.log("error in /get-payment-session", error);
@@ -1928,7 +1927,10 @@ app.post("/api/get-all-workflows", async (req, res) => {
 app.post("/api/checkout-payments-webhook", async (req, res) => {
   try {
     console.log("req.body in checkout webhoook", req.body);
-    if (req.body.type === "payment_approved" || req.body.type === "payment_declined") {
+    if (
+      req.body.type === "payment_approved" ||
+      req.body.type === "payment_declined"
+    ) {
       await checkoutWebHook(req.body);
     }
     return res.status(200).json({
@@ -1950,4 +1952,3 @@ const estOffset = -5 * 60; // EST is UTC-5
 const nowEst = new Date(prevDt.getTime() + estOffset * 60 * 1000);
 
 export default app;
-
