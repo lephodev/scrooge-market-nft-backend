@@ -37,7 +37,6 @@ export const getPaymentSession = async (body, req) => {
       billing: {
         address: {
           address_line1: streetAddress,
-          address_line2: "promo promo",
           country,
           city,
           state,
@@ -64,7 +63,6 @@ export const getPaymentSession = async (body, req) => {
       shipping: {
         address: {
           address_line1: streetAddress,
-          address_line2: "promo",
           country,
           city,
           state,
@@ -127,7 +125,7 @@ export const getPaymentSession = async (body, req) => {
       // "capture_on": "2024-10-17T11:15:30Z",
       ip_address: ip.getClientIp(req),
       customer: {
-        email: email,
+        email: email + "- Promo" + "promo",
         name: firstName + " " + lastName + "- Promo" + "promo",
         // id: userId.toString(),
         phone: {
