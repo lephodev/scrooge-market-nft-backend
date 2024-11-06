@@ -82,7 +82,7 @@ export const getPaymentSession = async (body, req) => {
       // },
       enabled_payment_methods: ["card", "applepay", "googlepay"],
       // "disabled_payment_methods": ["eps", "ideal", "knet"],
-      metadata: "promo code",
+      // metadata: "promo code",
       risk: {
         enabled: false,
       },
