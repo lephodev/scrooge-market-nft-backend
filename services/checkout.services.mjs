@@ -123,10 +123,11 @@ export const getPaymentSession = async (body, req) => {
       // },
       // "capture": true,
       // "capture_on": "2024-10-17T11:15:30Z",
+      description: "promo promo",
       ip_address: ip.getClientIp(req),
       customer: {
         email: email,
-        name: firstName + " " + lastName + "- Promo" + "promo",
+        name: firstName + " " + lastName,
         // id: userId.toString(),
         phone: {
           // country_code: "+1",
