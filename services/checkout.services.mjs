@@ -51,6 +51,9 @@ export const getPaymentSession = async (body, req) => {
       //   "city": "Los Angeles",
       //   "reference": "Scrooge casino"
       // },
+      metadata:{
+        "coupon_code": "abcd"
+      },
       reference: userId,
       // "description": "Payment for Scrooge GC",
       // "processing": {
