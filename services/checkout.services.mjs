@@ -4,6 +4,7 @@ import { Checkout } from "checkout-sdk-node";
 import * as db from "../config/mongodb.mjs";
 import { ObjectId } from "mongodb";
 import * as rewards from "../config/rewards.mjs";
+import { InvoiceEmail } from "../email/emailSend.mjs";
 
 export const getPaymentSession = async (body) => {
   try {
@@ -94,7 +95,11 @@ export const getPaymentSession = async (body) => {
 
     return resp.data;
   } catch (error) {
-    console.log("error in get checkout payment session",error.data.error_codes, JSON.stringify(error));
+    console.log(
+      "error in get checkout payment session",
+      error.data.error_codes,
+      JSON.stringify(error)
+    );
   }
 };
 
@@ -181,54 +186,244 @@ export const getAllCheckoutwebhooks = async () => {
   }
 };
 
+const getGCPurchaseAffliateBonus = async (
+  extractedId,
+  extractedReffrenceId,
+  amount
+) => {
+  // console.log("888888888888888", extractedId, extractedReffrenceId, amount);
+  try {
+    let getUserdetails = await db
+      .get_scrooge_usersDB()
+      .findOne({ _id: ObjectId(extractedId) });
+    // console.log("getUsergetUser", getUserdetails);
+    let affliateData = await db
+      .get_affiliatesDB()
+      .findOne({ userId: extractedId });
+    let getAdminSettings = await db.get_db_admin_settingDB().findOne({});
+    const { cryptoToGcReferalBonus } = getAdminSettings;
+    let getTicketBonus =
+      (cryptoToGcReferalBonus / 100) * parseInt(amount * 100);
+    // console.log(
+    //   "getTicketBonus",
+    //   getTicketBonus,
+    //   amount,
+    //   cryptoToGcReferalBonus
+    // );
+    let affliateUserDetails = {
+      commission: getTicketBonus,
+      monthly_earned: getTicketBonus,
+      referred_user_id: extractedReffrenceId && ObjectId(extractedReffrenceId),
+      affiliate_id: affliateData?._id || null,
+      userId: ObjectId(extractedId),
+      transactionType: "CC to Gc",
+      purchaseAmount: amount,
+      tokenAmount: getUserdetails?.wallet,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    await db.get_db_affiliates_transactionDB().insertOne(affliateUserDetails);
+    // let getUser = await db.get_scrooge_usersDB().findOneAndUpdate(
+    //   { _id: ObjectId(extractedReffrenceId) },
+    //   {
+    //     $inc: { wallet: getTicketBonus },
+    //   },
+    //   { new: true }
+    // );
+
+    db.get_affiliatesDB().findOneAndUpdate(
+      { userId: ObjectId(extractedReffrenceId) },
+      {
+        $inc: {
+          // total_earned: getTicketBonus,
+          // monthly_earned: getTicketBonus,
+        },
+      },
+      { new: true }
+    );
+
+    await db.get_scrooge_usersDB().findOneAndUpdate(
+      { _id: ObjectId(extractedId) },
+      {
+        $inc: {
+          totalBuy: parseFloat(amount),
+          totalProfit: parseFloat(amount),
+        },
+      }
+    );
+    let getUser = await db
+      .get_scrooge_usersDB()
+      .findOne({ _id: ObjectId(extractedReffrenceId) });
+    let getUserData = await db
+      .get_scrooge_usersDB()
+      .findOne({ _id: ObjectId(extractedReffrenceId) });
+
+    // console.log("-----------------", getUserData);
+    const {
+      _id: referUserId,
+      username: referUserName,
+      email: referUserEmail,
+      firstName: referUserFirstName,
+      lastName: referUserLastName,
+      profile: referUserProfile,
+    } = getUserData;
+    const transactionPayload = {
+      amount: getTicketBonus,
+      transactionType: "CC To Gc bonus",
+      prevWallet: getUser?.value?.wallet,
+      updatedWallet: getUser?.value?.wallet,
+      // userId: ObjectId(refrenceId),
+
+      userId: {
+        _id: referUserId,
+        username: referUserName,
+        email: referUserEmail,
+        firstName: referUserFirstName,
+        referUserLastName,
+        profile: referUserProfile,
+        ipAddress: getUserData?.ipAddress,
+      },
+
+      updatedTicket: getUser?.value?.ticket + getTicketBonus,
+      prevGoldCoin: getUser?.value?.goldCoin,
+      updatedGoldCoin: getUser?.value?.goldCoin,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      prevTicket: getUser?.value?.ticket,
+    };
+    await db.get_scrooge_transactionDB().insertOne(transactionPayload);
+  } catch (error) {
+    console.log("error", error);
+  }
+};
+
 export const checkoutWebHook = async (body) => {
   try {
     let {
       data: { reference, amount },
     } = body;
-    const user = await db.get_scrooge_usersDB().findOne({
+    const getUser = await db.get_scrooge_usersDB().findOne({
       _id: ObjectId(reference),
     });
 
-    let query = {
-      couponCode: "",
-      expireDate: { $gte: new Date() },
-    };
-    let findPromoData = await db.get_scrooge_promoDB().findOne(query);
+    const extractedReffrenceId = getUser?.refrenceId || null;
+    const extractedPromoCode = null; // parts[1] || null
 
-    let data;
+    if (amount) {
+      const data = await db.get_marketplace_gcPackagesDB().findOne({
+        priceInBUSD: amount?.toString(),
+      });
 
-    const trans = await rewards.addChips(
-      user?._id?.toString(),
-      findPromoData?.coupanType === "Percent"
-        ? parseInt(data ? data.freeTokenAmount : amount) +
-            parseInt(data ? data.freeTokenAmount : amount) *
+      let query = {
+        couponCode: "",
+        expireDate: { $gte: new Date() },
+      };
+      let findPromoData = await db.get_scrooge_promoDB().findOne(query);
+
+      const trans = await rewards.addChips(
+        getUser?._id?.toString(),
+        findPromoData?.coupanType === "Percent"
+          ? parseInt(data.freeTokenAmount) +
+              parseInt(data.freeTokenAmount) *
+                (parseFloat(findPromoData?.discountInPercent) / 100)
+          : findPromoData?.coupanType === "2X"
+          ? parseInt(data.freeTokenAmount) * 2
+          : parseInt(data.freeTokenAmount),
+        "",
+        "CC To Gold Coin",
+        findPromoData?.coupanType === "Percent"
+          ? parseInt(data.gcAmount) +
+              parseInt(data.gcAmount) *
+                (parseFloat(findPromoData?.discountInPercent) / 100)
+          : findPromoData?.coupanType === "2X"
+          ? parseInt(data.gcAmount) * 2
+          : parseInt(data.gcAmount),
+        body,
+        findPromoData?.coupanType === "Percent"
+          ? parseInt(data.freeTokenAmount) *
               (parseFloat(findPromoData?.discountInPercent) / 100)
-        : findPromoData?.coupanType === "2X"
-        ? parseInt(data ? data.freeTokenAmount : amount) * 2
-        : parseInt(data ? data.freeTokenAmount : amount),
-      "",
-      "CC To Gold Coin",
-      findPromoData?.coupanType === "Percent"
-        ? parseInt(data ? data.gcAmount : amount * 1000) +
-            parseInt(data ? data.gcAmount : amount * 1000) *
-              (parseFloat(findPromoData?.discountInPercent) / 100)
-        : findPromoData?.coupanType === "2X"
-        ? parseInt(data ? data.gcAmount : amount * 1000) * 2
-        : parseInt(data ? data.gcAmount : amount * 1000),
-      {},
-      findPromoData?.coupanType === "Percent"
-        ? parseInt(data ? data.freeTokenAmount : amount) *
-            (parseFloat(findPromoData?.discountInPercent) / 100)
-        : findPromoData?.coupanType === "2X"
-        ? parseInt(data ? data.freeTokenAmount : amount)
-        : 0,
-      amount / 100 //amount?.toString() === "9.99"
-      // ? 1500
-      // : 0
-    );
+          : findPromoData?.coupanType === "2X"
+          ? parseInt(data.freeTokenAmount)
+          : 0,
+        amount //amount?.toString() === "9.99"
+        // ? 1500
+        // : 0
+      );
+      const reciptPayload = {
+        username: getUser?.username,
+        email: getUser?.email,
+        invoicDate: moment(new Date()).format("D MMMM  YYYY"),
+        paymentMethod: "Credit Card Purchase",
+        packageName: "Gold Coin Purchase",
+        goldCoinQuantity: parseInt(data?.gcAmount),
+        tokenQuantity: parseInt(data?.freeTokenAmount),
+        purcahsePrice: amount?.toString(),
+        Tax: 0,
+        firstName: getUser?.firstName,
+        lastName: getUser?.lastName,
+      };
+      if (data?.offerType === "MegaOffer") {
+        await db.get_scrooge_usersDB().findOneAndUpdate(
+          { _id: ObjectId(reference) },
 
-    return;
+          { $push: { megaOffer: parseFloat(amount) } }
+        );
+      }
+      if (data?.offerType === "freeSpin") {
+        let freeSpinPayload = {
+          amount: data?.numberofSpins,
+          currency: data.currency,
+          freespinvalue: data?.freespinValue,
+          gameid: data?.freeSpinGame,
+          remoteusername: reference,
+        };
+        let spinRes = createFreeSpin(freeSpinPayload);
+        await db.get_scrooge_usersDB().findOneAndUpdate(
+          { _id: ObjectId(reference) },
+
+          { $push: { freeSpin: parseFloat(amount) } }
+        );
+      }
+
+      const result = await db
+        .get_scrooge_usersDB()
+        .findOneAndUpdate(
+          { _id: ObjectId(reference) },
+          { $set: { isSpended: true } }
+        );
+
+      // console.log("ssss", result);
+
+      await InvoiceEmail(getUser?.email, reciptPayload);
+      if (extractedPromoCode) {
+        let payload = {
+          userId: reference,
+          claimedDate: new Date(),
+        };
+
+        let promoFind = await db
+          .get_scrooge_promoDB()
+          .findOne({ couponCode: extractedPromoCode.trim() });
+        await db.get_scrooge_promoDB().findOneAndUpdate(
+          { couponCode: extractedPromoCode.trim() },
+          {
+            $push: { claimedUser: payload },
+          },
+          {
+            new: true,
+          }
+        );
+      }
+      if (extractedReffrenceId) {
+        getGCPurchaseAffliateBonus(
+          reference,
+          extractedReffrenceId,
+          parseFloat(amount)
+        );
+      }
+
+      return;
+    }
   } catch (error) {
     console.log("web hook in checkout ==>", error);
   }
