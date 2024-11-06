@@ -67,8 +67,7 @@ export const getPaymentSession = async (body, req) => {
           country,
           city,
           state,
-          zip: zipCode,
-          promo: "hello promo"
+          zip: zipCode
         },
         phone: {
           // country_code: "+1",
