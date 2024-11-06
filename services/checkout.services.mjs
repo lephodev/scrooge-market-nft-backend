@@ -127,8 +127,7 @@ export const getPaymentSession = async (body, req) => {
       ip_address: ip.getClientIp(req),
       customer: {
         email: email,
-        name: firstName + " " + lastName,
-        promo: "hello promo",
+        name: firstName + " " + lastName + "- Promo" + "promo",
         // id: userId.toString(),
         phone: {
           // country_code: "+1",
