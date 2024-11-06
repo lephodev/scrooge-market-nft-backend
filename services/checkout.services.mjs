@@ -72,7 +72,7 @@ export const getPaymentSession = async (body, req) => {
           number: phoneNumber,
         },
       },
-      processing_channel_id: process.env.CHECKOUt_SANDBOX_CHANEL_ID,
+      processing_channel_id: "pc_sxouohxmuome5jptmrsoxsdoru",//process.env.CHECKOUt_SANDBOX_CHANEL_ID,
       // "expires_on": "2024-10-31T09:15:30Z",
       // "payment_method_configuration": {
       //   "card": {
