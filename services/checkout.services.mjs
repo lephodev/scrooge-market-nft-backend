@@ -150,7 +150,7 @@ export const getPaymentSession = async (body, req) => {
   } catch (error) {
     console.log(
       "error in get checkout payment session",
-      error.data.error_codes,
+      // error.data.error_codes,
       JSON.stringify(error)
     );
   }
