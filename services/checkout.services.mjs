@@ -14,7 +14,7 @@ export const getPaymentSession = async (body) => {
     console.log("userId ==>", accessToken);
 
     const resp = await axios.post(
-      "https://api.checkout.com/payment-sessions",
+      "https://api.sandbox.checkout.com/payment-sessions",
       {
         amount: amount * 100,
         currency: "USD",
@@ -106,11 +106,11 @@ export const getPaymentSession = async (body) => {
 const getAcessToken = async () => {
   try {
     const acsTkResp = await axios.post(
-      process.env.CHECKOUT_MERCHENT_URL,
+      process.env.CHECKOUT_SANDBOX_URL,
       qs.stringify({
         grant_type: "client_credentials",
-        client_id: process.env.CHECKOUT_MERCHENT_CLIENT_ID, //"ack_eiccapfazfletih475sllukdmy",
-        client_secret: process.env.CHECKOUT_MERCHENT_CLIENT_SECRET, //"sa3U0dlryEzJ9CtbLzQkDfZ1Bdv963F92SmGKWwmNjt0-V5qDgbtpZmNqUP6_Oh-ztbylzjOlWzNqmxfFY8qmA",
+        client_id: process.env.CHECKOUT_SANDBOX_CLIENT_ID, //"ack_eiccapfazfletih475sllukdmy",
+        client_secret: process.env.CHECKOUT_SANDBOX_CLIENT_SECRET, //"sa3U0dlryEzJ9CtbLzQkDfZ1Bdv963F92SmGKWwmNjt0-V5qDgbtpZmNqUP6_Oh-ztbylzjOlWzNqmxfFY8qmA",
         scope: "payment-sessions",
       }),
       {
