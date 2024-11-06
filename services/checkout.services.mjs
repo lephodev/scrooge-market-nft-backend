@@ -78,7 +78,7 @@ export const getPaymentSession = async (body, req) => {
       //     "store_payment_details": "disabled"
       //   }
       // },
-      enabled_payment_methods: ["card", "applepay", "googlepay", "paypal"],
+      enabled_payment_methods: ["card", "applepay", "googlepay"],
       // "disabled_payment_methods": ["eps", "ideal", "knet"],
       // "items": [{
       //   "reference": "$10 GC",
