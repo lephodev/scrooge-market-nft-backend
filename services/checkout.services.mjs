@@ -349,7 +349,7 @@ const getGCPurchaseAffliateBonus = async (
 export const checkoutWebHook = async (body) => {
   try {
     let {
-      data: { reference, amount },
+      data: { reference, amount, metadata },
     } = body;
 
     amount = amount / 100;
@@ -358,7 +358,7 @@ export const checkoutWebHook = async (body) => {
     });
 
     const extractedReffrenceId = getUser?.refrenceId || null;
-    const extractedPromoCode = null; // parts[1] || null
+    const extractedPromoCode = metadata?.promocode; // parts[1] || null
 
     if (amount) {
       const data = await db.get_marketplace_gcPackagesDB().findOne({
