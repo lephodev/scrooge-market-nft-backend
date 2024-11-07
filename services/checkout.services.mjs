@@ -96,8 +96,8 @@ export const getPaymentSession = async (body, req) => {
       //   "max_attempts": 5
       // },
       // "display_name": "Test user",
-      success_url: `${process.env.CLIENT}/crypto-to-gc/?status=${freespin ? "freespin" : "success"}${freespin ? `&freespin=${freespin}` : ""}`,
-      failure_url: `${process.env.CLIENT}/crypto-to-gc/?status=failure`,
+      success_url: `${process.env.CLIENT}/crypto-to-gc?status=${freespin ? "freespin" : "success"}${freespin ? `&freespin=${freespin}` : ""}`,
+      failure_url: `${process.env.CLIENT}/crypto-to-gc?status=failure`,
       // "metadata": {
       //   "coupon_code": "NY2018"
       // },
