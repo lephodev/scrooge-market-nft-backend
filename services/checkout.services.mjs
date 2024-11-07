@@ -23,6 +23,7 @@ export const getPaymentSession = async (body, req) => {
       country,
       address,
       streetAddress,
+      promocode
     } = body;
 
     console.log("helloo ==>", city, state, zipCode, email, address);
@@ -52,7 +53,7 @@ export const getPaymentSession = async (body, req) => {
       //   "reference": "Scrooge casino"
       // },
       metadata:{
-        "coupon_code": "abcd"
+        promocode
       },
       reference: userId,
       // "description": "Payment for Scrooge GC",
