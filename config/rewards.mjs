@@ -2903,7 +2903,7 @@ const getGCPurchaseAffliateBonus = async (
       .get_scrooge_usersDB()
       .findOne({ _id: ObjectId(extractedReffrenceId) });
 
-    console.log("-----------------", getUserData);
+    // console.log("-----------------", getUserData);
     const {
       _id: referUserId,
       username: referUserName,
