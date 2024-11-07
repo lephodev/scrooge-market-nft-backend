@@ -25,6 +25,7 @@ export const getPaymentSession = async (body, req) => {
       address,
       streetAddress,
       promocode,
+      freespin
     } = body;
 
     console.log("helloo ==>", city, state, zipCode, email, address);
@@ -95,8 +96,8 @@ export const getPaymentSession = async (body, req) => {
       //   "max_attempts": 5
       // },
       // "display_name": "Test user",
-      success_url: `${process.env.CLIENT}/copy-crypto-to-gc`,
-      failure_url: `${process.env.CLIENT}/copy-crypto-to-gc/?status=failure`,
+      success_url: `${process.env.CLIENT}/crypto-to-gc/?status=${freespin ? "freespin" : "success"}&freespin: ${freespin}`,
+      failure_url: `${process.env.CLIENT}/crypto-to-gc/?status=failure`,
       // "metadata": {
       //   "coupon_code": "NY2018"
       // },
