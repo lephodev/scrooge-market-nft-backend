@@ -34,7 +34,7 @@ export const getPaymentSession = async (body, req) => {
     // console.log("userId ==>", accessToken);
 
     const payload = {
-      amount: amount * 100,
+      amount: (Math.round(amount * 100)),
       currency: "USD",
       // "payment_type": "Regular",
       billing: {
