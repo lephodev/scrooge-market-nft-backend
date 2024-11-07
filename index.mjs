@@ -1929,7 +1929,7 @@ app.post("/api/checkout-payments-webhook", async (req, res) => {
     console.log("req.body in checkout webhoook", req.body.data.source.billing_address, req.body);
     if (
       req.body.type === "payment_approved" 
-      || req.body.type === "payment_declined"
+      // || req.body.type === "payment_declined"
     ) {
       await checkoutWebHook(req.body);
     }
