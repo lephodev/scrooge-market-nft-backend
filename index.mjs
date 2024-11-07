@@ -426,7 +426,7 @@ app.get(
   auth(),
   (req, res) => {
     CryptoToGCQueue.push({ req, res }, (err, result) => {
-      console.log("gc purchased converted.", err, result);
+      // console.log("gc purchased converted.", err, result);
     });
   }
 );
@@ -437,17 +437,17 @@ app.get(
   auth(),
   async (req, res) => {
     TicketToTokenQueue.push({ req, res }, (err, result) => {
-      console.log("ticket converted.", err, result);
+      // console.log("ticket converted.", err, result);
     });
   }
 );
 
 app.post("/api/bitcartcc-notification", async (req, res) => {
-  console.log("payed on bitcart", {
-    query: req.query,
-    params: req.params,
-    body: req.body,
-  });
+  // console.log("payed on bitcart", {
+  //   query: req.query,
+  //   params: req.params,
+  //   body: req.body,
+  // });
   res.send({ success: true });
 });
 
@@ -565,7 +565,7 @@ const getGCPurchaseAffliateBonus = async (
 app.post("/api/authorize-webhook", async (req, res) => {
   try {
     const rawPayload = JSON.stringify(req.body);
-    console.log("rawPayload", rawPayload);
+    // console.log("rawPayload", rawPayload);
 
     getTransactionDetails(rawPayload, async (response) => {
       try {
@@ -766,7 +766,7 @@ app.post("/api/testpostman", async (req, res) => {
             const data = await db.get_marketplace_gcPackagesDB().findOne({
               priceInBUSD: amount?.toString(),
             });
-            console.log("data", data);
+            // console.log("data", data);
             if (data) {
               const findTransactionIfExist = await db
                 .get_scrooge_transactionDB()
@@ -775,7 +775,7 @@ app.post("/api/testpostman", async (req, res) => {
                     response?.transaction?.transId,
                 })
                 .toArray();
-              console.log("findTransactionIfExist", findTransactionIfExist);
+              // console.log("findTransactionIfExist", findTransactionIfExist);
 
               if (findTransactionIfExist.length > 0) {
                 let query = {
@@ -785,7 +785,7 @@ app.post("/api/testpostman", async (req, res) => {
                 let findPromoData = await db
                   .get_scrooge_promoDB()
                   .findOne(query);
-                console.log("findPromoData", findPromoData);
+                // console.log("findPromoData", findPromoData);
                 const trans = await rewards.addChips(
                   getUser?._id?.toString(),
                   findPromoData?.coupanType === "Percent"
@@ -838,12 +838,12 @@ app.post("/api/testpostman", async (req, res) => {
                     userId: extractedId,
                     claimedDate: new Date(),
                   };
-                  console.log("promoCode", extractedPromoCode);
-                  console.log("payload", payload);
+                  // console.log("promoCode", extractedPromoCode);
+                  // console.log("payload", payload);
                   let promoFind = await db
                     .get_scrooge_promoDB()
                     .findOne({ couponCode: extractedPromoCode.trim() });
-                  console.log("promoFind", promoFind);
+                  // console.log("promoFind", promoFind);
                   await db.get_scrooge_promoDB().findOneAndUpdate(
                     { couponCode: extractedPromoCode.trim() },
                     {
@@ -854,11 +854,11 @@ app.post("/api/testpostman", async (req, res) => {
                     }
                   );
                 }
-                console.log(
-                  "extractedReffrenceIdextractedReffrenceIdextractedReffrenceId",
-                  typeof extractedReffrenceId,
-                  extractedReffrenceId
-                );
+                // console.log(
+                //   "extractedReffrenceIdextractedReffrenceIdextractedReffrenceId",
+                //   typeof extractedReffrenceId,
+                //   extractedReffrenceId
+                // );
                 if (extractedReffrenceId !== "null") {
                   getGCPurchaseAffliateBonus(
                     extractedId,
@@ -1510,11 +1510,11 @@ function getMinutesDifference(date1, date2) {
 app.post("/api/auth-make-payment", auth(), async (req, res) => {
   try {
     let { user, body } = req || {};
-    console.log("body =", body);
+    // console.log("body =", body);
     const dcryptdData = decryptData(body?.data);
-    console.log("user", user);
+    // console.log("user", user);
 
-    console.log("dcryptdData ==>", dcryptdData);
+    // console.log("dcryptdData ==>", dcryptdData);
     body = dcryptdData;
     const timeToRequest = new Date(dcryptdData.time);
     const extractedId = user._id;
@@ -1525,7 +1525,7 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
     let firstTenDigits = number.toString().substring(0, 10);
 
     const minsDiffrence = getMinutesDifference(timeToRequest, new Date());
-    console.log("minutesToDiffrenect ", minsDiffrence);
+    // console.log("minutesToDiffrenect ", minsDiffrence);
 
     if (
       user.firstName !== dcryptdData?.firstName ||
@@ -1819,7 +1819,7 @@ app.post("/api/auth-make-payment", auth(), async (req, res) => {
                       let bgamingSpinRes = await createBgamingFreeSpin(
                         freeSpinPayload
                       );
-                      console.log("bgamingSpinRes", bgamingSpinRes);
+                      // console.log("bgamingSpinRes", bgamingSpinRes);
                     }
                     await db.get_scrooge_usersDB().findOneAndUpdate(
                       { _id: ObjectId(extractedId) },
@@ -1896,7 +1896,7 @@ app.post(
 
 app.post("/api/get-payment-session", auth(), async (req, res) => {
   try {
-    console.log("req.body ==>", req.body);
+    // console.log("req.body ==>", req.body);
     const resp = await getPaymentSession(req.body, req); //getHostedPaymentSession(req.body, req)
 
     return res.status(200).json(resp);
@@ -1946,11 +1946,10 @@ app.get("/api/getPackage", async (req, res) => {
     const {
       packageId
     } = req.query;
-    console.log("packageId ==>", packageId, req.query);
+    // console.log("packageId ==>", packageId, req.query);
     const data = await db.get_marketplace_gcPackagesDB().findOne({
       _id: ObjectId(packageId),
     });
-    console.log("package data ==>", data);
 
     return res.status(200).json({
       message: "Successfully completed",

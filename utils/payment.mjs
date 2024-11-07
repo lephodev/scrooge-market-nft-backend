@@ -30,7 +30,7 @@ export function createAnAcceptPaymentTransaction(body, user, callback) {
   var opaqueData = new ApiContracts.OpaqueDataType();
   opaqueData.setDataDescriptor(body.dataDescriptor);
   opaqueData.setDataValue(body.dataValue);
-  console.log("opaqueData", opaqueData);
+  // console.log("opaqueData", opaqueData);
 
   var paymentType = new ApiContracts.PaymentType();
   paymentType.setOpaqueData(opaqueData);
@@ -104,7 +104,7 @@ export function createAnAcceptPaymentTransaction(body, user, callback) {
   createRequest.setTransactionRequest(transactionRequestType);
 
   //pretty print request
-  console.log(JSON.stringify(createRequest.getJSON(), null, 2));
+  // console.log(JSON.stringify(createRequest.getJSON(), null, 2));
 
   var ctrl = new ApiControllers.CreateTransactionController(
     createRequest.getJSON()
@@ -118,9 +118,9 @@ export function createAnAcceptPaymentTransaction(body, user, callback) {
     var response = new ApiContracts.CreateTransactionResponse(apiResponse);
 
     //pretty print response
-    console.log("respo", JSON.stringify(response, null, 2));
+    // console.log("respo", JSON.stringify(response, null, 2));
     let ss = JSON.stringify(response, null, 2);
-    console.log("respoId", ss?.transactionResponse?.transId);
+    // console.log("respoId", ss?.transactionResponse?.transId);
 
     if (response != null) {
       if (

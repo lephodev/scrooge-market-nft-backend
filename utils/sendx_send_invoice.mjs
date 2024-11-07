@@ -162,7 +162,7 @@ export const sendInvoice = async (record) => {
     lastName,
   } = record;
 
-  console.log("recordrecord", record);
+  // console.log("recordrecord", record);
 
   try {
     let tax = (purcahsePrice * Tax) / 100;
@@ -196,7 +196,7 @@ export const sendInvoice = async (record) => {
       },
     });
 
-    console.log("Contact identified:", response.data.data.email);
+    // console.log("Contact identified:", response.data.data.email);
     await trackEvent(email);
     return response.data;
   } catch (error) {
@@ -221,7 +221,7 @@ async function trackEvent(email) {
       },
     });
 
-    console.log("Event tracked:", response.data);
+    // console.log("Event tracked:", response.data);
     console.count("Event tracked");
     return response.data;
   } catch (error) {

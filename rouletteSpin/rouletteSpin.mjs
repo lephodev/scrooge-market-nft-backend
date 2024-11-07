@@ -248,7 +248,7 @@ export async function updateUserDataAndTransaction(
   type,
   spinType
 ) {
-  console.log("spinTypespinType", spinType);
+  // console.log("spinTypespinType", spinType);
   try {
     const tempData = { ...responseData };
 
@@ -346,10 +346,10 @@ export async function updateUserDataAndTransaction(
       .toArray();
 
     getLastDaySpin = getLastDaySpin[0];
-    console.log("getLastDaySpin", getLastDaySpin);
+    // console.log("getLastDaySpin", getLastDaySpin);
 
     if (type === "Loyality") {
-      console.log("Loyality");
+      // console.log("Loyality");
       await db.get_scrooge_usersDB().updateOne(
         { _id: ObjectId(req.user._id) },
         {

@@ -43,16 +43,16 @@ export const authLimiter = async (req, res, next) => {
 };
 
 export const rateAuthLimit = (req, res, next) => {
-  console.log(req.body);
+  // console.log(req.body);
   let time = 0;
   const { promocode } = req.body || {};
-  console.log("promocode", promocode);
+  // console.log("promocode", promocode);
   if (promocode) {
     time = 10 * 1000;
   } else {
     time = 24 * 60 * 60;
   }
-  console.log("time", req.user?._id);
+  // console.log("time", req.user?._id);
   try {
     const userId = req.user?._id; // Assuming you have a user identifier in headers
     // console.log('userId', userId);

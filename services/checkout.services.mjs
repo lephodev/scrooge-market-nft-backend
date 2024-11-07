@@ -28,10 +28,10 @@ export const getPaymentSession = async (body, req) => {
       freespin
     } = body;
 
-    console.log("helloo ==>", city, state, zipCode, email, address);
+    // console.log("helloo ==>", city, state, zipCode, email, address);
 
     const accessToken = await getAcessToken();
-    console.log("userId ==>", accessToken);
+    // console.log("userId ==>", accessToken);
 
     const payload = {
       amount: amount * 100,
@@ -214,7 +214,7 @@ export const addCheckoutWorkFlows = async () => {
       ],
     });
     //  web hook https://api.sandbox.checkout.com/workflows/wf_4a2bdxij4wlevafdnx2miulmim
-    console.log("webhooks ==>", workflows);
+    // console.log("webhooks ==>", workflows);
   } catch (error) {
     console.log("error in addCheckoutWorkFlows =>", error);
   }
@@ -229,7 +229,7 @@ export const getAllCheckoutwebhooks = async () => {
     });
     let workflows = await cko.workflows.getAll();
     //  web hook https://api.sandbox.checkout.com/workflows/wf_4a2bdxij4wlevafdnx2miulmim
-    console.log("webhooks ==>", workflows.data[0]._links);
+    // console.log("webhooks ==>", workflows.data[0]._links);
   } catch (error) {
     console.log("error in addCheckoutWorkFlows =>", error);
   }

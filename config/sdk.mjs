@@ -217,28 +217,28 @@ export async function getOGBalance(req, res) {
 // return resp;
 // }
 export async function getFreeTokens(req, res) {
-  console.log("Calleddddd getFreeTokens", req.body);
+  // console.log("Calleddddd getFreeTokens", req.body);
   try {
     let resp;
     const { address, token_id, userid, qty, aff_id } = req?.body || {};
-    console.log(
-      "address==>>",
-      address,
-      "token_id===>>",
-      token_id,
-      "user_id===>>>",
-      userid,
-      "qty===>>",
-      qty,
-      "aff_id===>>",
-      aff_id
-    );
+    // console.log(
+    //   "address==>>",
+    //   address,
+    //   "token_id===>>",
+    //   token_id,
+    //   "user_id===>>>",
+    //   userid,
+    //   "qty===>>",
+    //   qty,
+    //   "aff_id===>>",
+    //   aff_id
+    // );
     if (address && token_id && userid) {
       const query = await db
         .get_marketplace_itemsDB()
         .findOne({ token_id: parseInt(token_id) })
         .then(async (item) => {
-          console.log("itemDatatataa", item);
+          // console.log("itemDatatataa", item);
           const chipsAdded = await addChips(
             userid,
             parseInt(item.chip_value),
@@ -247,11 +247,11 @@ export async function getFreeTokens(req, res) {
           ).then(async (trans) => {
             // console.log("trans",trans);
             const commission = (0.05 * item?.chip_value).toFixed(0);
-            console.log("commission", commission);
+            // console.log("commission", commission);
             let findUserAff = await db
               .get_scrooge_usersDB()
               .findOne({ _id: ObjectId(userid) });
-            console.log("avvavavva", findUserAff);
+            // console.log("avvavavva", findUserAff);
             if (findUserAff?.refrenceId !== "false") {
               let comisData = {
                 id: userid,
@@ -309,12 +309,12 @@ export async function getFreeTokens(req, res) {
               };
 
               let trans_id;
-              console.log("transactionPayload", transactionPayload);
+              // console.log("transactionPayload", transactionPayload);
               await db
                 .get_scrooge_transactionDB()
                 .insertOne(transactionPayload)
                 .then((trans) => {
-                  console.log("transtranstrans", trans);
+                  // console.log("transtranstrans", trans);
                   trans_id = trans.insertedId;
                 });
             }

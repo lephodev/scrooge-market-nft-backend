@@ -81,7 +81,7 @@ export async function addChips(
         };
       }
     }
-    console.log("query afetr purchase ", query);
+    // console.log("query afetr purchase ", query);
     const { value: user } = await db.get_scrooge_usersDB().findOneAndUpdate(
       { _id: ObjectId(_user_id) },
       {
@@ -665,7 +665,7 @@ export async function getCryptoToGCPackages(req, res) {
       purchasedAmountInUSD: { $nin: megaOffer },
     });
     const dr = await tranCount.toArray();
-    console.log("tran---------------------", dr);
+    // console.log("tran---------------------", dr);
     let totalPurchasedAmountInUSD = 0;
     dr.forEach((transaction) => {
       totalPurchasedAmountInUSD += transaction.purchasedAmountInUSD;
@@ -3103,7 +3103,7 @@ export async function IdAnalyzerWithDocupass(req, res) {
         console.error("Error:", error);
       });
 
-    console.log("IdAnalyzerWithDocupass user");
+    // console.log("IdAnalyzerWithDocupass user");
 
     // Respond to the client with success
   } catch (e) {
@@ -3116,7 +3116,7 @@ export async function IdAnalyzerWithDocupass(req, res) {
 
 export async function saveUserconnectedWallet(req, res) {
   const { walletAddress } = req.body;
-  console.log("walletAddress", walletAddress);
+  // console.log("walletAddress", walletAddress);
   const currentTime = new Date();
   let user = req.user;
   const result = await db.get_scrooge_usersDB().updateOne(
@@ -3142,7 +3142,7 @@ export async function saveUserconnectedWallet(req, res) {
       }
     );
 
-    console.log("result", result);
+    // console.log("result", result);
     res.status(200).json({ message: "Wallet added successfully." });
   }
   try {
