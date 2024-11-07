@@ -2618,7 +2618,7 @@ export async function FastWithdrawRedeem(req, res) {
 }
 
 export async function getWeeklyWheel(req, res) {
-  console.log("-----------------------------------------------", req.user);
+  // console.log("-----------------------------------------------", req.user);
 
   try {
     const { _id: userId, isSpended } = req.user;
