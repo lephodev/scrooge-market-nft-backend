@@ -1926,7 +1926,7 @@ app.post("/api/get-all-workflows", async (req, res) => {
 
 app.post("/api/checkout-payments-webhook", async (req, res) => {
   try {
-    console.log("req.body in checkout webhoook",  req.body, req.body?.data?.source?.avs_check);
+    console.log("req.body in checkout webhoook",  req.body, req.body?.data?.source);
     if (
       req.body.type === "payment_approved" &&
       req.body?.data?.source?.avs_check === "Y" &&
