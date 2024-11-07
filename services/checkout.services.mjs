@@ -7,6 +7,7 @@ import * as rewards from "../config/rewards.mjs";
 import { InvoiceEmail } from "../email/emailSend.mjs";
 import ip from "request-ip";
 import moment from "moment";
+import { createFreeSpin } from "../utils/payment.mjs";
 
 export const getPaymentSession = async (body, req) => {
   try {
@@ -23,7 +24,7 @@ export const getPaymentSession = async (body, req) => {
       country,
       address,
       streetAddress,
-      promocode
+      promocode,
     } = body;
 
     console.log("helloo ==>", city, state, zipCode, email, address);
@@ -52,8 +53,8 @@ export const getPaymentSession = async (body, req) => {
       //   "city": "Los Angeles",
       //   "reference": "Scrooge casino"
       // },
-      metadata:{
-        promocode
+      metadata: {
+        promocode,
       },
       reference: userId,
       // "description": "Payment for Scrooge GC",
@@ -70,7 +71,7 @@ export const getPaymentSession = async (body, req) => {
           country,
           city,
           state,
-          zip: zipCode
+          zip: zipCode,
         },
         phone: {
           // country_code: "+1",
