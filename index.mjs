@@ -1952,12 +1952,14 @@ app.get("/api/getPackage", async (req, res) => {
       _id: ObjectId(packageId),
     });
 
-    console.log("datadata", data);
+    if (data) {
+      console.log("datadata", data);
 
-    return res.status(200).json({
-      message: "Successfully completed",
-      package: data,
-    });
+      return res.status(200).json({
+        message: "Successfully completed",
+        package: data,
+      });
+    }
   } catch (error) {
     console.log("error in checkpout payment webhooks", error);
   }
