@@ -1952,6 +1952,8 @@ app.get("/api/getPackage", async (req, res) => {
       _id: ObjectId(packageId),
     });
 
+    console.log("datadata", data);
+
     return res.status(200).json({
       message: "Successfully completed",
       package: data,
