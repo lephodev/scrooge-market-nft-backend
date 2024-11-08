@@ -1924,11 +1924,9 @@ app.post("/api/get-all-workflows", async (req, res) => {
   }
 });
 
-
-
 app.post("/api/checkout-payments-webhook", async (req, res) => {
   try {
-    console.log("req.body in checkout webhoook",  req.body);
+    console.log("req.body in checkout webhoook", req.body);
     if (
       req.body.type === "payment_approved" &&
       req.body?.data?.source?.avs_check != "N" &&
@@ -1948,17 +1946,15 @@ app.post("/api/checkout-payments-webhook", async (req, res) => {
 
 app.get("/api/getPackage", async (req, res) => {
   try {
-    const {
-      packageId
-    } = req.query;
-    // console.log("packageId ==>", packageId, req.query);
+    const { packageId } = req.query;
+    console.log("packageId ==>", packageId, req.query);
     const data = await db.get_marketplace_gcPackagesDB().findOne({
       _id: ObjectId(packageId),
     });
 
     return res.status(200).json({
       message: "Successfully completed",
-      package: data
+      package: data,
     });
   } catch (error) {
     console.log("error in checkpout payment webhooks", error);
@@ -1968,8 +1964,6 @@ app.get("/api/getPackage", async (req, res) => {
 app.listen(PORT, () => {
   console.log("Server is running.", PORT);
 });
-
-
 
 const prevDt = new Date();
 prevDt.setDate(prevDt.getDate() - 1);
