@@ -6,6 +6,8 @@ import { ObjectId } from "mongodb";
 import * as rewards from "../config/rewards.mjs";
 import { InvoiceEmail } from "../email/emailSend.mjs";
 import ip from "request-ip";
+import moment from "moment";
+import { createFreeSpin } from "../utils/payment.mjs";
 
 export const getPaymentSession = async (body, req) => {
   try {
@@ -22,15 +24,17 @@ export const getPaymentSession = async (body, req) => {
       country,
       address,
       streetAddress,
+      promocode,
+      freespin
     } = body;
 
-    console.log("helloo ==>", city, state, zipCode, email, address);
+    // console.log("helloo ==>", city, state, zipCode, email, address);
 
     const accessToken = await getAcessToken();
-    console.log("userId ==>", accessToken);
+    // console.log("userId ==>", accessToken);
 
     const payload = {
-      amount: amount * 100,
+      amount: (Math.round(amount * 100)),
       currency: "USD",
       // "payment_type": "Regular",
       billing: {
@@ -50,6 +54,9 @@ export const getPaymentSession = async (body, req) => {
       //   "city": "Los Angeles",
       //   "reference": "Scrooge casino"
       // },
+      metadata: {
+        promocode,
+      },
       reference: userId,
       // "description": "Payment for Scrooge GC",
       // "processing": {
@@ -72,7 +79,7 @@ export const getPaymentSession = async (body, req) => {
           number: phoneNumber,
         },
       },
-      processing_channel_id: "pc_sxouohxmuome5jptmrsoxsdoru",//process.env.CHECKOUt_SANDBOX_CHANEL_ID,
+      processing_channel_id: process.env.CHECKOUt_MERCHENT_CHANEL_ID,
       // "expires_on": "2024-10-31T09:15:30Z",
       // "payment_method_configuration": {
       //   "card": {
@@ -81,19 +88,7 @@ export const getPaymentSession = async (body, req) => {
       // },
       enabled_payment_methods: ["card", "applepay", "googlepay"],
       // "disabled_payment_methods": ["eps", "ideal", "knet"],
-      // "items": [{
-      //   "reference": "$10 GC",
-      //   "commodity_code": "1234",
-      //   "unit_of_measure": "each",
-      //   "total_amount": 10,
-      //   "tax_amount": 0,
-      //   "discount_amount": 0,
-      //   "url": "string",
-      //   "image_url": "string",
-      //   "name": "Gold Necklace",
-      //   "quantity": 1,
-      //   "unit_price": 10
-      //   }],
+      // metadata: "promo code",
       risk: {
         enabled: false,
       },
@@ -101,8 +96,8 @@ export const getPaymentSession = async (body, req) => {
       //   "max_attempts": 5
       // },
       // "display_name": "Test user",
-      success_url: `${process.env.CLIENT}/copy-crypto-to-gc`,
-      failure_url: `${process.env.CLIENT}/copy-crypto-to-gc/?status=failure`,
+      success_url: `${process.env.CLIENT}/crypto-to-gc?status=${freespin ? "freespin" : "success"}${freespin ? `&freespin=${freespin}` : ""}`,
+      failure_url: `${process.env.CLIENT}/crypto-to-gc?status=failure`,
       // "metadata": {
       //   "coupon_code": "NY2018"
       // },
@@ -122,6 +117,7 @@ export const getPaymentSession = async (body, req) => {
       // },
       // "capture": true,
       // "capture_on": "2024-10-17T11:15:30Z",
+      description: "Payment",
       ip_address: ip.getClientIp(req),
       customer: {
         email: email,
@@ -137,7 +133,7 @@ export const getPaymentSession = async (body, req) => {
     console.log("payload in checkout payment session", payload);
 
     const resp = await axios.post(
-      "https://api.sandbox.checkout.com/payment-sessions",
+      "https://api.checkout.com/payment-sessions",
       payload,
       {
         headers: {
@@ -159,11 +155,11 @@ export const getPaymentSession = async (body, req) => {
 const getAcessToken = async () => {
   try {
     const acsTkResp = await axios.post(
-      process.env.CHECKOUT_SANDBOX_URL,
+      process.env.CHECKOUT_MERCHENT_URL,
       qs.stringify({
         grant_type: "client_credentials",
-        client_id: process.env.CHECKOUT_SANDBOX_CLIENT_ID, //"ack_eiccapfazfletih475sllukdmy",
-        client_secret: process.env.CHECKOUT_SANDBOX_CLIENT_SECRET, //"sa3U0dlryEzJ9CtbLzQkDfZ1Bdv963F92SmGKWwmNjt0-V5qDgbtpZmNqUP6_Oh-ztbylzjOlWzNqmxfFY8qmA",
+        client_id: process.env.CHECKOUT_MERCHENT_CLIENT_ID, //"ack_eiccapfazfletih475sllukdmy",
+        client_secret: process.env.CHECKOUT_MERCHENT_CLIENT_SECRET, //"sa3U0dlryEzJ9CtbLzQkDfZ1Bdv963F92SmGKWwmNjt0-V5qDgbtpZmNqUP6_Oh-ztbylzjOlWzNqmxfFY8qmA",
         scope: "payment-sessions",
       }),
       {
@@ -218,7 +214,7 @@ export const addCheckoutWorkFlows = async () => {
       ],
     });
     //  web hook https://api.sandbox.checkout.com/workflows/wf_4a2bdxij4wlevafdnx2miulmim
-    console.log("webhooks ==>", workflows);
+    // console.log("webhooks ==>", workflows);
   } catch (error) {
     console.log("error in addCheckoutWorkFlows =>", error);
   }
@@ -233,7 +229,7 @@ export const getAllCheckoutwebhooks = async () => {
     });
     let workflows = await cko.workflows.getAll();
     //  web hook https://api.sandbox.checkout.com/workflows/wf_4a2bdxij4wlevafdnx2miulmim
-    console.log("webhooks ==>", workflows.data[0]._links);
+    // console.log("webhooks ==>", workflows.data[0]._links);
   } catch (error) {
     console.log("error in addCheckoutWorkFlows =>", error);
   }
@@ -353,14 +349,16 @@ const getGCPurchaseAffliateBonus = async (
 export const checkoutWebHook = async (body) => {
   try {
     let {
-      data: { reference, amount },
+      data: { reference, amount, metadata },
     } = body;
+
+    amount = amount / 100;
     const getUser = await db.get_scrooge_usersDB().findOne({
       _id: ObjectId(reference),
     });
 
     const extractedReffrenceId = getUser?.refrenceId || null;
-    const extractedPromoCode = null; // parts[1] || null
+    const extractedPromoCode = metadata?.promocode; // parts[1] || null
 
     if (amount) {
       const data = await db.get_marketplace_gcPackagesDB().findOne({
