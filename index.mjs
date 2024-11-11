@@ -1929,7 +1929,7 @@ app.post("/api/checkout-payments-webhook", async (req, res) => {
     console.log("req.body in checkout webhoook", req.body);
     if (
       req.body.type === "payment_approved" &&
-      req.body?.data?.source?.avs_check != "N" &&
+      // req.body?.data?.source?.avs_check != "N" &&
       req.body?.data?.source?.cvv_check === "Y"
       // || req.body.type === "payment_declined"
     ) {
