@@ -118,7 +118,7 @@ export const getPaymentSession = async (body, req) => {
       // "capture": true,
       // "capture_on": "2024-10-17T11:15:30Z",
       description: "Payment",
-      ip_address: ip.getClientIp(req),
+      ip_address: "49.36.171.188",//ip.getClientIp(req),
       customer: {
         email: email,
         name: firstName + " " + lastName,
@@ -133,7 +133,7 @@ export const getPaymentSession = async (body, req) => {
     console.log("payload in checkout payment session", payload);
 
     const resp = await axios.post(
-      "https://api.checkout.com/payment-sessions",
+      "https://api.sandbox.checkout.com/payment-sessions",
       payload,
       {
         headers: {
@@ -146,8 +146,9 @@ export const getPaymentSession = async (body, req) => {
   } catch (error) {
     console.log(
       "error in get checkout payment session",
-      // error.data.error_codes,
-      JSON.stringify(error)
+      error.response.data.error_codes,
+      // JSON.stringify(error)
+      error
     );
   }
 };
@@ -196,7 +197,7 @@ export const addCheckoutWorkFlows = async () => {
         // },
         {
           type: "processing_channel",
-          processing_channels: [process.env.CHECKOUt_MERCHENT_CHANEL_ID],
+          processing_channels: [process.env.CHECKOUT_MERCHENT_CHANEL_ID],
         },
       ],
       actions: [
