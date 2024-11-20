@@ -305,7 +305,8 @@ export const APPROVE_REDEEM_REQUEST = (username, hash, from) => {
                   font-weight: 600;
                   font-family: 'Poppins', sans-serif;
                 ">
-                Welcome to Scrooge, LLC
+                Congrats from Scrooge LLC,
+
               </h4>
             </div>
             <div class="congratsImg" style="margin: 20px auto">
