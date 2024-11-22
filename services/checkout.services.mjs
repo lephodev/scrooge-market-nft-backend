@@ -79,7 +79,7 @@ export const getPaymentSession = async (body, req) => {
           number: phoneNumber,
         },
       },
-      processing_channel_id: process.env.CHECKOUt_MERCHENT_CHANEL_ID,
+      processing_channel_id: process.env.CHECKOUT_MERCHENT_CHANEL_ID,
       // "expires_on": "2024-10-31T09:15:30Z",
       // "payment_method_configuration": {
       //   "card": {
