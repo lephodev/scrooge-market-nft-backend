@@ -25,7 +25,7 @@ export const getPaymentSession = async (body, req) => {
       address,
       streetAddress,
       promocode,
-      freespin
+      freespin,
     } = body;
 
     // console.log("helloo ==>", city, state, zipCode, email, address);
@@ -34,7 +34,7 @@ export const getPaymentSession = async (body, req) => {
     // console.log("userId ==>", accessToken);
 
     const payload = {
-      amount: (Math.round(amount * 100)),
+      amount: Math.round(amount * 100),
       currency: "USD",
       // "payment_type": "Regular",
       billing: {
@@ -96,7 +96,9 @@ export const getPaymentSession = async (body, req) => {
       //   "max_attempts": 5
       // },
       // "display_name": "Test user",
-      success_url: `${process.env.CLIENT}/crypto-to-gc?status=${freespin ? "freespin" : "success"}${freespin ? `&freespin=${freespin}` : ""}`,
+      success_url: `${process.env.CLIENT}/crypto-to-gc?status=${
+        freespin ? "freespin" : "success"
+      }${freespin ? `&freespin=${freespin}` : ""}`,
       failure_url: `${process.env.CLIENT}/crypto-to-gc?status=failure`,
       // "metadata": {
       //   "coupon_code": "NY2018"
@@ -118,7 +120,7 @@ export const getPaymentSession = async (body, req) => {
       // "capture": true,
       // "capture_on": "2024-10-17T11:15:30Z",
       description: "Payment",
-      ip_address: "49.36.171.188",//ip.getClientIp(req),
+      ip_address: "49.36.171.188", //ip.getClientIp(req),
       customer: {
         email: email,
         name: firstName + " " + lastName,
@@ -404,7 +406,7 @@ export const checkoutWebHook = async (body) => {
       const reciptPayload = {
         username: getUser?.username,
         email: getUser?.email,
-        invoicDate: moment(new Date()).format("D MMMM  YYYY"),
+        invoicDate: moment(new Date()).format("D MMMM YYYY, h:mm A"),
         paymentMethod: "Credit Card Purchase",
         packageName: "Gold Coin Purchase",
         goldCoinQuantity: parseInt(data?.gcAmount),
