@@ -86,7 +86,7 @@ export const getPaymentSession = async (body, req) => {
       //     "store_payment_details": "disabled"
       //   }
       // },
-      enabled_payment_methods: ["card" ],//"applepay", "googlepay"
+      enabled_payment_methods: ["card"], //"applepay", "googlepay"
       // "disabled_payment_methods": ["eps", "ideal", "knet"],
       // metadata: "promo code",
       risk: {
@@ -352,7 +352,7 @@ const getGCPurchaseAffliateBonus = async (
 export const checkoutWebHook = async (body) => {
   try {
     let {
-      data: { reference, amount, metadata },
+      data: { id, reference, amount, metadata },
     } = body;
 
     amount = amount / 100;
@@ -406,6 +406,7 @@ export const checkoutWebHook = async (body) => {
       const reciptPayload = {
         username: getUser?.username,
         email: getUser?.email,
+        txId: id,
         invoicDate: moment(new Date()).format("D MMMM  YYYY"),
         paymentMethod: "Credit Card Purchase",
         packageName: "Gold Coin Purchase",
