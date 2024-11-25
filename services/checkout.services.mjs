@@ -352,7 +352,7 @@ const getGCPurchaseAffliateBonus = async (
 export const checkoutWebHook = async (body) => {
   try {
     let {
-      data: { reference, amount, metadata },
+      data: { id, reference, amount, metadata },
     } = body;
 
     amount = amount / 100;
@@ -406,6 +406,7 @@ export const checkoutWebHook = async (body) => {
       const reciptPayload = {
         username: getUser?.username,
         email: getUser?.email,
+        txId: id,
         invoicDate: moment(new Date()).format("D MMMM YYYY, h:mm A"),
         paymentMethod: "Credit Card Purchase",
         packageName: "Gold Coin Purchase",

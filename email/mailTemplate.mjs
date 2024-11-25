@@ -644,6 +644,11 @@ export const SEND_INVOICE = (data, hash, from) => {
               } </span>
             </h4>
             <h4 style="color:#333536">
+              Transaction Id:
+              <span style="font-size:14px;color:#333536;font-weight:500"> ${
+                data?.txId
+              } </
+            <h4 style="color:#333536">
               Payment Method:
               <span style="font-size:14px;color:#333536;font-weight:500"> ${
                 data?.paymentMethod
