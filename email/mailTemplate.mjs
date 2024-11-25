@@ -566,6 +566,8 @@ export const APPROVE_REDEEM_REQUEST = (username, hash, from) => {
 };
 
 export const SEND_INVOICE = (data, hash, from) => {
+  console.log("SEND_INVOICE datatattatatata", data);
+
   return `
   <!DOCTYPE html>
 <html lang="en">
