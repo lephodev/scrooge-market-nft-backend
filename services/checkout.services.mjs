@@ -349,6 +349,22 @@ const getGCPurchaseAffliateBonus = async (
   }
 };
 
+function getESTTime() {
+  const options = {
+    timeZone: "America/New_York", // EST/EDT timezone
+    hour12: true,
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+    second: "numeric",
+  };
+
+  const formatter = new Intl.DateTimeFormat("en-US", options);
+  return formatter.format(new Date());
+}
+
 export const checkoutWebHook = async (body) => {
   try {
     let {
@@ -407,7 +423,7 @@ export const checkoutWebHook = async (body) => {
         username: getUser?.username,
         email: getUser?.email,
         txId: id,
-        invoicDate: moment(new Date()).format("D MMMM  YYYY"),
+        invoicDate: getESTTime(),
         paymentMethod: "Credit Card Purchase",
         packageName: "Gold Coin Purchase",
         goldCoinQuantity: parseInt(data?.gcAmount),

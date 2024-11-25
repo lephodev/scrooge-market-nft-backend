@@ -299,7 +299,7 @@ export const SUBMIT_REDEEM_REQUEST = (username, prize) => {
               font-family: 'Poppins', sans-serif;
             "
           >
-            © 2023 - SCROOGE, LLC- All Rights Reserved
+            © 2024 - SCROOGE, LLC- All Rights Reserved
           </p>
         </div>
       </main>
@@ -554,7 +554,7 @@ export const APPROVE_REDEEM_REQUEST = (prize_price, username, hash, from) => {
                   font-size: 14px;
                   font-family: 'Poppins', sans-serif;
                 ">
-                © 2023 - SCROOGE, LLC- All Rights Reserved
+                © 2024 - SCROOGE, LLC- All Rights Reserved
               </p>
             </div>
           </main>
@@ -565,6 +565,8 @@ export const APPROVE_REDEEM_REQUEST = (prize_price, username, hash, from) => {
         `;
 };
 export const SEND_INVOICE = (data, hash, from) => {
+  console.log("SEND_INVOICE datatattatatata", data);
+
   return `
   <!DOCTYPE html>
 <html lang="en">
@@ -643,6 +645,12 @@ export const SEND_INVOICE = (data, hash, from) => {
               } </span>
             </h4>
             <h4 style="color:#333536">
+              Transaction Id:
+              <span style="font-size:14px;color:#333536;font-weight:500"> ${
+                data?.txId
+              } </span>
+            </h4>
+            <h4 style="color:#333536">
               Payment Method:
               <span style="font-size:14px;color:#333536;font-weight:500"> ${
                 data?.paymentMethod
@@ -703,7 +711,7 @@ export const SEND_INVOICE = (data, hash, from) => {
     background-color: rgb(232,232,232);
     margin: 40px 0px 10px;"></div>
 
-    <p style="font-size:14px;text-align:center;color:#333536">© 2023 - SCROOGE, LLC- All Rights Reserved</p>
+    <p style="font-size:14px;text-align:center;color:#333536">© 2024 - SCROOGE, LLC- All Rights Reserved</p>
 
 
   </div>
