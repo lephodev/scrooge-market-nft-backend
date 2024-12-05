@@ -94,7 +94,7 @@ app.use(
     //   "https://market-newui.scrooge.casino",
     // ],
     origin: "*",
-    credentials: true,
+    // credentials: true,
   })
 );
 app.use(json());
