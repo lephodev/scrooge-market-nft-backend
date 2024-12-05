@@ -98,9 +98,9 @@ const PORT = process.env.PORT;
 //   })
 // );
 app.use( cors({
-  origin: 'file://', // Allow Electron's file protocol
-  credentials: true,
-}));
+    origin: [ "http://localhost:1212","http://localhost:9001"], // Allow Electron's file protocol
+    credentials: true,
+  }));
 app.use(json());
 app.use(cookieParser());
 // app.use("/api/accept-deceptor", authLimiter);
