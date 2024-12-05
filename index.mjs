@@ -1974,8 +1974,8 @@ app.get("/api/getPackage", async (req, res) => {
 app.get("/api/getCheckoutAccessToken", async (req, res) => {
   try {
     
-    const token = getAcessToken();
-    return res.status(400).json(token);
+    const token = await getAcessToken();
+    return res.status(200).json(token);
   } catch (error) {
     console.log("error in checkpout payment webhooks", error);
   }
