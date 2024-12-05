@@ -97,7 +97,10 @@ const PORT = process.env.PORT;
 //     // credentials: true,
 //   })
 // );
-app.use(cors());
+app.use( cors({
+  origin: 'file://', // Allow Electron's file protocol
+  credentials: true,
+}));
 app.use(json());
 app.use(cookieParser());
 // app.use("/api/accept-deceptor", authLimiter);
