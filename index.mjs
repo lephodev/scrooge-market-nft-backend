@@ -226,7 +226,7 @@ app.get(
 //   }
 // );
 
-// app.post("/api/getFreeTokens", auth(), async (req, res) => {
+// app.post("/api/getFreeTokens", decryptPayload, auth(), async (req, res) => {
 //   useSDK.getFreeTokens(req, res);
 // const resp = await useSDK.getFreeTokens(req).then((data) => {
 //   res.send(data);
@@ -1066,6 +1066,7 @@ app.post(
 );
 app.post(
   "/api/WithdrawRequestWithFiat",
+  decryptPayload,
   Basicauth,
   auth(),
   rewards.WithdrawRequestWithFiat
@@ -1496,6 +1497,7 @@ app.get(
 );
 app.post(
   "/api/redeemFreePromoST",
+  decryptPayload,
   Basicauth,
   auth(),
   rewards.redeemFreePromoST
@@ -1897,12 +1899,13 @@ app.post("/api/capture-paypal-order", Basicauth, auth(), rewards.paypalOrder);
 app.post("/api/IdAnalyzerWithDocupass", auth(), rewards.IdAnalyzerWithDocupass);
 app.post(
   "/api/saveUserconnectedWallet",
+  decryptPayload,
   Basicauth,
   auth(),
   rewards.saveUserconnectedWallet
 );
 
-app.post("/api/get-payment-session", auth(), async (req, res) => {
+app.post("/api/get-payment-session", decryptPayload, auth(), async (req, res) => {
   try {
     // console.log("req.body ==>", req.body);
     const resp = await getPaymentSession(req.body, req); //getHostedPaymentSession(req.body, req)
