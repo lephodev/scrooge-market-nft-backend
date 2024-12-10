@@ -51,6 +51,7 @@ import {
   getAllCheckoutwebhooks,
   getPaymentSession,
 } from "./services/checkout.services.mjs";
+import decryptPayload from "./utils/decryptPayload";
 
 const app = express();
 
@@ -1057,6 +1058,7 @@ app.post("/api/accept-deceptor", auth(), authLimiter, async (req, res) => {
 
 app.post(
   "/api/applyPromoCode",
+  decryptPayload,
   Basicauth,
   auth(),
   rateAuthLimit,
