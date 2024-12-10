@@ -1456,7 +1456,7 @@ app.get(
       },
       "userId._id": userId,
       purchasedAmountInUSD: {
-        $in: [9.99, 19.99, 24.99, 4.99, 14.99, 49.99, 99.99],
+        $in: [9.99, 4.99, 14.99],
       },
       createdAt: { $gt: startOfDay },
     };
