@@ -51,7 +51,7 @@ import {
   getAllCheckoutwebhooks,
   getPaymentSession,
 } from "./services/checkout.services.mjs";
-import decryptPayload from "./utils/decryptPayload";
+import decryptPayload from "./utils/decryptPayload.js";
 
 const app = express();
 
