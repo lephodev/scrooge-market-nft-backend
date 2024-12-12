@@ -47,9 +47,11 @@ import { decryptData } from "./middlewares/decrypt.mjs";
 import {
   addCheckoutWorkFlows,
   checkoutWebHook,
+  getAcessToken,
   getAllCheckoutwebhooks,
   getPaymentSession,
 } from "./services/checkout.services.mjs";
+import decryptPayload from "./utils/decryptPayload.mjs";
 
 const app = express();
 
@@ -93,9 +95,14 @@ app.use(
       "https://landing-newui.scrooge.casino",
       "https://market-newui.scrooge.casino",
     ],
+    
     credentials: true,
   })
 );
+// app.use( cors({
+//     origin: [ "http://localhost:1212","http://localhost:9001"], // Allow Electron's file protocol
+//     credentials: true,
+//   }));
 app.use(json());
 app.use(cookieParser());
 // app.use("/api/accept-deceptor", authLimiter);
@@ -219,7 +226,7 @@ app.get(
 //   }
 // );
 
-// app.post("/api/getFreeTokens", auth(), async (req, res) => {
+// app.post("/api/getFreeTokens", decryptPayload, auth(), async (req, res) => {
 //   useSDK.getFreeTokens(req, res);
 // const resp = await useSDK.getFreeTokens(req).then((data) => {
 //   res.send(data);
@@ -1051,6 +1058,7 @@ app.post("/api/accept-deceptor", auth(), authLimiter, async (req, res) => {
 
 app.post(
   "/api/applyPromoCode",
+  decryptPayload,
   Basicauth,
   auth(),
   rateAuthLimit,
@@ -1058,6 +1066,7 @@ app.post(
 );
 app.post(
   "/api/WithdrawRequestWithFiat",
+  decryptPayload,
   Basicauth,
   auth(),
   rewards.WithdrawRequestWithFiat
@@ -1488,6 +1497,7 @@ app.get(
 );
 app.post(
   "/api/redeemFreePromoST",
+  decryptPayload,
   Basicauth,
   auth(),
   rewards.redeemFreePromoST
@@ -1889,12 +1899,13 @@ app.post("/api/capture-paypal-order", Basicauth, auth(), rewards.paypalOrder);
 app.post("/api/IdAnalyzerWithDocupass", auth(), rewards.IdAnalyzerWithDocupass);
 app.post(
   "/api/saveUserconnectedWallet",
+  decryptPayload,
   Basicauth,
   auth(),
   rewards.saveUserconnectedWallet
 );
 
-app.post("/api/get-payment-session", auth(), async (req, res) => {
+app.post("/api/get-payment-session", decryptPayload, auth(), async (req, res) => {
   try {
     // console.log("req.body ==>", req.body);
     const resp = await getPaymentSession(req.body, req); //getHostedPaymentSession(req.body, req)
@@ -1960,6 +1971,16 @@ app.get("/api/getPackage", async (req, res) => {
       package: data,
     });
     // }
+  } catch (error) {
+    console.log("error in checkpout payment webhooks", error);
+  }
+});
+
+app.get("/api/getCheckoutAccessToken", async (req, res) => {
+  try {
+    
+    const token = await getAcessToken();
+    return res.status(200).json(token);
   } catch (error) {
     console.log("error in checkpout payment webhooks", error);
   }
