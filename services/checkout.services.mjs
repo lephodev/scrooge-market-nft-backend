@@ -155,7 +155,7 @@ export const getPaymentSession = async (body, req) => {
   }
 };
 
-const getAcessToken = async () => {
+export const getAcessToken = async () => {
   try {
     const acsTkResp = await axios.post(
       process.env.CHECKOUT_MERCHENT_URL,
